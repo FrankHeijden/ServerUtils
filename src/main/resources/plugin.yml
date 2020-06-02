@@ -1,0 +1,12 @@
+name: ServerUtils
+main: net.frankheijden.serverutils.ServerUtils
+version: ${version}
+author: FrankHeijden
+api-version: '1.13'
+
+commands:
+  serverutils:
+    usage: "/<command>"
+    aliases:
+      - "su"
+

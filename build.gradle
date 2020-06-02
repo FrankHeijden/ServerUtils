@@ -1,0 +1,40 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+}
+
+String packagePath = 'net.frankheijden.serverutils'
+group = packagePath
+version '1.0.0'
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.aikar.co/content/groups/aikar/' }
+    maven { url 'https://papermc.io/repo/repository/maven-public/' }
+}
+
+dependencies {
+    implementation 'co.aikar:acf-paper:0.5.0-SNAPSHOT'
+    compileOnly 'com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT'
+}
+
+processResources {
+    from('src/main/resources') {
+        include 'plugin.yml'
+        expand(version: project.version)
+    }
+}
+
+compileJava {
+    options.compilerArgs += ["-parameters"]
+    options.fork = true
+    options.forkOptions.executable = 'javac'
+}
+
+shadowJar {
+    relocate 'co.aikar.commands', packagePath + '.acf'
+    relocate 'co.aikar.locales', packagePath + '.locales'
+}
+
+build.dependsOn shadowJar

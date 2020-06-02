@@ -1,0 +1,17 @@
+serverutils:
+  success: "&3Successfully %action%ed &b%what%&3!"
+  warning: "&3Successfully %action%ed &b%what%&3, but with warnings."
+  error: "&cAn error occurred while %action%ing &4%what%&c, please check the console!"
+  not_exists: "&cAn error occurred while %action%ing &4%what%&c, plugin does not exist!"
+  already_enabled: "&cAn error occurred while %action%ing &4%what%&c, plugin is already enabled!"
+  help:
+    header: "&8&m-------------=&r&8[ &b&lServerUtils Help&r &8]&m=---------------"
+    format: "&8/&3%command%&b%subcommand% &f(&7%help%&f)"
+    footer: "&8&m-------------------------------------------------"
+  plugins:
+    header: "&8&m------------=&r&8[ &b&lServerUtils Plugins&r &8]&m=-------------"
+    format: "&3%plugin%"
+    seperator: "&b, "
+    last_seperator: " &band "
+    version: " &8(&a%version%&8)"
+    footer: "&8&m-------------------------------------------------"
