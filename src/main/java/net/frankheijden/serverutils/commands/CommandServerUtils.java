@@ -77,7 +77,7 @@ public class CommandServerUtils extends BaseCommand {
 
     @Subcommand("reloadconfig")
     @CommandCompletion("@supportedConfigs")
-    @CommandPermission("serverutils.reloadconfig.commands")
+    @CommandPermission("serverutils.reloadconfig")
     @Description("Reloads individual Server configurations.")
     public void onReloadCommands(CommandSender sender, String config) {
         ReloadHandler handler = supportedConfigs.get(config);
