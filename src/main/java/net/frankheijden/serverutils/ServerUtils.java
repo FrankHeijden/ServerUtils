@@ -7,11 +7,12 @@ import net.frankheijden.serverutils.config.Messenger;
 import net.frankheijden.serverutils.reflection.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
+import org.bukkit.command.defaults.PluginsCommand;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,6 +21,7 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
 
     private static ServerUtils instance;
     private PaperCommandManager commandManager;
+    private CommandPlugins commandPlugins;
 
     public static ServerUtils getInstance() {
         return instance;
@@ -30,11 +32,10 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         super.onEnable();
         instance = this;
 
-        this.removeCommands("pl", "plugins");
-
-        commandManager = new PaperCommandManager(this);
+        this.commandManager = new PaperCommandManager(this);
         commandManager.registerCommand(new CommandServerUtils());
-        commandManager.registerCommand(new CommandPlugins());
+        this.commandPlugins = null;
+
         commandManager.getCommandCompletions().registerAsyncCompletion("plugins", context -> Arrays.stream(Bukkit.getPluginManager().getPlugins())
                 .map(Plugin::getName)
                 .collect(Collectors.toList()));
@@ -48,6 +49,7 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
     @Override
     public void onDisable() {
         super.onDisable();
+        restoreBukkitPluginCommand();
     }
 
     private void removeCommands(String... commands) {
@@ -64,8 +66,24 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         }
     }
 
+    public void restoreBukkitPluginCommand() {
+        RCraftServer.getCommandMap().register("bukkit", new PluginsCommand("plugins"));
+    }
+
     public void reload() {
+        if (commandPlugins != null) {
+            commandManager.unregisterCommand(commandPlugins);
+            restoreBukkitPluginCommand();
+        }
+
         new Messenger(copyResourceIfNotExists("messages.yml"));
+
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(copyResourceIfNotExists("config.yml"));
+        if (!config.getBoolean("settings.disable-plugins-command", false)) {
+            this.removeCommands("pl", "plugins");
+            this.commandPlugins = new CommandPlugins();
+            commandManager.registerCommand(commandPlugins);
+        }
     }
 
     public PaperCommandManager getCommandManager() {
