@@ -5,7 +5,7 @@ plugins {
 
 String packagePath = 'net.frankheijden.serverutils'
 group = packagePath
-version '1.0.1'
+version '1.0.2'
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
