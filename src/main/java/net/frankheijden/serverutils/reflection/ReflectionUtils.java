@@ -108,16 +108,20 @@ public class ReflectionUtils {
             this.max = max;
         }
 
-        public static VersionParam versionOf(int min, int max) {
+        public static VersionParam versionOf(int ver) {
+            return new VersionParam(ver, ver);
+        }
+
+        public static VersionParam between(int min, int max) {
             return new VersionParam(min, max);
         }
 
         public static VersionParam min(int min) {
-            return versionOf(min, Integer.MAX_VALUE);
+            return between(min, Integer.MAX_VALUE);
         }
 
         public static VersionParam max(int max) {
-            return versionOf(Integer.MIN_VALUE, max);
+            return between(Integer.MIN_VALUE, max);
         }
 
         public boolean isCompatible() {

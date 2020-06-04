@@ -39,7 +39,7 @@ public class RCraftServer {
                     fieldOf("console", ALL_VERSIONS),
                     fieldOf("commandsConfiguration", ALL_VERSIONS),
                     fieldOf("overrideAllCommandBlockCommands", ALL_VERSIONS),
-                    fieldOf("unrestrictedAdvancements", max(12)),
+                    fieldOf("unrestrictedAdvancements", versionOf(12)),
                     fieldOf("ignoreVanillaPermissions", min(13)),
                     fieldOf("monsterSpawn", ALL_VERSIONS),
                     fieldOf("animalSpawn", ALL_VERSIONS),
