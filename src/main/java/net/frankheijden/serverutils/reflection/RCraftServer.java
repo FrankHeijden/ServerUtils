@@ -46,7 +46,7 @@ public class RCraftServer {
                     fieldOf("waterAnimalSpawn", ALL_VERSIONS),
                     fieldOf("ambientSpawn", ALL_VERSIONS),
                     fieldOf("warningState", ALL_VERSIONS),
-                    fieldOf("minimumAPI", min(13)),
+                    fieldOf("minimumAPI", min(14)),
                     fieldOf("printSaveWarning", ALL_VERSIONS),
                     fieldOf("chunkGCPeriod", max(12)),
                     fieldOf("chunkGCLoadThresh", max(12)),
