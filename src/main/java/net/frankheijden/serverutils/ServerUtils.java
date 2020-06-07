@@ -5,6 +5,7 @@ import net.frankheijden.serverutils.commands.CommandPlugins;
 import net.frankheijden.serverutils.commands.CommandServerUtils;
 import net.frankheijden.serverutils.config.Messenger;
 import net.frankheijden.serverutils.reflection.*;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.command.defaults.PluginsCommand;
@@ -19,6 +20,8 @@ import java.util.stream.Collectors;
 
 public class ServerUtils extends JavaPlugin implements CommandExecutor {
 
+    private static final int BSTATS_METRICS_ID = 7790;
+
     private static ServerUtils instance;
     private PaperCommandManager commandManager;
     private CommandPlugins commandPlugins;
@@ -31,6 +34,8 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
     public void onEnable() {
         super.onEnable();
         instance = this;
+
+        new Metrics(this, BSTATS_METRICS_ID);
 
         this.commandManager = new PaperCommandManager(this);
         commandManager.registerCommand(new CommandServerUtils());
