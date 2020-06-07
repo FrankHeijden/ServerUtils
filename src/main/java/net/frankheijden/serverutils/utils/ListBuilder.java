@@ -17,6 +17,13 @@ public class ListBuilder<T> {
         return new ListBuilder<>(collection);
     }
 
+    @SuppressWarnings("unchecked")
+    public static ListBuilder<String> createStrings(Collection<? extends String> collection) {
+        ListBuilder<String> builder = create((Collection<String>) collection);
+        builder.format(ListFormat.stringFormat);
+        return builder;
+    }
+
     public ListBuilder<T> format(ListFormat<T> formatter) {
         this.formatter = formatter;
         return this;

@@ -6,14 +6,16 @@ import net.frankheijden.serverutils.ServerUtils;
 import net.frankheijden.serverutils.config.Messenger;
 import net.frankheijden.serverutils.managers.PluginManager;
 import net.frankheijden.serverutils.reflection.*;
-import net.frankheijden.serverutils.utils.ForwardFilter;
-import net.frankheijden.serverutils.utils.ReloadHandler;
+import net.frankheijden.serverutils.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginDescriptionFile;
 
 import java.util.*;
 
 import static net.frankheijden.serverutils.config.Messenger.sendMessage;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.MINOR;
 
 @CommandAlias("serverutils|su")
 public class CommandServerUtils extends BaseCommand {
@@ -46,22 +48,19 @@ public class CommandServerUtils extends BaseCommand {
     @Description("Shows a help page with a few commands.")
     public void onHelp(CommandSender sender) {
         Messenger.sendMessage(sender, "serverutils.help.header");
+
+        FormatBuilder builder = FormatBuilder.create(Messenger.getMessage("serverutils.help.format"))
+                .orderedKeys("%command%", "%subcommand%", "%help%");
         plugin.getCommandManager().getRegisteredRootCommands().stream()
                 .filter(c -> !ALIASES.contains(c.getCommandName().toLowerCase()))
                 .forEach(rootCommand -> {
-                    Messenger.sendMessage(sender, "serverutils.help.format",
-                            "%command%", rootCommand.getCommandName(),
-                            "%subcommand%", "",
-                            "%help%", rootCommand.getDescription());
-
+                    builder.add(rootCommand.getCommandName(), "", rootCommand.getDescription());
                     rootCommand.getSubCommands().forEach((str, cmd) -> {
                         if (cmd.getPrefSubCommand().isEmpty()) return;
-                        Messenger.sendMessage(sender, "serverutils.help.format",
-                                "%command%", rootCommand.getCommandName(),
-                                "%subcommand%", " " + cmd.getPrefSubCommand(),
-                                "%help%", cmd.getHelpText());
+                        builder.add(rootCommand.getCommandName(), " " + cmd.getPrefSubCommand(), cmd.getHelpText());
                     });
         });
+        builder.sendTo(sender);
         Messenger.sendMessage(sender, "serverutils.help.footer");
     }
 
@@ -135,5 +134,59 @@ public class CommandServerUtils extends BaseCommand {
     public void onReloadPlugin(CommandSender sender, String pluginName) {
         PluginManager.Result result = PluginManager.reloadPlugin(pluginName);
         result.sendTo(sender, "reload", pluginName);
+    }
+
+    @Subcommand("plugininfo")
+    @CommandCompletion("@plugins")
+    @CommandPermission("serverutils.plugininfo")
+    @Description("Shows information about the specified plugin.")
+    public void onPluginInfo(CommandSender sender, String pluginName) {
+        Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
+        if (plugin == null) {
+            PluginManager.Result.NOT_EXISTS.sendTo(sender, "fetch", pluginName);
+            return;
+        }
+
+        PluginDescriptionFile description = plugin.getDescription();
+        String format = Messenger.getMessage("serverutils.plugininfo.format");
+        String seperator = Messenger.getMessage("serverutils.plugininfo.seperator");
+        String lastSeperator = Messenger.getMessage("serverutils.plugininfo.last_seperator");
+
+        Messenger.sendMessage(sender, "serverutils.plugininfo.header");
+
+        FormatBuilder builder = FormatBuilder.create(format)
+                .orderedKeys("%key%", "%value%")
+                .add("Name", plugin.getName())
+                .add("Full Name", description.getFullName())
+                .add("Version", description.getVersion());
+        if (MINOR >= 13) builder.add( "API Version", description.getAPIVersion());
+        builder.add("Website", description.getWebsite())
+                .add("Authors", ListBuilder.createStrings(description.getAuthors())
+                        .seperator(seperator)
+                        .lastSeperator(lastSeperator)
+                        .toString())
+                .add("Description", description.getDescription())
+                .add("Main", description.getMain())
+                .add("Prefix", description.getPrefix())
+                .add("Load Order", description.getLoad().name())
+                .add("Load Before", ListBuilder.createStrings(description.getLoadBefore())
+                        .seperator(seperator)
+                        .lastSeperator(lastSeperator)
+                        .toString())
+                .add("Depend", ListBuilder.createStrings(description.getDepend())
+                        .seperator(seperator)
+                        .lastSeperator(lastSeperator)
+                        .toString())
+                .add("Soft Depend", ListBuilder.createStrings(description.getSoftDepend())
+                        .seperator(seperator)
+                        .lastSeperator(lastSeperator)
+                        .toString());
+        if (MINOR >= 15) builder.add("Provides", ListBuilder.createStrings(description.getProvides())
+                .seperator(seperator)
+                .lastSeperator(lastSeperator)
+                .toString());
+
+        builder.sendTo(sender);
+        Messenger.sendMessage(sender, "serverutils.plugininfo.footer");
     }
 }
