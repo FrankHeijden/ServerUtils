@@ -47,6 +47,7 @@ public class PluginManager {
             Bukkit.getPluginManager().disablePlugin(plugin);
             RSimplePluginManager.getPlugins(Bukkit.getPluginManager()).remove(plugin);
             RSimplePluginManager.removeLookupName(Bukkit.getPluginManager(), plugin.getName());
+            RCraftingManager.removeRecipesFor(plugin);
         } catch (Exception ex) {
             ex.printStackTrace();
             return Result.ERROR;
