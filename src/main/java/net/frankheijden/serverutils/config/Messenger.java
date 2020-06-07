@@ -37,6 +37,7 @@ public class Messenger {
                         "plugininfo", Defaults.of(
                                 "header", "&8&m-----------=&r&8[ &b&lServerUtils PluginInfo&r &8]&m=-----------",
                                 "format", " &3%key%&8: &b%value%",
+                                "list_format", "&b%value%",
                                 "seperator", "&8, ",
                                 "last_seperator", " &8and ",
                                 "footer", "&8&m-------------------------------------------------"

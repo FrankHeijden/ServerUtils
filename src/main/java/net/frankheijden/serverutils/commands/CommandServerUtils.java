@@ -149,8 +149,11 @@ public class CommandServerUtils extends BaseCommand {
 
         PluginDescriptionFile description = plugin.getDescription();
         String format = Messenger.getMessage("serverutils.plugininfo.format");
+        String listFormatString = Messenger.getMessage("serverutils.plugininfo.list_format");
         String seperator = Messenger.getMessage("serverutils.plugininfo.seperator");
         String lastSeperator = Messenger.getMessage("serverutils.plugininfo.last_seperator");
+
+        ListFormat<String> listFormat = str -> listFormatString.replace("%value%", str);
 
         Messenger.sendMessage(sender, "serverutils.plugininfo.header");
 
@@ -161,7 +164,8 @@ public class CommandServerUtils extends BaseCommand {
                 .add("Version", description.getVersion());
         if (MINOR >= 13) builder.add( "API Version", description.getAPIVersion());
         builder.add("Website", description.getWebsite())
-                .add("Authors", ListBuilder.createStrings(description.getAuthors())
+                .add("Authors", ListBuilder.create(description.getAuthors())
+                        .format(listFormat)
                         .seperator(seperator)
                         .lastSeperator(lastSeperator)
                         .toString())
@@ -169,19 +173,23 @@ public class CommandServerUtils extends BaseCommand {
                 .add("Main", description.getMain())
                 .add("Prefix", description.getPrefix())
                 .add("Load Order", description.getLoad().name())
-                .add("Load Before", ListBuilder.createStrings(description.getLoadBefore())
+                .add("Load Before", ListBuilder.create(description.getLoadBefore())
+                        .format(listFormat)
                         .seperator(seperator)
                         .lastSeperator(lastSeperator)
                         .toString())
-                .add("Depend", ListBuilder.createStrings(description.getDepend())
+                .add("Depend", ListBuilder.create(description.getDepend())
+                        .format(listFormat)
                         .seperator(seperator)
                         .lastSeperator(lastSeperator)
                         .toString())
-                .add("Soft Depend", ListBuilder.createStrings(description.getSoftDepend())
+                .add("Soft Depend", ListBuilder.create(description.getSoftDepend())
+                        .format(listFormat)
                         .seperator(seperator)
                         .lastSeperator(lastSeperator)
                         .toString());
-        if (MINOR >= 15) builder.add("Provides", ListBuilder.createStrings(description.getProvides())
+        if (MINOR >= 15) builder.add("Provides", ListBuilder.create(description.getProvides())
+                .format(listFormat)
                 .seperator(seperator)
                 .lastSeperator(lastSeperator)
                 .toString());
