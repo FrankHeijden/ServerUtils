@@ -1,11 +1,9 @@
 package net.frankheijden.serverutils.managers;
 
 import net.frankheijden.serverutils.ServerUtils;
-import net.frankheijden.serverutils.config.Messenger;
 import net.frankheijden.serverutils.reflection.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
 
@@ -42,7 +40,7 @@ public class PluginManager {
     }
 
     public static Result disablePlugin(Plugin plugin) {
-        if (plugin == null) return Result.NOT_EXISTS;
+        if (plugin == null) return Result.NOT_ENABLED;
         try {
             Bukkit.getPluginManager().disablePlugin(plugin);
             RSimplePluginManager.getPlugins(Bukkit.getPluginManager()).remove(plugin);
@@ -85,7 +83,10 @@ public class PluginManager {
         }
 
         LoadResult loadResult = loadPlugin(pluginFile);
-        if (!loadResult.isSuccess()) return loadResult.getResult();
+        if (!loadResult.isSuccess()) {
+            Result r = loadResult.getResult();
+            return (r == Result.NOT_EXISTS) ? Result.FILE_CHANGED : r;
+        }
         return enablePlugin(loadResult.getPlugin());
     }
 
@@ -107,44 +108,5 @@ public class PluginManager {
                 aliases.forEach(map::remove);
             }
         });
-    }
-
-    public static class LoadResult {
-        private final Plugin plugin;
-        private final Result result;
-
-        public LoadResult(Plugin plugin, Result result) {
-            this.plugin = plugin;
-            this.result = result;
-        }
-
-        public LoadResult(Result result) {
-            this(null, result);
-        }
-
-        public Result getResult() {
-            return result;
-        }
-
-        public Plugin getPlugin() {
-            return plugin;
-        }
-
-        public boolean isSuccess() {
-            return plugin != null && result == Result.SUCCESS;
-        }
-    }
-
-    public enum Result {
-        NOT_EXISTS,
-        ALREADY_ENABLED,
-        ERROR,
-        SUCCESS;
-
-        public void sendTo(CommandSender sender, String action, String what) {
-            Messenger.sendMessage(sender, "serverutils." + this.name().toLowerCase(),
-                    "%action%", action,
-                    "%what%", what);
-        }
     }
 }

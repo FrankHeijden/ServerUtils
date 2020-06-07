@@ -18,7 +18,9 @@ public class Messenger {
                         "warning", "&3Successfully %action%ed &b%what%&3, but with warnings.",
                         "error", "&cAn error occurred while %action%ing &4%what%&c, please check the console!",
                         "not_exists", "&cAn error occurred while %action%ing &4%what%&c, plugin does not exist!",
+                        "not_enabled", "&cAn error occurred while %action%ing &4%what%&c, plugin is not enabled!",
                         "already_enabled", "&cAn error occurred while %action%ing &4%what%&c, plugin is already enabled!",
+                        "file_changed", "&cAccessing the jar file while %action%ing &4%what%&c went wrong, please load the plugin manually!",
                         "help", Defaults.of(
                                 "header", "&8&m-------------=&r&8[ &b&lServerUtils Help&r &8]&m=---------------",
                                 "format", "&8/&3%command%&b%subcommand% &f(&7%help%&f)",

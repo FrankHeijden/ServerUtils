@@ -4,7 +4,7 @@ import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
 import net.frankheijden.serverutils.ServerUtils;
 import net.frankheijden.serverutils.config.Messenger;
-import net.frankheijden.serverutils.managers.PluginManager;
+import net.frankheijden.serverutils.managers.*;
 import net.frankheijden.serverutils.reflection.*;
 import net.frankheijden.serverutils.utils.*;
 import org.bukkit.Bukkit;
@@ -108,13 +108,13 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.loadplugin")
     @Description("Loads the specified jar file as a plugin.")
     public void onLoadPlugin(CommandSender sender, String jarFile) {
-        PluginManager.LoadResult loadResult = PluginManager.loadPlugin(jarFile);
+        LoadResult loadResult = PluginManager.loadPlugin(jarFile);
         if (!loadResult.isSuccess()) {
             loadResult.getResult().sendTo(sender, "load", jarFile);
             return;
         }
 
-        PluginManager.Result result = PluginManager.enablePlugin(loadResult.getPlugin());
+        Result result = PluginManager.enablePlugin(loadResult.getPlugin());
         result.sendTo(sender, "load", jarFile);
     }
 
@@ -123,7 +123,7 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.unloadplugin")
     @Description("Unloads the specified plugin.")
     public void onUnloadPlugin(CommandSender sender, String pluginName) {
-        PluginManager.Result result = PluginManager.disablePlugin(pluginName);
+        Result result = PluginManager.disablePlugin(pluginName);
         result.sendTo(sender, "unload", pluginName);
     }
 
@@ -132,7 +132,7 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.reloadplugin")
     @Description("Reloads a specified plugin.")
     public void onReloadPlugin(CommandSender sender, String pluginName) {
-        PluginManager.Result result = PluginManager.reloadPlugin(pluginName);
+        Result result = PluginManager.reloadPlugin(pluginName);
         result.sendTo(sender, "reload", pluginName);
     }
 
@@ -143,7 +143,7 @@ public class CommandServerUtils extends BaseCommand {
     public void onPluginInfo(CommandSender sender, String pluginName) {
         Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
         if (plugin == null) {
-            PluginManager.Result.NOT_EXISTS.sendTo(sender, "fetch", pluginName);
+            Result.NOT_EXISTS.sendTo(sender, "fetch", pluginName);
             return;
         }
 
