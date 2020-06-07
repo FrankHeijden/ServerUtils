@@ -2,6 +2,8 @@ package net.frankheijden.serverutils.config;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -34,5 +36,34 @@ public class Defaults {
                 yml.set(key, value);
             }
         }
+    }
+
+    public Object get(String path) {
+        return get(this, path);
+    }
+
+    private Object get(Defaults defaults, String path) {
+        String[] split = path.split("\\.");
+        if (split.length > 1) {
+            return get((Defaults) defaults.rootMap.get(split[0]), path.substring(split[0].length() + 1));
+        }
+        return defaults.rootMap.get(split[0]);
+    }
+
+    public static YamlConfiguration init(File file, Defaults defaults) {
+        YamlConfiguration yml = YamlConfiguration.loadConfiguration(file);
+        Defaults.addDefaults(defaults, yml);
+
+        try {
+            // Idk somehow the order messes up
+            // of the messages if we don't do this
+            file.delete();
+            file.createNewFile();
+
+            yml.save(file);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return yml;
     }
 }

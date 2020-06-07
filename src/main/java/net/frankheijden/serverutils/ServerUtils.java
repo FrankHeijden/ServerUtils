@@ -3,8 +3,12 @@ package net.frankheijden.serverutils;
 import co.aikar.commands.PaperCommandManager;
 import net.frankheijden.serverutils.commands.CommandPlugins;
 import net.frankheijden.serverutils.commands.CommandServerUtils;
+import net.frankheijden.serverutils.config.Config;
 import net.frankheijden.serverutils.config.Messenger;
+import net.frankheijden.serverutils.listeners.MainListener;
+import net.frankheijden.serverutils.managers.VersionManager;
 import net.frankheijden.serverutils.reflection.*;
+import net.frankheijden.serverutils.tasks.UpdateCheckerTask;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
@@ -49,6 +53,11 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
                 .collect(Collectors.toList()));
         commandManager.getCommandCompletions().registerAsyncCompletion("supportedConfigs", context -> CommandServerUtils.getSupportedConfigs());
         reload();
+
+        Bukkit.getPluginManager().registerEvents(new MainListener(), this);
+
+        new VersionManager();
+        checkForUpdates();
     }
 
     @Override
@@ -81,10 +90,10 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
             restoreBukkitPluginCommand();
         }
 
+        new Config(copyResourceIfNotExists("config.yml"));
         new Messenger(copyResourceIfNotExists("messages.yml"));
 
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(copyResourceIfNotExists("config.yml"));
-        if (!config.getBoolean("settings.disable-plugins-command", false)) {
+        if (!Config.getInstance().getBoolean("settings.disable-plugins-command")) {
             this.removeCommands("pl", "plugins");
             this.commandPlugins = new CommandPlugins();
             commandManager.registerCommand(commandPlugins);
@@ -116,5 +125,11 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
             saveResource(resource, false);
         }
         return file;
+    }
+
+    private void checkForUpdates() {
+        if (Config.getInstance().getBoolean("settings.check-updates")) {
+            UpdateCheckerTask.start(Bukkit.getConsoleSender(), true);
+        }
     }
 }
