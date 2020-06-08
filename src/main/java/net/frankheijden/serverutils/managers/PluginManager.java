@@ -99,7 +99,10 @@ public class PluginManager {
             return;
         }
 
-        plugin.getDescription().getCommands().forEach((cmd, data) -> {
+        Map<String, Map<String, Object>> commands = plugin.getDescription().getCommands();
+        if (commands == null) return; // Older versions
+
+        commands.forEach((cmd, data) -> {
             map.remove(cmd);
 
             @SuppressWarnings("unchecked")
