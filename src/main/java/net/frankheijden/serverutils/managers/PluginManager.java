@@ -3,14 +3,13 @@ package net.frankheijden.serverutils.managers;
 import net.frankheijden.serverutils.ServerUtils;
 import net.frankheijden.serverutils.reflection.*;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
+import org.bukkit.command.*;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.PluginClassLoader;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.Map;
 
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.set;
@@ -108,25 +107,25 @@ public class PluginManager {
     }
 
     public static void unregisterCommands(Plugin plugin) {
+        SimpleCommandMap commandMap = RCraftServer.getCommandMap();
         Map<String, Command> map;
         try {
-            map = RCommandMap.getKnownCommands(RCraftServer.getCommandMap());
+            map = RCommandMap.getKnownCommands(commandMap);
         } catch (Exception ex) {
             ex.printStackTrace();
             return;
         }
 
-        Map<String, Map<String, Object>> commands = plugin.getDescription().getCommands();
-        if (commands == null) return; // Older versions
-
-        commands.forEach((cmd, data) -> {
-            map.remove(cmd);
-
-            @SuppressWarnings("unchecked")
-            List<String> aliases = (List<String>) data.get("aliases");
-            if (aliases != null) {
-                aliases.forEach(map::remove);
+        map.values().removeIf(c -> {
+            if (c instanceof PluginCommand) {
+                PluginCommand pc = (PluginCommand) c;
+                if (pc.getPlugin() == plugin) {
+                    pc.unregister(RCraftServer.getCommandMap());
+                    return true;
+                }
+                return false;
             }
+            return false;
         });
     }
 }
