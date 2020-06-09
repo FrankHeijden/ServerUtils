@@ -107,17 +107,20 @@ public class PluginManager {
         return enablePlugin(loadResult.getPlugin());
     }
 
-    public static void unregisterCommands(Plugin plugin) {
-        SimpleCommandMap commandMap = RCraftServer.getCommandMap();
-        Map<String, Command> map;
+    public static Map<String, Command> getKnownCommands() {
         try {
-            map = RCommandMap.getKnownCommands(commandMap);
+            return RCommandMap.getKnownCommands(RCraftServer.getCommandMap());
         } catch (Exception ex) {
             ex.printStackTrace();
-            return;
+            return null;
         }
+    }
 
-        map.values().removeIf(c -> {
+    public static void unregisterCommands(Plugin plugin) {
+        Map<String, Command> knownCommands = getKnownCommands();
+        if (knownCommands == null) return;
+
+        knownCommands.values().removeIf(c -> {
             if (c instanceof PluginCommand) {
                 PluginCommand pc = (PluginCommand) c;
                 if (pc.getPlugin() == plugin) {
@@ -128,5 +131,11 @@ public class PluginManager {
             }
             return false;
         });
+    }
+
+    public static Command getCommand(String command) {
+        Map<String, Command> knownCommands = getKnownCommands();
+        if (knownCommands == null) return null;
+        return knownCommands.get(command);
     }
 }

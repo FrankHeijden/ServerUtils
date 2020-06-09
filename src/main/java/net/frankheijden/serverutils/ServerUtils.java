@@ -13,13 +13,12 @@ import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.command.defaults.PluginsCommand;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ServerUtils extends JavaPlugin implements CommandExecutor {
@@ -52,6 +51,14 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
                 .map(File::getName)
                 .collect(Collectors.toList()));
         commandManager.getCommandCompletions().registerAsyncCompletion("supportedConfigs", context -> CommandServerUtils.getSupportedConfigs());
+        commandManager.getCommandCompletions().registerAsyncCompletion("commands", context -> {
+            try {
+                return RCommandMap.getKnownCommands((SimpleCommandMap) Bukkit.getCommandMap()).keySet();
+            } catch (IllegalAccessException | InvocationTargetException ex) {
+                ex.printStackTrace();
+            }
+            return Collections.emptyList();
+        });
         reload();
 
         Bukkit.getPluginManager().registerEvents(new MainListener(), this);

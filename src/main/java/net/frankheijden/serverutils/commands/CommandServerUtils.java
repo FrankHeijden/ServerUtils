@@ -197,4 +197,46 @@ public class CommandServerUtils extends BaseCommand {
         builder.sendTo(sender);
         Messenger.sendMessage(sender, "serverutils.plugininfo.footer");
     }
+
+    @Subcommand("commandinfo")
+    @CommandCompletion("@commands")
+    @CommandPermission("serverutils.commandinfo")
+    @Description("Shows information about the specified command.")
+    public void onCommandInfo(CommandSender sender, String command) {
+        Command cmd = PluginManager.getCommand(command);
+        if (cmd == null) {
+            Messenger.sendMessage(sender, "serverutils.commandinfo.not_exists");
+            return;
+        }
+
+        String format = Messenger.getMessage("serverutils.commandinfo.format");
+        String listFormatString = Messenger.getMessage("serverutils.commandinfo.list_format");
+        String seperator = Messenger.getMessage("serverutils.commandinfo.seperator");
+        String lastSeperator = Messenger.getMessage("serverutils.commandinfo.last_seperator");
+
+        ListFormat<String> listFormat = str -> listFormatString.replace("%value%", str);
+
+        Messenger.sendMessage(sender, "serverutils.commandinfo.header");
+        FormatBuilder builder = FormatBuilder.create(format)
+                .orderedKeys("%key%", "%value%")
+                .add("Name", cmd.getName());
+        if (cmd instanceof PluginIdentifiableCommand) {
+            PluginIdentifiableCommand pc = (PluginIdentifiableCommand) cmd;
+            builder.add("Plugin", pc.getPlugin().getName());
+        }
+        builder.add("Usage", cmd.getUsage())
+                .add("Description", cmd.getDescription())
+                .add("Aliases", ListBuilder.create(cmd.getAliases())
+                        .format(listFormat)
+                        .seperator(seperator)
+                        .lastSeperator(lastSeperator)
+                        .toString())
+                .add("Label", cmd.getLabel())
+                .add("Timings Name", cmd.getTimingName())
+                .add("Permission", cmd.getPermission())
+                .add("Permission Message", cmd.getPermissionMessage());
+
+        builder.sendTo(sender);
+        Messenger.sendMessage(sender, "serverutils.commandinfo.footer");
+    }
 }

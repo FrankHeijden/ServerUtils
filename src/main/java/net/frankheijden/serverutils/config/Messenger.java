@@ -54,6 +54,15 @@ public class Messenger {
                             "seperator", "&8, ",
                             "last_seperator", " &8and ",
                             "footer", "&8&m-------------------------------------------------"
+                    ),
+                    "commandinfo", Defaults.of(
+                            "header", "&8&m-----------=&r&8[ &b&lServerUtils CommandInfo&r &8]&m=----------",
+                            "format", " &3%key%&8: &b%value%",
+                            "list_format", "&b%value%",
+                            "seperator", "&8, ",
+                            "last_seperator", " &8and ",
+                            "footer", "&8&m-------------------------------------------------",
+                            "not_exists", "&cThat command is not a valid registered command."
                     )
             )
     );
