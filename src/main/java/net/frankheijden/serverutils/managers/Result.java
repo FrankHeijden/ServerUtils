@@ -8,6 +8,7 @@ public enum Result {
     NOT_ENABLED,
     ALREADY_ENABLED,
     FILE_CHANGED,
+    INVALID_DESCRIPTION,
     ERROR,
     SUCCESS;
 

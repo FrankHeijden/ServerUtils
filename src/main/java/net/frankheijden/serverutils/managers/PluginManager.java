@@ -4,8 +4,7 @@ import net.frankheijden.serverutils.ServerUtils;
 import net.frankheijden.serverutils.reflection.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
-import org.bukkit.plugin.InvalidPluginException;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.PluginClassLoader;
 
 import java.io.File;
@@ -24,6 +23,8 @@ public class PluginManager {
         if (!file.exists()) return new LoadResult(Result.NOT_EXISTS);
         try {
             return new LoadResult(Bukkit.getPluginManager().loadPlugin(file), Result.SUCCESS);
+        } catch (InvalidDescriptionException ex) {
+            return new LoadResult(Result.INVALID_DESCRIPTION);
         } catch (InvalidPluginException ex) {
             if (ex.getCause() instanceof IllegalArgumentException) {
                 IllegalArgumentException e = (IllegalArgumentException) ex.getCause();
@@ -31,9 +32,9 @@ public class PluginManager {
                     return new LoadResult(Result.ALREADY_ENABLED);
                 }
             }
-        } catch (Exception ex) {
             ex.printStackTrace();
         }
+
         return new LoadResult(Result.ERROR);
     }
 

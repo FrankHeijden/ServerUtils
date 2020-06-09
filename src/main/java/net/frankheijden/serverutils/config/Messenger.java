@@ -18,6 +18,7 @@ public class Messenger {
                     "not_enabled", "&cAn error occurred while %action%ing &4%what%&c, plugin is not enabled!",
                     "already_enabled", "&cAn error occurred while %action%ing &4%what%&c, plugin is already enabled!",
                     "file_changed", "&cAccessing the jar file while %action%ing &4%what%&c went wrong, please load the plugin manually!",
+                    "invalid_description", "&cAn error occurred while %action%ing &4%what%&c, plugin doesn't have a valid description!",
                     "update", Defaults.of(
                             "available", "&8&m------------=&r&8[ &b&lServerUtils Update&r &8]&m=--------------\n"
                                     + " &3Current version: &b%old%\n"
