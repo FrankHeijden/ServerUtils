@@ -121,10 +121,16 @@ public class CommandServerUtils extends BaseCommand {
     @Subcommand("unloadplugin")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.unloadplugin")
-    @Description("Unloads the specified plugin.")
+    @Description("Disables and unloads the specified plugin.")
     public void onUnloadPlugin(CommandSender sender, String pluginName) {
-        Result result = PluginManager.disablePlugin(pluginName);
-        result.sendTo(sender, "unload", pluginName);
+        Result disableResult = PluginManager.disablePlugin(pluginName);
+        if (disableResult != Result.SUCCESS && disableResult != Result.ALREADY_DISABLED) {
+            disableResult.sendTo(sender, "disabl", pluginName);
+            return;
+        }
+
+        Result unloadResult = PluginManager.unloadPlugin(pluginName);
+        unloadResult.sendTo(sender, "unload", pluginName);
     }
 
     @Subcommand("reloadplugin")
@@ -134,6 +140,24 @@ public class CommandServerUtils extends BaseCommand {
     public void onReloadPlugin(CommandSender sender, String pluginName) {
         Result result = PluginManager.reloadPlugin(pluginName);
         result.sendTo(sender, "reload", pluginName);
+    }
+
+    @Subcommand("enableplugin")
+    @CommandCompletion("@plugins")
+    @CommandPermission("serverutils.enableplugin")
+    @Description("Enables the loaded plugin.")
+    public void onEnablePlugin(CommandSender sender, String pluginName) {
+        Result result = PluginManager.enablePlugin(pluginName);
+        result.sendTo(sender, "enabl", pluginName);
+    }
+
+    @Subcommand("disableplugin")
+    @CommandCompletion("@plugins")
+    @CommandPermission("serverutils.disableplugin")
+    @Description("Disables the specified plugin.")
+    public void onDisablePlugin(CommandSender sender, String pluginName) {
+        Result result = PluginManager.disablePlugin(pluginName);
+        result.sendTo(sender, "disabl", pluginName);
     }
 
     @Subcommand("plugininfo")

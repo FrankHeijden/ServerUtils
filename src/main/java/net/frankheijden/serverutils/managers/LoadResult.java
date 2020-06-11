@@ -6,9 +6,13 @@ public class LoadResult {
     private final Plugin plugin;
     private final Result result;
 
-    public LoadResult(Plugin plugin, Result result) {
+    private LoadResult(Plugin plugin, Result result) {
         this.plugin = plugin;
         this.result = result;
+    }
+
+    public LoadResult(Plugin plugin) {
+        this(plugin, Result.SUCCESS);
     }
 
     public LoadResult(Result result) {

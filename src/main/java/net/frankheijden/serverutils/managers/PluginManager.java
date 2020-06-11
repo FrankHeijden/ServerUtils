@@ -8,8 +8,11 @@ import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.PluginClassLoader;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.set;
 
@@ -21,8 +24,13 @@ public class PluginManager {
 
     public static LoadResult loadPlugin(File file) {
         if (!file.exists()) return new LoadResult(Result.NOT_EXISTS);
+
+        Plugin loadedPlugin = getLoadedPlugin(file);
+        if (loadedPlugin != null) return new LoadResult(Result.ALREADY_LOADED);
+
+        Plugin plugin;
         try {
-            return new LoadResult(Bukkit.getPluginManager().loadPlugin(file), Result.SUCCESS);
+            plugin = Bukkit.getPluginManager().loadPlugin(file);
         } catch (InvalidDescriptionException ex) {
             return new LoadResult(Result.INVALID_DESCRIPTION);
         } catch (InvalidPluginException ex) {
@@ -33,9 +41,12 @@ public class PluginManager {
                 }
             }
             ex.printStackTrace();
+            return new LoadResult(Result.ERROR);
         }
 
-        return new LoadResult(Result.ERROR);
+        if (plugin == null) return new LoadResult(Result.INVALID_PLUGIN);
+        plugin.onLoad();
+        return new LoadResult(plugin);
     }
 
     public static Result disablePlugin(String pluginName) {
@@ -44,11 +55,9 @@ public class PluginManager {
 
     public static Result disablePlugin(Plugin plugin) {
         if (plugin == null) return Result.NOT_ENABLED;
+        if (!plugin.isEnabled()) return Result.ALREADY_DISABLED;
         try {
             Bukkit.getPluginManager().disablePlugin(plugin);
-            RSimplePluginManager.getPlugins(Bukkit.getPluginManager()).remove(plugin);
-            RSimplePluginManager.removeLookupName(Bukkit.getPluginManager(), plugin.getName());
-            clearClassLoader(RJavaPlugin.getClassLoader(plugin));
             RCraftingManager.removeRecipesFor(plugin);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -58,17 +67,39 @@ public class PluginManager {
         return Result.SUCCESS;
     }
 
-    public static void clearClassLoader(ClassLoader loader) throws IllegalAccessException {
+    public static Result unloadPlugin(String pluginName) {
+        return unloadPlugin(Bukkit.getPluginManager().getPlugin(pluginName));
+    }
+
+    public static Result unloadPlugin(Plugin plugin) {
+        if (plugin == null) return Result.NOT_EXISTS;
+        try {
+            RSimplePluginManager.getPlugins(Bukkit.getPluginManager()).remove(plugin);
+            RSimplePluginManager.removeLookupName(Bukkit.getPluginManager(), plugin.getName());
+            clearClassLoader(RJavaPlugin.getClassLoader(plugin));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return Result.ERROR;
+        }
+        return Result.SUCCESS;
+    }
+
+    public static void clearClassLoader(ClassLoader loader) throws IllegalAccessException, IOException {
         if (loader == null) return;
         if (loader instanceof PluginClassLoader) {
             clearClassLoader((PluginClassLoader) loader);
         }
     }
 
-    public static void clearClassLoader(PluginClassLoader loader) throws IllegalAccessException {
+    public static void clearClassLoader(PluginClassLoader loader) throws IllegalAccessException, IOException {
         if (loader == null) return;
         set(RPluginClassLoader.getFields(), loader, "plugin", null);
         set(RPluginClassLoader.getFields(), loader, "pluginInit", null);
+        loader.close();
+    }
+
+    public static Result enablePlugin(String pluginName) {
+        return enablePlugin(Bukkit.getPluginManager().getPlugin(pluginName));
     }
 
     public static Result enablePlugin(Plugin plugin) {
@@ -89,7 +120,10 @@ public class PluginManager {
 
     public static Result reloadPlugin(Plugin plugin) {
         Result disableResult = disablePlugin(plugin);
-        if (disableResult != Result.SUCCESS) return disableResult;
+        if (disableResult != Result.SUCCESS && disableResult != Result.ALREADY_DISABLED) return disableResult;
+
+        Result unloadResult = unloadPlugin(plugin);
+        if (unloadResult != Result.SUCCESS) return unloadResult;
 
         File pluginFile;
         try {
@@ -137,5 +171,44 @@ public class PluginManager {
         Map<String, Command> knownCommands = getKnownCommands();
         if (knownCommands == null) return null;
         return knownCommands.get(command);
+    }
+
+    public static Map<Pattern, PluginLoader> getFileAssociations() {
+        try {
+            return RSimplePluginManager.getFileAssociations(Bukkit.getPluginManager());
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    public static PluginLoader getPluginLoader(File file) {
+        Map<Pattern, PluginLoader> fileAssociations = getFileAssociations();
+        if (fileAssociations == null) return null;
+
+        for (Pattern filter : fileAssociations.keySet()) {
+            Matcher match = filter.matcher(file.getName());
+            if (match.find()) {
+                return fileAssociations.get(filter);
+            }
+        }
+        return null;
+    }
+
+    public static Plugin getLoadedPlugin(File file) {
+        PluginDescriptionFile descriptionFile;
+        try {
+            descriptionFile = getPluginDescription(file);
+        } catch (InvalidDescriptionException ex) {
+            return null;
+        }
+        if (descriptionFile == null) return null;
+        return Bukkit.getPluginManager().getPlugin(descriptionFile.getName());
+    }
+
+    public static PluginDescriptionFile getPluginDescription(File file) throws InvalidDescriptionException {
+        PluginLoader loader = getPluginLoader(file);
+        if (loader == null) return null;
+        return loader.getPluginDescription(file);
     }
 }

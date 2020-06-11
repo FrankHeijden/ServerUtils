@@ -6,9 +6,12 @@ import org.bukkit.command.CommandSender;
 public enum Result {
     NOT_EXISTS,
     NOT_ENABLED,
+    ALREADY_LOADED,
     ALREADY_ENABLED,
+    ALREADY_DISABLED,
     FILE_CHANGED,
     INVALID_DESCRIPTION,
+    INVALID_PLUGIN,
     ERROR,
     SUCCESS;
 

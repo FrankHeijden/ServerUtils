@@ -1,10 +1,10 @@
 package net.frankheijden.serverutils.reflection;
 
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.SimplePluginManager;
+import org.bukkit.plugin.*;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.FieldParam.fieldOf;
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.ALL_VERSIONS;
@@ -21,15 +21,21 @@ public class RSimplePluginManager {
             simplePluginManagerClass = SimplePluginManager.class;
             fields = getAllFields(simplePluginManagerClass,
                     fieldOf("plugins", ALL_VERSIONS),
-                    fieldOf("lookupNames", ALL_VERSIONS));
+                    fieldOf("lookupNames", ALL_VERSIONS),
+                    fieldOf("fileAssociations", ALL_VERSIONS));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
     @SuppressWarnings("unchecked")
+    public static Map<Pattern, PluginLoader> getFileAssociations(Object manager) throws IllegalAccessException {
+        return (Map<Pattern, PluginLoader>) get(fields, manager, "fileAssociations");
+    }
+
+    @SuppressWarnings("unchecked")
     public static List<Plugin> getPlugins(Object manager) throws IllegalAccessException {
-        return (List<Plugin>) fields.get("plugins").get(manager);
+        return (List<Plugin>) get(fields, manager, "plugins");
     }
 
     @SuppressWarnings("unchecked")
