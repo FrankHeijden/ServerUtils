@@ -53,7 +53,7 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         commandManager.getCommandCompletions().registerAsyncCompletion("supportedConfigs", context -> CommandServerUtils.getSupportedConfigs());
         commandManager.getCommandCompletions().registerAsyncCompletion("commands", context -> {
             try {
-                return RCommandMap.getKnownCommands((SimpleCommandMap) Bukkit.getCommandMap()).keySet();
+                return RCommandMap.getKnownCommands(RCraftServer.getCommandMap()).keySet();
             } catch (IllegalAccessException | InvocationTargetException ex) {
                 ex.printStackTrace();
             }
