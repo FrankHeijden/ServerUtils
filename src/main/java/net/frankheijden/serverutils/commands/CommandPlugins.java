@@ -18,15 +18,21 @@ public class CommandPlugins extends BaseCommand {
     @CommandPermission("serverutils.plugins")
     @Description("Shows the plugins of this server.")
     public void onPlugins(CommandSender sender) {
-        sendPlugins(sender, plugin -> Messenger.getMessage("serverutils.plugins.format", "%plugin%", plugin.getName()));
+        sendPlugins(sender, pl -> {
+            String format = "serverutils.plugins.format" + (pl.isEnabled() ? "" : "_disabled");
+            return Messenger.getMessage(format, "%plugin%", pl.getName());
+        });
     }
 
     @Subcommand("-v")
     @CommandPermission("serverutils.plugins.version")
     @Description("Shows the plugins of this server with version.")
     public void onPluginsWithVersion(CommandSender sender) {
-        sendPlugins(sender, plugin -> Messenger.getMessage("serverutils.plugins.format", "%plugin%", plugin.getName())
-                + Messenger.getMessage("serverutils.plugins.version", "%version%", plugin.getDescription().getVersion()));
+        sendPlugins(sender, pl -> {
+            String format = "serverutils.plugins.format" + (pl.isEnabled() ? "" : "_disabled");
+            String version = Messenger.getMessage("serverutils.plugins.version", "%version%", pl.getDescription().getVersion());
+            return Messenger.getMessage(format, "%plugin%", pl.getName()) + version;
+        });
     }
 
     private static void sendPlugins(CommandSender sender, ListFormat<Plugin> pluginFormat) {

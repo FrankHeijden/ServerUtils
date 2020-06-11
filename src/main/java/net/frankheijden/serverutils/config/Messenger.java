@@ -42,6 +42,7 @@ public class Messenger {
                     "plugins", Defaults.of(
                             "header", "&8&m------------=&r&8[ &b&lServerUtils Plugins&r &8]&m=-------------",
                             "format", "&3%plugin%",
+                            "format_disabled", "&c%plugin%",
                             "seperator", "&b, ",
                             "last_seperator", " &band ",
                             "version", " &8(&a%version%&8)",
