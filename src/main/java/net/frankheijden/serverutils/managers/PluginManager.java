@@ -33,6 +33,8 @@ public class PluginManager {
             plugin = Bukkit.getPluginManager().loadPlugin(file);
         } catch (InvalidDescriptionException ex) {
             return new LoadResult(Result.INVALID_DESCRIPTION);
+        } catch (UnknownDependencyException ex) {
+            return new LoadResult(Result.UNKNOWN_DEPENDENCY.arg(ex.getMessage()));
         } catch (InvalidPluginException ex) {
             if (ex.getCause() instanceof IllegalArgumentException) {
                 IllegalArgumentException e = (IllegalArgumentException) ex.getCause();

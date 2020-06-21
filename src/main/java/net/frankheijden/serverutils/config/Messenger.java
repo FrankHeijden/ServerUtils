@@ -22,6 +22,7 @@ public class Messenger {
                     "file_changed", "&cAccessing the jar file while %action%ing &4%what%&c went wrong, please load the plugin manually!",
                     "invalid_description", "&cAn error occurred while %action%ing &4%what%&c, plugin doesn't have a valid description!",
                     "invalid_plugin", "&cAn error occurred while %action%ing &4%what%&c, plugin is invalid!",
+                    "unknown_dependency", "&cAn error occurred while %action%ing &4%what%&c, plugin has a dependeny which is not loaded: &4%arg%",
                     "update", Defaults.of(
                             "available", "&8&m------------=&r&8[ &b&lServerUtils Update&r &8]&m=--------------\n"
                                     + " &3Current version: &b%old%\n"
