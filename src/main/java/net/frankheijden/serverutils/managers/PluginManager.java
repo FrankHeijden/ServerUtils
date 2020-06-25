@@ -5,16 +5,12 @@ import net.frankheijden.serverutils.reflection.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.plugin.*;
-import org.bukkit.plugin.java.PluginClassLoader;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.set;
 
 public class PluginManager {
 
@@ -78,26 +74,12 @@ public class PluginManager {
         try {
             RSimplePluginManager.getPlugins(Bukkit.getPluginManager()).remove(plugin);
             RSimplePluginManager.removeLookupName(Bukkit.getPluginManager(), plugin.getName());
-            clearClassLoader(RJavaPlugin.getClassLoader(plugin));
+            RPluginClassLoader.clearClassLoader(RJavaPlugin.getClassLoader(plugin));
         } catch (Exception ex) {
             ex.printStackTrace();
             return Result.ERROR;
         }
         return Result.SUCCESS;
-    }
-
-    public static void clearClassLoader(ClassLoader loader) throws IllegalAccessException, IOException {
-        if (loader == null) return;
-        if (loader instanceof PluginClassLoader) {
-            clearClassLoader((PluginClassLoader) loader);
-        }
-    }
-
-    public static void clearClassLoader(PluginClassLoader loader) throws IllegalAccessException, IOException {
-        if (loader == null) return;
-        set(RPluginClassLoader.getFields(), loader, "plugin", null);
-        set(RPluginClassLoader.getFields(), loader, "pluginInit", null);
-        loader.close();
     }
 
     public static Result enablePlugin(String pluginName) {
