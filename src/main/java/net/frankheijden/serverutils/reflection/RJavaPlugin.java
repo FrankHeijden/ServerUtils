@@ -1,15 +1,15 @@
 package net.frankheijden.serverutils.reflection;
 
-import org.bukkit.plugin.java.JavaPlugin;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.MethodParam.methodOf;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.ALL_VERSIONS;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.getAllMethods;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.invoke;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.MethodParam.methodOf;
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.ALL_VERSIONS;
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.getAllMethods;
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.invoke;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class RJavaPlugin {
 

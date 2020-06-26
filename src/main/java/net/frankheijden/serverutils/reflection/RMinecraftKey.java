@@ -1,6 +1,10 @@
 package net.frankheijden.serverutils.reflection;
 
-import org.bukkit.plugin.Plugin;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.FieldParam.fieldOf;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.max;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.min;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.get;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.getAllFields;
 
 import java.lang.reflect.Field;
 import java.util.Locale;
@@ -8,10 +12,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.FieldParam.fieldOf;
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.*;
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.get;
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.getAllFields;
+import org.bukkit.plugin.Plugin;
 
 public class RMinecraftKey {
 
@@ -20,7 +21,8 @@ public class RMinecraftKey {
 
     static {
         try {
-            minecraftKeyClass = Class.forName(String.format("net.minecraft.server.%s.MinecraftKey", ReflectionUtils.NMS));
+            minecraftKeyClass = Class.forName(String.format("net.minecraft.server.%s.MinecraftKey",
+                    ReflectionUtils.NMS));
             fields = getAllFields(minecraftKeyClass,
                     fieldOf("a", max(13)),
                     fieldOf("namespace", min(14)));
@@ -29,6 +31,12 @@ public class RMinecraftKey {
         }
     }
 
+    /**
+     * Retrieves the namespace of the specified MinecraftKey instance.
+     * @param instance The MinecraftKey instance.
+     * @return The namespace.
+     * @throws IllegalAccessException When prohibited access to the field.
+     */
     public static String getNameSpace(Object instance) throws IllegalAccessException {
         if (ReflectionUtils.MINOR <= 13) {
             return (String) get(fields, instance, "a");
@@ -41,6 +49,12 @@ public class RMinecraftKey {
         return namespace.equalsIgnoreCase(getNameSpace(instance));
     }
 
+    /**
+     * Creates a predicate which returns true if a MinecraftKey instance comes from the specified plugin.
+     * @param errorThrown Requires an atomicboolean to ensure an exception is only thrown once, if any.
+     * @param plugin The plugin to match the MinecraftKey instance with.
+     * @return The predicate.
+     */
     public static Predicate<Object> matchingPluginPredicate(AtomicBoolean errorThrown, Plugin plugin) {
         return o -> {
             try {

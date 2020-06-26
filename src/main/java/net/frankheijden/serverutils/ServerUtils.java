@@ -1,25 +1,31 @@
 package net.frankheijden.serverutils;
 
+import co.aikar.commands.BukkitCommandCompletionContext;
+import co.aikar.commands.CommandCompletions;
 import co.aikar.commands.PaperCommandManager;
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import net.frankheijden.serverutils.commands.CommandPlugins;
 import net.frankheijden.serverutils.commands.CommandServerUtils;
 import net.frankheijden.serverutils.config.Config;
 import net.frankheijden.serverutils.config.Messenger;
 import net.frankheijden.serverutils.listeners.MainListener;
 import net.frankheijden.serverutils.managers.VersionManager;
-import net.frankheijden.serverutils.reflection.*;
+import net.frankheijden.serverutils.reflection.RCommandMap;
+import net.frankheijden.serverutils.reflection.RCraftServer;
 import net.frankheijden.serverutils.tasks.UpdateCheckerTask;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
-import org.bukkit.command.*;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.defaults.PluginsCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class ServerUtils extends JavaPlugin implements CommandExecutor {
 
@@ -44,14 +50,11 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         commandManager.registerCommand(new CommandServerUtils());
         this.commandPlugins = null;
 
-        commandManager.getCommandCompletions().registerAsyncCompletion("plugins", context -> Arrays.stream(Bukkit.getPluginManager().getPlugins())
-                .map(Plugin::getName)
-                .collect(Collectors.toList()));
-        commandManager.getCommandCompletions().registerAsyncCompletion("pluginJars", context -> Arrays.stream(getJars())
-                .map(File::getName)
-                .collect(Collectors.toList()));
-        commandManager.getCommandCompletions().registerAsyncCompletion("supportedConfigs", context -> CommandServerUtils.getSupportedConfigs());
-        commandManager.getCommandCompletions().registerAsyncCompletion("commands", context -> {
+        CommandCompletions<BukkitCommandCompletionContext> completions = commandManager.getCommandCompletions();
+        completions.registerAsyncCompletion("plugins", context -> getPluginNames());
+        completions.registerAsyncCompletion("pluginJars", context -> getPluginFileNames());
+        completions.registerAsyncCompletion("supportedConfigs", context -> CommandServerUtils.getSupportedConfigs());
+        completions.registerAsyncCompletion("commands", context -> {
             try {
                 return RCommandMap.getKnownCommands(RCraftServer.getCommandMap()).keySet();
             } catch (IllegalAccessException | InvocationTargetException ex) {
@@ -73,6 +76,18 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         restoreBukkitPluginCommand();
     }
 
+    private List<String> getPluginNames() {
+        return Arrays.stream(Bukkit.getPluginManager().getPlugins())
+                .map(Plugin::getName)
+                .collect(Collectors.toList());
+    }
+
+    private List<String> getPluginFileNames() {
+        return Arrays.stream(getJars())
+                .map(File::getName)
+                .collect(Collectors.toList());
+    }
+
     private void removeCommands(String... commands) {
         Map<String, Command> map;
         try {
@@ -91,6 +106,10 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         RCraftServer.getCommandMap().register("bukkit", new PluginsCommand("plugins"));
     }
 
+    /**
+     * Reloads the configurations of the plugin.
+     * Also makes sure the bukkit /pl command gets restored.
+     */
     public void reload() {
         if (commandPlugins != null) {
             commandManager.unregisterCommand(commandPlugins);

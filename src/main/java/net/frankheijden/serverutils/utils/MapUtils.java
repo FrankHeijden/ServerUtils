@@ -1,10 +1,17 @@
 package net.frankheijden.serverutils.utils;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public class MapUtils {
 
+    /**
+     * Removes keys from a map using a predicate.
+     * @param map The map.
+     * @param predicate The predicate used to test removal.
+     */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static void removeKeys(Map map, Predicate<Object> predicate) {
         Set<Object> keysToRemove = new HashSet<>();
@@ -16,6 +23,11 @@ public class MapUtils {
         keysToRemove.forEach(map::remove);
     }
 
+    /**
+     * Removes values from a map using a predicate.
+     * @param map The map.
+     * @param predicate The predicate used to test removal.
+     */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static void removeValues(Map map, Predicate<Object> predicate) {
         Set<Object> keysToRemove = new HashSet<>();

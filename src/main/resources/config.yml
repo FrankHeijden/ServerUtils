@@ -1,1 +1,5 @@
-{}
+settings:
+  disable-plugins-command: false
+  check-updates: true
+  download-updates: false
+  download-at-startup-and-update: false

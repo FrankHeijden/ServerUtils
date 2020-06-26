@@ -1,24 +1,38 @@
 package net.frankheijden.serverutils.tasks;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Method;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.UnknownHostException;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+
 import net.frankheijden.serverutils.ServerUtils;
 import net.frankheijden.serverutils.config.Config;
 import net.frankheijden.serverutils.config.Messenger;
-import net.frankheijden.serverutils.managers.*;
+import net.frankheijden.serverutils.managers.VersionManager;
 import net.frankheijden.serverutils.utils.VersionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.io.*;
-import java.lang.reflect.Method;
-import java.net.*;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
 
 public class UpdateCheckerTask implements Runnable {
 
@@ -29,6 +43,19 @@ public class UpdateCheckerTask implements Runnable {
     private final boolean startup;
 
     private static final String GITHUB_LINK = "https://api.github.com/repos/FrankHeijden/ServerUtils/releases/latest";
+    private static final String USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:77.0)"
+            + "Gecko/20100101"
+            + "Firefox/77.0";
+
+    private static final String UPDATE_CHECK_START = "Checking for updates...";
+    private static final String GENERAL_ERROR = "Error fetching new version of ServerUtils";
+    private static final String CONNECTION_ERROR = GENERAL_ERROR + ": (%s) %s (maybe check your connection?)";
+    private static final String UNAVAILABLE = GENERAL_ERROR + ": (%s) %s (no update available)";
+    private static final String UPDATE_AVAILABLE = "ServerUtils %s is available!";
+    private static final String DOWNLOAD_START = "Started downloading from \"%s\"...";
+    private static final String DOWNLOAD_ERROR = "Error downloading a new version of ServerUtils";
+    private static final String UPGRADE_SUCCESS = "Successfully upgraded ServerUtils to v%s!";
+    private static final String DOWNLOADED_RESTART = "Downloaded ServerUtils version v%s. Restarting plugin now...";
 
     private UpdateCheckerTask(CommandSender sender, boolean startup) {
         this.sender = sender;
@@ -52,22 +79,20 @@ public class UpdateCheckerTask implements Runnable {
     @Override
     public void run() {
         if (isStartupCheck()) {
-            plugin.getLogger().info("Checking for updates...");
+            plugin.getLogger().info(UPDATE_CHECK_START);
         }
 
         JsonObject jsonObject;
         try {
-            jsonObject = readJsonFromURL(GITHUB_LINK).getAsJsonObject();
+            jsonObject = readJsonFromUrl(GITHUB_LINK).getAsJsonObject();
         } catch (ConnectException | UnknownHostException | SocketTimeoutException ex) {
-            plugin.getLogger().severe(String.format("Error fetching new version of ServerUtils: (%s) %s (maybe check your connection?)",
-                    ex.getClass().getSimpleName(), ex.getMessage()));
+            plugin.getLogger().severe(String.format(CONNECTION_ERROR, ex.getClass().getSimpleName(), ex.getMessage()));
             return;
         } catch (FileNotFoundException ex) {
-            plugin.getLogger().severe(String.format("Error fetching new version of ServerUtils: (%s) %s (no update available)",
-                    ex.getClass().getSimpleName(), ex.getMessage()));
+            plugin.getLogger().severe(String.format(UNAVAILABLE, ex.getClass().getSimpleName(), ex.getMessage()));
             return;
         } catch (IOException ex) {
-            plugin.getLogger().log(Level.SEVERE, ex, () -> "Error fetching new version of ServerUtils");
+            plugin.getLogger().log(Level.SEVERE, ex, () -> GENERAL_ERROR);
             return;
         }
         String githubVersion = jsonObject.getAsJsonPrimitive("tag_name").getAsString();
@@ -84,12 +109,12 @@ public class UpdateCheckerTask implements Runnable {
         }
         if (VersionUtils.isNewVersion(currentVersion, githubVersion)) {
             if (isStartupCheck()) {
-                plugin.getLogger().info(String.format("ServerUtils %s is available!", githubVersion));
+                plugin.getLogger().info(String.format(UPDATE_AVAILABLE, githubVersion));
                 plugin.getLogger().info("Release info: " + body);
             }
             if (canDownloadPlugin()) {
                 if (isStartupCheck()) {
-                    plugin.getLogger().info("Started downloading from \"" + downloadLink + "\"...");
+                    plugin.getLogger().info(String.format(DOWNLOAD_START, downloadLink));
                 } else {
                     Messenger.sendMessage(sender, "serverutils.update.downloading",
                             "%old%", currentVersion,
@@ -131,11 +156,11 @@ public class UpdateCheckerTask implements Runnable {
             download(downloadLink, getPluginFile());
         } catch (IOException ex) {
             broadcastDownloadStatus(githubVersion, true);
-            throw new RuntimeException("Error downloading a new version of ServerUtils", ex);
+            throw new RuntimeException(DOWNLOAD_ERROR, ex);
         }
 
         if (isStartupCheck()) {
-            plugin.getLogger().info(String.format("Downloaded ServerUtils version v%s. Restarting plugin now...", githubVersion));
+            plugin.getLogger().info(String.format(DOWNLOADED_RESTART, githubVersion));
             Bukkit.getPluginManager().disablePlugin(plugin);
             try {
                 Bukkit.getPluginManager().enablePlugin(Bukkit.getPluginManager().loadPlugin(getPluginFile()));
@@ -143,7 +168,7 @@ public class UpdateCheckerTask implements Runnable {
                 ex.printStackTrace();
                 return;
             }
-            plugin.getLogger().info(String.format("Successfully upgraded ServerUtils to v%s!", githubVersion));
+            plugin.getLogger().info(String.format(UPGRADE_SUCCESS, githubVersion));
         } else {
             versionManager.setDownloadedVersion(githubVersion);
             broadcastDownloadStatus(githubVersion, false);
@@ -186,7 +211,7 @@ public class UpdateCheckerTask implements Runnable {
         return sb.toString();
     }
 
-    private JsonElement readJsonFromURL(String url) throws IOException {
+    private JsonElement readJsonFromUrl(String url) throws IOException {
         try (InputStream is = stream(url)) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
             String jsonText = readAll(reader);
@@ -196,7 +221,7 @@ public class UpdateCheckerTask implements Runnable {
 
     private InputStream stream(String url) throws IOException {
         URLConnection conn = new URL(url).openConnection();
-        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:77.0) Gecko/20100101 Firefox/77.0");
+        conn.setRequestProperty("User-Agent", USER_AGENT);
         conn.setConnectTimeout(10000);
         return conn.getInputStream();
     }

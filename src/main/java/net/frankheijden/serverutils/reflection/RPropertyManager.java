@@ -1,11 +1,11 @@
 package net.frankheijden.serverutils.reflection;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.MethodParam.methodOf;
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.ALL_VERSIONS;
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.getAllMethods;
+
+import java.lang.reflect.Method;
+import java.util.Map;
 
 public class RPropertyManager {
 
@@ -14,7 +14,8 @@ public class RPropertyManager {
 
     static {
         try {
-            propertyManagerClass = Class.forName(String.format("net.minecraft.server.%s.PropertyManager", ReflectionUtils.NMS));
+            propertyManagerClass = Class.forName(String.format("net.minecraft.server.%s.PropertyManager",
+                    ReflectionUtils.NMS));
             methods = getAllMethods(propertyManagerClass,
                     methodOf("getBoolean", ALL_VERSIONS, String.class, boolean.class),
                     methodOf("getString", ALL_VERSIONS, String.class, String.class));
@@ -23,7 +24,7 @@ public class RPropertyManager {
         }
     }
 
-    public static Object newInstance(Object options) throws Exception {
+    public static Object newInstance(Object options) throws ReflectiveOperationException {
         return propertyManagerClass.getDeclaredConstructor(Class.forName("joptsimple.OptionSet")).newInstance(options);
     }
 

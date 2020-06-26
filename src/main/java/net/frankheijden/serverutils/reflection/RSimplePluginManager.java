@@ -1,15 +1,19 @@
 package net.frankheijden.serverutils.reflection;
 
-import org.bukkit.plugin.*;
-
-import java.lang.reflect.Field;
-import java.util.*;
-import java.util.regex.Pattern;
-
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.FieldParam.fieldOf;
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.ALL_VERSIONS;
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.get;
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.getAllFields;
+
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginLoader;
+import org.bukkit.plugin.SimplePluginManager;
 
 public class RSimplePluginManager {
 
@@ -38,6 +42,13 @@ public class RSimplePluginManager {
         return (List<Plugin>) get(fields, manager, "plugins");
     }
 
+    /**
+     * Removes the lookup name of the plugin.
+     * This ensures the plugin cannot be found anymore in Bukkit#getPlugin(String name).
+     * @param manager The SimplePluginManager instance to remove the lookup name from.
+     * @param name The name of the plugin to remove.
+     * @throws IllegalAccessException When prohibited access to the field.
+     */
     @SuppressWarnings("unchecked")
     public static void removeLookupName(Object manager, String name) throws IllegalAccessException {
         Map<String, Plugin> lookupNames = (Map<String, Plugin>) get(fields, manager, "lookupNames");

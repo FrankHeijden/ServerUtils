@@ -1,10 +1,10 @@
 package net.frankheijden.serverutils.utils;
 
-import net.frankheijden.serverutils.config.Messenger;
-import org.bukkit.command.CommandSender;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import net.frankheijden.serverutils.config.Messenger;
+import org.bukkit.command.CommandSender;
 
 public class FormatBuilder {
 
@@ -39,6 +39,10 @@ public class FormatBuilder {
         return this;
     }
 
+    /**
+     * Builds the format and sends it to the CommandSender.
+     * @param sender The receiver of the list.
+     */
     public void sendTo(CommandSender sender) {
         valueList.forEach(values -> {
             int length = Math.min(values.length, orderedKeys.length);

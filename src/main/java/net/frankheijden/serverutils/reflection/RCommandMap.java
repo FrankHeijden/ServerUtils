@@ -1,17 +1,20 @@
 package net.frankheijden.serverutils.reflection;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.SimpleCommandMap;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.getDeclaredField;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.getDeclaredField;
+import org.bukkit.command.Command;
+import org.bukkit.command.SimpleCommandMap;
 
 public class RCommandMap {
 
     private static Field knownCommands = null;
     private static Method getKnownCommands = null;
+
     static {
         try {
             try {
@@ -25,7 +28,8 @@ public class RCommandMap {
     }
 
     @SuppressWarnings("unchecked")
-    public static Map<String, Command> getKnownCommands(SimpleCommandMap map) throws IllegalAccessException, InvocationTargetException {
+    public static Map<String, Command> getKnownCommands(SimpleCommandMap map)
+            throws IllegalAccessException, InvocationTargetException {
         return (Map<String, Command>) (knownCommands == null ? getKnownCommands.invoke(map) : knownCommands.get(map));
     }
 }

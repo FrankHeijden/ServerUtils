@@ -1,16 +1,16 @@
 package net.frankheijden.serverutils.reflection;
 
-import net.frankheijden.serverutils.utils.MapUtils;
-import org.bukkit.plugin.Plugin;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.FieldParam.fieldOf;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.ALL_VERSIONS;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.get;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.getAllFields;
 
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.FieldParam.fieldOf;
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.ALL_VERSIONS;
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.get;
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.getAllFields;
+import net.frankheijden.serverutils.utils.MapUtils;
+import org.bukkit.plugin.Plugin;
 
 public class RRegistrySimple {
 
@@ -19,7 +19,8 @@ public class RRegistrySimple {
 
     static {
         try {
-            registrySimpleClass = Class.forName(String.format("net.minecraft.server.%s.RegistrySimple", ReflectionUtils.NMS));
+            registrySimpleClass = Class.forName(String.format("net.minecraft.server.%s.RegistrySimple",
+                    ReflectionUtils.NMS));
             fields = getAllFields(registrySimpleClass,
                     fieldOf("c", ALL_VERSIONS));
         } catch (Exception ex) {
@@ -27,6 +28,12 @@ public class RRegistrySimple {
         }
     }
 
+    /**
+     * Removes all registered MinecraftKey's from an instance associated to the specified plugin.
+     * @param instance The RegistrySimple instance.
+     * @param plugin The plugin to remove keys for.
+     * @throws IllegalAccessException When prohibited access to the field.
+     */
     @SuppressWarnings("rawtypes")
     public static void removeKeyFor(Object instance, Plugin plugin) throws IllegalAccessException {
         Map map = (Map) get(fields, instance, "c");

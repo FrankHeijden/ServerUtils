@@ -2,6 +2,13 @@ package net.frankheijden.serverutils.utils;
 
 public class VersionUtils {
 
+    /**
+     * Compares two versions in X.X.X format.
+     * Returns true if version is newer than the old one.
+     * @param oldVersion The old version.
+     * @param newVersion The new version.
+     * @return true iff new version is newer than old version.
+     */
     public static boolean isNewVersion(String oldVersion, String newVersion) {
         String[] oldVersionSplit = oldVersion.split("\\.");
         String[] newVersionSplit = newVersion.split("\\.");

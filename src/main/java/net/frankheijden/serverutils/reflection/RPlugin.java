@@ -1,17 +1,18 @@
 package net.frankheijden.serverutils.reflection;
 
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.getDeclaredMethod;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.getDeclaredMethod;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class RPlugin {
 
     private static Method getFile;
+
     static {
         try {
             getFile = getDeclaredMethod(JavaPlugin.class, "getFile");

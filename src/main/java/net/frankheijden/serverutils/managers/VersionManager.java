@@ -9,6 +9,10 @@ public class VersionManager {
     private final String currentVersion;
     private String downloadedVersion;
 
+    /**
+     * Creates a new VersionManager instance.
+     * Used for automatic updating.
+     */
     public VersionManager() {
         instance = this;
         this.currentVersion = plugin.getDescription().getVersion();

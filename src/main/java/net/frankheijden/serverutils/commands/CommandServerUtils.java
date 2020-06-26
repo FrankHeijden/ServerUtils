@@ -1,27 +1,46 @@
 package net.frankheijden.serverutils.commands;
 
-import co.aikar.commands.BaseCommand;
-import co.aikar.commands.annotation.*;
-import net.frankheijden.serverutils.ServerUtils;
-import net.frankheijden.serverutils.config.Messenger;
-import net.frankheijden.serverutils.managers.*;
-import net.frankheijden.serverutils.reflection.*;
-import net.frankheijden.serverutils.utils.*;
-import org.bukkit.Bukkit;
-import org.bukkit.command.*;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
-
-import java.util.*;
-
 import static net.frankheijden.serverutils.config.Messenger.sendMessage;
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.MINOR;
+
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.annotation.CommandAlias;
+import co.aikar.commands.annotation.CommandCompletion;
+import co.aikar.commands.annotation.CommandPermission;
+import co.aikar.commands.annotation.Default;
+import co.aikar.commands.annotation.Dependency;
+import co.aikar.commands.annotation.Description;
+import co.aikar.commands.annotation.Subcommand;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import net.frankheijden.serverutils.ServerUtils;
+import net.frankheijden.serverutils.config.Messenger;
+import net.frankheijden.serverutils.managers.LoadResult;
+import net.frankheijden.serverutils.managers.PluginManager;
+import net.frankheijden.serverutils.managers.Result;
+import net.frankheijden.serverutils.reflection.RCraftServer;
+import net.frankheijden.serverutils.utils.FormatBuilder;
+import net.frankheijden.serverutils.utils.ForwardFilter;
+import net.frankheijden.serverutils.utils.ListBuilder;
+import net.frankheijden.serverutils.utils.ListFormat;
+import net.frankheijden.serverutils.utils.ReloadHandler;
+import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginIdentifiableCommand;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginDescriptionFile;
 
 @CommandAlias("serverutils|su")
 public class CommandServerUtils extends BaseCommand {
 
     private static final Set<String> ALIASES;
     private static final Map<String, ReloadHandler> supportedConfigs;
+
     static {
         ALIASES = new HashSet<>();
         ALIASES.add("serverutils");
@@ -31,7 +50,7 @@ public class CommandServerUtils extends BaseCommand {
         supportedConfigs.put("bukkit", RCraftServer::reloadBukkitConfiguration);
         supportedConfigs.put("commands.yml", RCraftServer::reloadCommandsConfiguration);
         supportedConfigs.put("server-icon.png", RCraftServer::loadIcon);
-        supportedConfigs.put("banned-ips.json", RCraftServer::reloadIPBans);
+        supportedConfigs.put("banned-ips.json", RCraftServer::reloadIpBans);
         supportedConfigs.put("banned-players.json", RCraftServer::reloadProfileBans);
     }
 
@@ -42,6 +61,10 @@ public class CommandServerUtils extends BaseCommand {
         return supportedConfigs.keySet();
     }
 
+    /**
+     * Shows the help page to the sender.
+     * @param sender The sender of the command.
+     */
     @Default
     @Subcommand("help")
     @CommandPermission("serverutils.help")
@@ -59,11 +82,15 @@ public class CommandServerUtils extends BaseCommand {
                         if (cmd.getPrefSubCommand().isEmpty()) return;
                         builder.add(rootCommand.getCommandName(), " " + cmd.getPrefSubCommand(), cmd.getHelpText());
                     });
-        });
+                });
         builder.sendTo(sender);
         Messenger.sendMessage(sender, "serverutils.help.footer");
     }
 
+    /**
+     * Reloads the configurations of ServerUtils.
+     * @param sender The sender of the command.
+     */
     @Subcommand("reload")
     @CommandPermission("serverutils.reload")
     @Description("Reloads the ServerUtils plugin.")
@@ -74,6 +101,11 @@ public class CommandServerUtils extends BaseCommand {
                 "%what%", "ServerUtils configurations");
     }
 
+    /**
+     * Reloads a config from a set of configurations of the server.
+     * @param sender The sender of the command.
+     * @param config The configuration to reload.
+     */
     @Subcommand("reloadconfig")
     @CommandCompletion("@supportedConfigs")
     @CommandPermission("serverutils.reloadconfig")
@@ -103,6 +135,11 @@ public class CommandServerUtils extends BaseCommand {
         }
     }
 
+    /**
+     * Loads the specified plugin on the server.
+     * @param sender The sender of the command.
+     * @param jarFile The filename of the plugin in the plugins/ directory.
+     */
     @Subcommand("loadplugin")
     @CommandCompletion("@pluginJars")
     @CommandPermission("serverutils.loadplugin")
@@ -118,6 +155,11 @@ public class CommandServerUtils extends BaseCommand {
         result.sendTo(sender, "load", jarFile);
     }
 
+    /**
+     * Unloads the specified plugin from the server.
+     * @param sender The sender of the command.
+     * @param pluginName The plugin name.
+     */
     @Subcommand("unloadplugin")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.unloadplugin")
@@ -133,6 +175,11 @@ public class CommandServerUtils extends BaseCommand {
         unloadResult.sendTo(sender, "unload", pluginName);
     }
 
+    /**
+     * Reloads the specified plugin on the server.
+     * @param sender The sender of the command.
+     * @param pluginName The plugin name.
+     */
     @Subcommand("reloadplugin")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.reloadplugin")
@@ -142,6 +189,11 @@ public class CommandServerUtils extends BaseCommand {
         result.sendTo(sender, "reload", pluginName);
     }
 
+    /**
+     * Enables the specified plugin on the server.
+     * @param sender The sender of the command.
+     * @param pluginName The plugin name.
+     */
     @Subcommand("enableplugin")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.enableplugin")
@@ -151,6 +203,11 @@ public class CommandServerUtils extends BaseCommand {
         result.sendTo(sender, "enabl", pluginName);
     }
 
+    /**
+     * Disables the specified plugin on the server.
+     * @param sender The sender of the command.
+     * @param pluginName The plugin name.
+     */
     @Subcommand("disableplugin")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.disableplugin")
@@ -160,6 +217,11 @@ public class CommandServerUtils extends BaseCommand {
         result.sendTo(sender, "disabl", pluginName);
     }
 
+    /**
+     * Shows information about the specified plugin.
+     * @param sender The sender of the command.
+     * @param pluginName The plugin name.
+     */
     @Subcommand("plugininfo")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.plugininfo")
@@ -186,7 +248,7 @@ public class CommandServerUtils extends BaseCommand {
                 .add("Name", plugin.getName())
                 .add("Full Name", description.getFullName())
                 .add("Version", description.getVersion());
-        if (MINOR >= 13) builder.add( "API Version", description.getAPIVersion());
+        if (MINOR >= 13) builder.add("API Version", description.getAPIVersion());
         builder.add("Website", description.getWebsite())
                 .add("Authors", ListBuilder.create(description.getAuthors())
                         .format(listFormat)
@@ -222,6 +284,11 @@ public class CommandServerUtils extends BaseCommand {
         Messenger.sendMessage(sender, "serverutils.plugininfo.footer");
     }
 
+    /**
+     * Shows information about a provided command.
+     * @param sender The sender of the command.
+     * @param command The command to lookup.
+     */
     @Subcommand("commandinfo")
     @CommandCompletion("@commands")
     @CommandPermission("serverutils.commandinfo")

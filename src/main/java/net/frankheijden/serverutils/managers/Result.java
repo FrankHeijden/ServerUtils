@@ -27,6 +27,13 @@ public enum Result {
         return this;
     }
 
+    /**
+     * Retrieves the associated message of the result
+     * and sends it to a CommandSender.
+     * @param sender The receiver.
+     * @param action The action which let to the result.
+     * @param what An associated variable.
+     */
     public void sendTo(CommandSender sender, String action, String what) {
         Messenger.sendMessage(sender, "serverutils." + this.name().toLowerCase(),
                 "%action%", action,

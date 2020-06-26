@@ -1,7 +1,9 @@
 package net.frankheijden.serverutils.utils;
 
 import java.util.function.Predicate;
-import java.util.logging.*;
+import java.util.logging.Filter;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 public class PredicateFilter implements Filter {
 

@@ -1,13 +1,20 @@
 package net.frankheijden.serverutils.reflection;
 
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.FieldParam.fieldOf;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.MINOR;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.MethodParam.methodOf;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.ALL_VERSIONS;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.min;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.get;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.getAllFields;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.getAllMethods;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.invoke;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.set;
+
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
-
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.*;
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.FieldParam.fieldOf;
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.MethodParam.methodOf;
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.*;
 
 public class RDedicatedServer {
 
@@ -17,7 +24,8 @@ public class RDedicatedServer {
 
     static {
         try {
-            dedicatedServerClass = Class.forName(String.format("net.minecraft.server.%s.DedicatedServer", ReflectionUtils.NMS));
+            dedicatedServerClass = Class.forName(String.format("net.minecraft.server.%s.DedicatedServer",
+                    ReflectionUtils.NMS));
 
             fields = getAllFields(dedicatedServerClass,
                     fieldOf("propertyManager", ALL_VERSIONS),
@@ -47,29 +55,57 @@ public class RDedicatedServer {
         return fields;
     }
 
-    public static void reload(Object console) throws Exception {
+    /**
+     * Reloads the specified console (= DedicatedServer) instance's bukkit config.
+     * @param console The console to reload.
+     * @throws ReflectiveOperationException Iff exception thrown regarding reflection.
+     */
+    public static void reload(Object console) throws ReflectiveOperationException {
         Object options = get(fields, console, "options");
 
         if (MINOR >= 13) {
             Object propertyManager = RDedicatedServerSettings.newInstance(options);
             set(fields, console, "propertyManager", propertyManager);
             Object config = invoke(RDedicatedServerSettings.getMethods(), propertyManager, "getProperties");
-            invoke(methods, console, "setSpawnAnimals", get(RDedicatedServerProperties.getFields(), config, "spawnAnimals"));
-            invoke(methods, console, "setSpawnNPCs", get(RDedicatedServerProperties.getFields(), config, "spawnNpcs"));
-            invoke(methods, console, "setPVP", get(RDedicatedServerProperties.getFields(), config, "pvp"));
-            invoke(methods, console, "setAllowFlight", get(RDedicatedServerProperties.getFields(), config, "allowFlight"));
-            invoke(methods, console, "setResourcePack", get(RDedicatedServerProperties.getFields(), config, "resourcePack"), invoke(methods, console, "aZ"));
-            invoke(methods, console, "setMotd", get(RDedicatedServerProperties.getFields(), config, "motd"));
-            invoke(methods, console, "setForceGamemode", get(RDedicatedServerProperties.getFields(), config, "forceGamemode"));
-            invoke(methods, console, "n", get(RDedicatedServerProperties.getFields(), config, "enforceWhitelist"));
-            set(fields, console, "o", get(RDedicatedServerProperties.getFields(), config, "gamemode"));
+            invoke(methods, console, "setSpawnAnimals", getConfigValue(config, "spawnAnimals"));
+            invoke(methods, console, "setSpawnNPCs", getConfigValue(config, "spawnNpcs"));
+            invoke(methods, console, "setPVP", getConfigValue(config, "pvp"));
+            invoke(methods, console, "setAllowFlight", getConfigValue(config, "allowFlight"));
+            invoke(methods, console, "setResourcePack", getConfigValue(config, "resourcePack"),
+                    invoke(methods, console, "aZ"));
+            invoke(methods, console, "setMotd", getConfigValue(config, "motd"));
+            invoke(methods, console, "setForceGamemode", getConfigValue(config, "forceGamemode"));
+            invoke(methods, console, "n", getConfigValue(config, "enforceWhitelist"));
+            set(fields, console, "o", getConfigValue(config, "gamemode"));
         } else {
             Object config = RPropertyManager.newInstance(options);
-            set(fields, console, "propertyManager", config);
-            invoke(methods, console, "setSpawnAnimals", invoke(RPropertyManager.getMethods(), config, "getBoolean", "spawn-animals", invoke(methods, console, "getSpawnAnimals")));
-            invoke(methods, console, "setPVP", invoke(RPropertyManager.getMethods(), config, "getBoolean", "pvp", invoke(methods, console, "getPVP")));
-            invoke(methods, console, "setAllowFlight", invoke(RPropertyManager.getMethods(), config, "getBoolean", "allow-flight", invoke(methods, console, "getAllowFlight")));
-            invoke(methods, console, "setMotd", invoke(RPropertyManager.getMethods(), config, "getString", "motd", invoke(methods, console, "getMotd")));
+            setConfigValue(config, console, "getSpawnAnimals", "setSpawnAnimals", "getBoolean", "spawn-animals");
+            setConfigValue(config, console, "getPVP", "setPVP", "getBoolean", "pvp");
+            setConfigValue(config, console, "getAllowFlight", "setAllowFlight", "getBoolean", "allow-flight");
+            setConfigValue(config, console, "getMotd", "setMotd", "getString", "motd");
         }
+    }
+
+    public static Object getConfigValue(Object config, String key) throws IllegalAccessException {
+        return get(RDedicatedServerProperties.getFields(), config, key);
+    }
+
+    /**
+     * Sets the specified bukkit config value.
+     * @param config The config instance (= PropertyManager)
+     * @param console The console instance (= DedicatedServer)
+     * @param getMethod The getter method for the config value.
+     * @param setMethod The setter method for the config value.
+     * @param configMethod The method which we call the config value upon.
+     * @param key The config key.
+     * @throws InvocationTargetException If the method call produced an exception.
+     * @throws IllegalAccessException When prohibited access to the method.
+     */
+    public static void setConfigValue(Object config, Object console, String getMethod, String setMethod,
+                                            String configMethod, String key)
+            throws InvocationTargetException, IllegalAccessException {
+        Object defaultValue = invoke(methods, console, getMethod);
+        Object configValue = invoke(RPropertyManager.getMethods(), config, configMethod, key, defaultValue);
+        invoke(methods, console, setMethod, configValue);
     }
 }

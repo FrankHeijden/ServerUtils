@@ -1,18 +1,30 @@
 package net.frankheijden.serverutils.reflection;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Warning;
-import org.bukkit.command.*;
-import org.bukkit.configuration.file.YamlConfiguration;
-
-import java.io.File;
-import java.lang.reflect.*;
-import java.util.Map;
-
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.*;
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.FieldParam.fieldOf;
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.MethodParam.methodOf;
-import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.*;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.ALL_VERSIONS;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.max;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.min;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionParam.versionOf;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.get;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.getAllFields;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.getAllMethods;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.getDeclaredField;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.getDeclaredMethod;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.invoke;
+import static net.frankheijden.serverutils.reflection.ReflectionUtils.set;
+
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Warning;
+import org.bukkit.command.Command;
+import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 public class RCraftServer {
 
@@ -27,10 +39,12 @@ public class RCraftServer {
 
     static {
         try {
-            craftServerClass = Class.forName(String.format("org.bukkit.craftbukkit.%s.CraftServer", ReflectionUtils.NMS));
+            craftServerClass = Class.forName(String.format("org.bukkit.craftbukkit.%s.CraftServer",
+                    ReflectionUtils.NMS));
             craftServer = craftServerClass.cast(Bukkit.getServer());
 
-            commandsConfigFile = (File) getDeclaredMethod(craftServerClass, "getCommandsConfigFile").invoke(craftServer);
+            commandsConfigFile = (File) getDeclaredMethod(craftServerClass,
+                    "getCommandsConfigFile").invoke(craftServer);
             configFile = (File) getDeclaredMethod(craftServerClass, "getConfigFile").invoke(craftServer);
             commandMap = (SimpleCommandMap) getDeclaredField(craftServerClass, "commandMap").get(Bukkit.getServer());
 
@@ -66,6 +80,13 @@ public class RCraftServer {
         return configFile;
     }
 
+    /**
+     * Retrieves the options file from a key.
+     * @param option The option key.
+     * @return The associated file.
+     * @throws InvocationTargetException If the method call produced an exception.
+     * @throws IllegalAccessException When prohibited access to the method.
+     */
     public static File getOptionsFile(String option) throws IllegalAccessException, InvocationTargetException {
         Object console = get(fields, craftServer, "console");
         Object options = get(RDedicatedServer.getFields(), console, "options");
@@ -80,7 +101,11 @@ public class RCraftServer {
         return commandMap;
     }
 
-    public static void reloadBukkitConfiguration() throws Exception {
+    /**
+     * Reloads the bukkit configuration.
+     * @throws ReflectiveOperationException Iff exception thrown regarding reflection.
+     */
+    public static void reloadBukkitConfiguration() throws ReflectiveOperationException {
         YamlConfiguration bukkit = YamlConfiguration.loadConfiguration(getConfigFile());
         set(fields, craftServer, "configuration", bukkit);
 
@@ -91,7 +116,8 @@ public class RCraftServer {
         set(fields, craftServer, "animalSpawn", bukkit.getInt("spawn-limits.animals"));
         set(fields, craftServer, "waterAnimalSpawn", bukkit.getInt("spawn-limits.water-animals"));
         set(fields, craftServer, "ambientSpawn", bukkit.getInt("spawn-limits.ambient"));
-        set(fields, craftServer, "warningState", Warning.WarningState.value(bukkit.getString("settings.deprecated-verbose")));
+        set(fields, craftServer, "warningState",
+                Warning.WarningState.value(bukkit.getString("settings.deprecated-verbose")));
         set(fields, craftServer, "minimumAPI", bukkit.getString("settings.minimum-api"));
         set(fields, craftServer, "printSaveWarning", false);
 
@@ -105,25 +131,43 @@ public class RCraftServer {
         invoke(methods, craftServer, "loadIcon");
     }
 
+    /**
+     * Reloads the commands.yml file.
+     * @throws InvocationTargetException If the method call produced an exception.
+     * @throws IllegalAccessException When prohibited access to the method.
+     */
     public static void reloadCommandsConfiguration() throws IllegalAccessException, InvocationTargetException {
         Map<String, Command> map = RCommandMap.getKnownCommands(commandMap);
         Bukkit.getCommandAliases().keySet().forEach(map::remove);
 
         YamlConfiguration commands = YamlConfiguration.loadConfiguration(getCommandsConfigFile());
         set(fields, craftServer, "commandsConfiguration", commands);
-        set(fields, craftServer, "overrideAllCommandBlockCommands", commands.getStringList("command-block-overrides").contains("*"));
-        set(fields, craftServer, "ignoreVanillaPermissions", commands.getBoolean("ignore-vanilla-permissions"));
-        set(fields, craftServer, "unrestrictedAdvancements", commands.getBoolean("unrestricted-advancements"));
+        set(fields, craftServer, "overrideAllCommandBlockCommands",
+                commands.getStringList("command-block-overrides").contains("*"));
+        set(fields, craftServer, "ignoreVanillaPermissions",
+                commands.getBoolean("ignore-vanilla-permissions"));
+        set(fields, craftServer, "unrestrictedAdvancements",
+                commands.getBoolean("unrestricted-advancements"));
 
         commandMap.registerServerAliases();
     }
 
-    public static void reloadIPBans() throws IllegalAccessException, InvocationTargetException {
+    /**
+     * Reloads the ip-bans file.
+     * @throws InvocationTargetException If the method call produced an exception.
+     * @throws IllegalAccessException When prohibited access to the method.
+     */
+    public static void reloadIpBans() throws IllegalAccessException, InvocationTargetException {
         Object playerList = get(fields, craftServer, "playerList");
         Object jsonList = invoke(RPlayerList.getMethods(), playerList, "getIPBans");
         RJsonList.load(jsonList);
     }
 
+    /**
+     * Reloads the profile bans file.
+     * @throws InvocationTargetException If the method call produced an exception.
+     * @throws IllegalAccessException When prohibited access to the method.
+     */
     public static void reloadProfileBans() throws IllegalAccessException, InvocationTargetException {
         Object playerList = get(fields, craftServer, "playerList");
         Object jsonList = invoke(RPlayerList.getMethods(), playerList, "getProfileBans");

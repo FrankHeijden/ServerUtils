@@ -17,6 +17,11 @@ public class ListBuilder<T> {
         return new ListBuilder<>(collection);
     }
 
+    /**
+     * Creates a pre-defined ListBuilder with type String.
+     * @param collection The collection to be used.
+     * @return The ListBuilder.
+     */
     @SuppressWarnings("unchecked")
     public static ListBuilder<String> createStrings(Collection<? extends String> collection) {
         ListBuilder<String> builder = create((Collection<String>) collection);

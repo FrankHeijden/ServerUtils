@@ -1,14 +1,19 @@
 package net.frankheijden.serverutils.utils;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-
-import java.util.logging.*;
 
 public class ForwardFilter extends PredicateFilter {
 
     private boolean warnings;
 
+    /**
+     * Creates a filter which forwards all output to the sender.
+     * @param sender The sender to forward logs to.
+     */
     public ForwardFilter(CommandSender sender) {
         this.warnings = false;
 
