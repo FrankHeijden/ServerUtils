@@ -9,7 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
-import java.util.Arrays;
+import java.util.*;
 
 @CommandAlias("plugins|pl")
 public class CommandPlugins extends BaseCommand {
@@ -37,11 +37,17 @@ public class CommandPlugins extends BaseCommand {
 
     private static void sendPlugins(CommandSender sender, ListFormat<Plugin> pluginFormat) {
         Messenger.sendMessage(sender, "serverutils.plugins.header");
-        sender.sendMessage(Messenger.color(ListBuilder.create(Arrays.asList(Bukkit.getPluginManager().getPlugins()))
+        sender.sendMessage(Messenger.color(ListBuilder.create(getPluginsSorted())
                 .seperator(Messenger.getMessage("serverutils.plugins.seperator"))
                 .lastSeperator(Messenger.getMessage("serverutils.plugins.last_seperator"))
                 .format(pluginFormat)
                 .toString()));
         Messenger.sendMessage(sender, "serverutils.plugins.footer");
+    }
+
+    private static List<Plugin> getPluginsSorted() {
+        List<Plugin> plugins = Arrays.asList(Bukkit.getPluginManager().getPlugins());
+        plugins.sort(Comparator.comparing(Plugin::getName));
+        return plugins;
     }
 }
