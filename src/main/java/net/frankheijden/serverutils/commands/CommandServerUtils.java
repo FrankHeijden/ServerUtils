@@ -19,6 +19,7 @@ import java.util.Set;
 
 import net.frankheijden.serverutils.ServerUtils;
 import net.frankheijden.serverutils.config.Messenger;
+import net.frankheijden.serverutils.managers.CloseableResult;
 import net.frankheijden.serverutils.managers.LoadResult;
 import net.frankheijden.serverutils.managers.PluginManager;
 import net.frankheijden.serverutils.managers.Result;
@@ -171,8 +172,9 @@ public class CommandServerUtils extends BaseCommand {
             return;
         }
 
-        Result unloadResult = PluginManager.unloadPlugin(pluginName);
-        unloadResult.sendTo(sender, "unload", pluginName);
+        CloseableResult result = PluginManager.unloadPlugin(pluginName);
+        result.getResult().sendTo(sender, "unload", pluginName);
+        result.tryClose();
     }
 
     /**
@@ -185,8 +187,9 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.reloadplugin")
     @Description("Reloads a specified plugin.")
     public void onReloadPlugin(CommandSender sender, String pluginName) {
-        Result result = PluginManager.reloadPlugin(pluginName);
-        result.sendTo(sender, "reload", pluginName);
+        CloseableResult result = PluginManager.reloadPlugin(pluginName);
+        result.getResult().sendTo(sender, "reload", pluginName);
+        result.tryClose();
     }
 
     /**

@@ -130,7 +130,11 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         return commandManager;
     }
 
-    private File[] getJars() {
+    /**
+     * Retrieves all files with a jar extension in the plugins/ folder.
+     * @return An array of jar files.
+     */
+    public File[] getJars() {
         File parent = getDataFolder().getParentFile();
         if (parent == null) return new File[0];
         return parent.listFiles(f -> f.getName().endsWith(".jar"));

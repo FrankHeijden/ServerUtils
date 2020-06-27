@@ -5,9 +5,8 @@ import static net.frankheijden.serverutils.reflection.ReflectionUtils.VersionPar
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.getAllFields;
 import static net.frankheijden.serverutils.reflection.ReflectionUtils.set;
 
-import java.io.IOException;
+import java.io.Closeable;
 import java.lang.reflect.Field;
-import java.net.URLClassLoader;
 import java.util.Map;
 
 public class RPluginClassLoader {
@@ -32,20 +31,18 @@ public class RPluginClassLoader {
 
     /**
      * Clears and closes the provided classloader.
-     * Remov
      * @param loader The classloader instance.
-     * @throws IOException When closing the loader failed.
+     * @return The Closeable object.
      * @throws IllegalAccessException When prohibited access to the field.
      */
-    public static void clearClassLoader(ClassLoader loader) throws IOException, IllegalAccessException {
-        if (loader == null) return;
+    public static Closeable clearClassLoader(ClassLoader loader) throws IllegalAccessException {
+        if (loader == null) return null;
         if (isInstance(loader)) {
             clearUrlClassLoader(loader);
         }
 
-        if (loader instanceof URLClassLoader) {
-            ((URLClassLoader) loader).close();
-        }
+        if (loader instanceof Closeable) return (Closeable) loader;
+        return null;
     }
 
     /**

@@ -1,5 +1,6 @@
 package net.frankheijden.serverutils.managers;
 
+import java.io.Closeable;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -102,7 +103,7 @@ public class PluginManager {
      * @param pluginName The plugin to unload.
      * @return The result of the unload.
      */
-    public static Result unloadPlugin(String pluginName) {
+    public static CloseableResult unloadPlugin(String pluginName) {
         return unloadPlugin(Bukkit.getPluginManager().getPlugin(pluginName));
     }
 
@@ -111,17 +112,18 @@ public class PluginManager {
      * @param plugin The plugin to unload.
      * @return The result of the unload.
      */
-    public static Result unloadPlugin(Plugin plugin) {
-        if (plugin == null) return Result.NOT_EXISTS;
+    public static CloseableResult unloadPlugin(Plugin plugin) {
+        if (plugin == null) return new CloseableResult(Result.NOT_EXISTS);
+        Closeable closeable;
         try {
             RSimplePluginManager.getPlugins(Bukkit.getPluginManager()).remove(plugin);
             RSimplePluginManager.removeLookupName(Bukkit.getPluginManager(), plugin.getName());
-            RPluginClassLoader.clearClassLoader(RJavaPlugin.getClassLoader(plugin));
+            closeable = RPluginClassLoader.clearClassLoader(RJavaPlugin.getClassLoader(plugin));
         } catch (Exception ex) {
             ex.printStackTrace();
-            return Result.ERROR;
+            return new CloseableResult(Result.ERROR);
         }
-        return Result.SUCCESS;
+        return new CloseableResult(closeable);
     }
 
     /**
@@ -153,9 +155,9 @@ public class PluginManager {
      * @param pluginName The plugin to reload.
      * @return The result of the reload.
      */
-    public static Result reloadPlugin(String pluginName) {
+    public static CloseableResult reloadPlugin(String pluginName) {
         Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
-        if (plugin == null) return Result.NOT_EXISTS;
+        if (plugin == null) return new CloseableResult(Result.NOT_EXISTS);
         return reloadPlugin(plugin);
     }
 
@@ -164,27 +166,29 @@ public class PluginManager {
      * @param plugin The plugin to reload.
      * @return The result of the reload.
      */
-    public static Result reloadPlugin(Plugin plugin) {
+    public static CloseableResult reloadPlugin(Plugin plugin) {
         Result disableResult = disablePlugin(plugin);
-        if (disableResult != Result.SUCCESS && disableResult != Result.ALREADY_DISABLED) return disableResult;
+        if (disableResult != Result.SUCCESS && disableResult != Result.ALREADY_DISABLED) {
+            return new CloseableResult(disableResult);
+        }
 
-        Result unloadResult = unloadPlugin(plugin);
-        if (unloadResult != Result.SUCCESS) return unloadResult;
+        CloseableResult result = unloadPlugin(plugin);
+        if (result.getResult() != Result.SUCCESS) return result;
 
         File pluginFile;
         try {
             pluginFile = RPlugin.getPluginFile(plugin);
         } catch (InvocationTargetException | IllegalAccessException ex) {
             ex.printStackTrace();
-            return Result.ERROR;
+            return result.set(Result.ERROR);
         }
 
         LoadResult loadResult = loadPlugin(pluginFile);
         if (!loadResult.isSuccess()) {
             Result r = loadResult.getResult();
-            return (r == Result.NOT_EXISTS) ? Result.FILE_CHANGED : r;
+            return result.set((r == Result.NOT_EXISTS) ? Result.FILE_CHANGED : r);
         }
-        return enablePlugin(loadResult.getPlugin());
+        return result.set(enablePlugin(loadResult.getPlugin()));
     }
 
     /**
