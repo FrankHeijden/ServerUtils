@@ -6,7 +6,7 @@ plugins {
 
 String packagePath = 'net.frankheijden.serverutils'
 group = packagePath
-version '1.4.2'
+version '1.5.0'
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -18,7 +18,7 @@ repositories {
 dependencies {
     implementation 'co.aikar:acf-paper:0.5.0-SNAPSHOT'
     implementation 'org.bstats:bstats-bukkit:1.7'
-    compileOnly 'com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT'
+    compileOnly 'com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT'
 }
 
 processResources {
