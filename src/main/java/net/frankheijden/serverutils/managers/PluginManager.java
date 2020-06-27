@@ -175,19 +175,11 @@ public class PluginManager {
         CloseableResult result = unloadPlugin(plugin);
         if (result.getResult() != Result.SUCCESS) return result;
 
-        File pluginFile;
-        try {
-            pluginFile = RPlugin.getPluginFile(plugin);
-        } catch (InvocationTargetException | IllegalAccessException ex) {
-            ex.printStackTrace();
-            return result.set(Result.ERROR);
-        }
+        File pluginFile = getPluginFile(plugin.getName());
+        if (pluginFile == null) return result.set(Result.FILE_DELETED);
 
         LoadResult loadResult = loadPlugin(pluginFile);
-        if (!loadResult.isSuccess()) {
-            Result r = loadResult.getResult();
-            return result.set((r == Result.NOT_EXISTS) ? Result.FILE_CHANGED : r);
-        }
+        if (!loadResult.isSuccess()) return result.set(loadResult.getResult());
         return result.set(enablePlugin(loadResult.getPlugin()));
     }
 
@@ -293,5 +285,24 @@ public class PluginManager {
         PluginLoader loader = getPluginLoader(file);
         if (loader == null) return null;
         return loader.getPluginDescription(file);
+    }
+
+    /**
+     * Attempts to retrieve the plugin file by plugin name.
+     * @param pluginName The plugin name.
+     * @return The file, or null if invalid or not found.
+     */
+    public static File getPluginFile(String pluginName) {
+        for (File file : ServerUtils.getInstance().getJars()) {
+            PluginDescriptionFile descriptionFile;
+            try {
+                descriptionFile = getPluginDescription(file);
+            } catch (InvalidDescriptionException ex) {
+                return null;
+            }
+            if (descriptionFile == null) return null;
+            if (descriptionFile.getName().equals(pluginName)) return file;
+        }
+        return null;
     }
 }
