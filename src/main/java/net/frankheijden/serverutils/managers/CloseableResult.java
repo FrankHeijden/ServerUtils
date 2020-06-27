@@ -41,6 +41,7 @@ public class CloseableResult implements Closeable {
      * Attempts to close the closable, essentially wrapping it with try-catch.
      */
     public void tryClose() {
+        if (closeable == null) return;
         try {
             close();
         } catch (IOException ex) {
