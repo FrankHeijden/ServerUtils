@@ -13,15 +13,14 @@ public class YamlUtils {
     }
 
     private static void addDefaults(MemorySection defaults, YamlConfiguration yml, String root) {
-        MemorySection section = (MemorySection) defaults.get(root);
-        if (section == null) return;
-        for (String key : section.getKeys(false)) {
+        if (defaults == null) return;
+        for (String key : defaults.getKeys(false)) {
             String newKey = (root.isEmpty() ? "" : root + ".") + key;
             Object value = defaults.get(key);
             if (value instanceof MemorySection) {
                 addDefaults((MemorySection) value, yml, newKey);
-            } else if (yml.get(key) == null) {
-                yml.set(key, value);
+            } else if (yml.get(newKey) == null) {
+                yml.set(newKey, value);
             }
         }
     }
