@@ -1,30 +1,30 @@
 package net.frankheijden.serverutils.utils;
 
-import java.util.Collection;
+import java.util.List;
 
 public class ListBuilder<T> {
 
-    private final Collection<T> collection;
+    private final List<T> list;
     private ListFormat<T> formatter;
     private String seperator;
     private String lastSeperator;
 
-    private ListBuilder(Collection<T> collection) {
-        this.collection = collection;
+    private ListBuilder(List<T> list) {
+        this.list = list;
     }
 
-    public static <T> ListBuilder<T> create(Collection<T> collection) {
-        return new ListBuilder<>(collection);
+    public static <T> ListBuilder<T> create(List<T> list) {
+        return new ListBuilder<>(list);
     }
 
     /**
      * Creates a pre-defined ListBuilder with type String.
-     * @param collection The collection to be used.
+     * @param list The collection to be used.
      * @return The ListBuilder.
      */
     @SuppressWarnings("unchecked")
-    public static ListBuilder<String> createStrings(Collection<? extends String> collection) {
-        ListBuilder<String> builder = create((Collection<String>) collection);
+    public static ListBuilder<String> createStrings(List<? extends String> list) {
+        ListBuilder<String> builder = create((List<String>) list);
         builder.format(ListFormat.stringFormat);
         return builder;
     }
@@ -46,17 +46,17 @@ public class ListBuilder<T> {
 
     @Override
     public String toString() {
-        if (collection.size() == 1) {
-            return formatter.format(collection.iterator().next());
+        if (list.size() == 1) {
+            return formatter.format(list.iterator().next());
         } else {
             StringBuilder sb = new StringBuilder();
 
             int i = 1;
-            for (T t : collection) {
+            for (T t : list) {
                 sb.append(formatter.format(t));
-                if (i == collection.size() - 1) {
+                if (i == list.size() - 1) {
                     sb.append(lastSeperator);
-                } else if (i != collection.size()) {
+                } else if (i != list.size()) {
                     sb.append(seperator);
                 }
                 i++;
