@@ -19,7 +19,7 @@ public class MainListener implements Listener {
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (!config.getBoolean("settings.check-updates")) return;
+        if (!config.getBoolean("settings.check-updates-login")) return;
 
         Player player = event.getPlayer();
         if (player.hasPermission("serverutils.notification.update")) {
