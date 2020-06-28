@@ -1,32 +1,22 @@
 package net.frankheijden.serverutils.tasks;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.UnknownHostException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
 import net.frankheijden.serverutils.ServerUtils;
 import net.frankheijden.serverutils.config.Config;
 import net.frankheijden.serverutils.config.Messenger;
 import net.frankheijden.serverutils.managers.VersionManager;
+import net.frankheijden.serverutils.utils.FileUtils;
 import net.frankheijden.serverutils.utils.VersionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -84,7 +74,7 @@ public class UpdateCheckerTask implements Runnable {
 
         JsonObject jsonObject;
         try {
-            jsonObject = readJsonFromUrl(GITHUB_LINK).getAsJsonObject();
+            jsonObject = FileUtils.readJsonFromUrl(GITHUB_LINK).getAsJsonObject();
         } catch (ConnectException | UnknownHostException | SocketTimeoutException ex) {
             plugin.getLogger().severe(String.format(CONNECTION_ERROR, ex.getClass().getSimpleName(), ex.getMessage()));
             return;
@@ -153,7 +143,7 @@ public class UpdateCheckerTask implements Runnable {
         }
 
         try {
-            download(downloadLink, getPluginFile());
+            FileUtils.download(downloadLink, getPluginFile());
         } catch (IOException ex) {
             broadcastDownloadStatus(githubVersion, true);
             throw new RuntimeException(DOWNLOAD_ERROR, ex);
@@ -192,37 +182,5 @@ public class UpdateCheckerTask implements Runnable {
         } catch (ReflectiveOperationException ex) {
             throw new RuntimeException("Error retrieving current plugin file", ex);
         }
-    }
-
-    private void download(String urlString, File target) throws IOException {
-        try (InputStream is = stream(urlString);
-             ReadableByteChannel rbc = Channels.newChannel(is);
-             FileOutputStream fos = new FileOutputStream(target)) {
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-        }
-    }
-
-    private String readAll(BufferedReader reader) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        int cp;
-        while ((cp = reader.read()) != -1) {
-            sb.append((char) cp);
-        }
-        return sb.toString();
-    }
-
-    private JsonElement readJsonFromUrl(String url) throws IOException {
-        try (InputStream is = stream(url)) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-            String jsonText = readAll(reader);
-            return new JsonParser().parse(jsonText);
-        }
-    }
-
-    private InputStream stream(String url) throws IOException {
-        URLConnection conn = new URL(url).openConnection();
-        conn.setRequestProperty("User-Agent", USER_AGENT);
-        conn.setConnectTimeout(10000);
-        return conn.getInputStream();
     }
 }
