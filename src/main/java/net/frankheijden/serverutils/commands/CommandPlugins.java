@@ -51,7 +51,10 @@ public class CommandPlugins extends BaseCommand {
 
     private static void sendPlugins(CommandSender sender, ListFormat<Plugin> pluginFormat) {
         Messenger.sendMessage(sender, "serverutils.plugins.header");
-        sender.sendMessage(Messenger.color(ListBuilder.create(getPluginsSorted())
+        List<Plugin> plugins = getPluginsSorted();
+        String prefix = Messenger.getMessage("serverutils.plugins.prefix",
+                "%count%", String.valueOf(plugins.size()));
+        sender.sendMessage(Messenger.color(prefix + ListBuilder.create(plugins)
                 .seperator(Messenger.getMessage("serverutils.plugins.seperator"))
                 .lastSeperator(Messenger.getMessage("serverutils.plugins.last_seperator"))
                 .format(pluginFormat)

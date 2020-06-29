@@ -33,6 +33,7 @@ serverutils:
     footer: "&8&m-------------------------------------------------"
   plugins:
     header: "&8&m------------=&r&8[ &b&lServerUtils Plugins&r &8]&m=-------------"
+    prefix: " &3Plugins &8(&a%count%&8)&b: "
     format: "&3%plugin%"
     format_disabled: "&c%plugin%"
     seperator: "&b, "
