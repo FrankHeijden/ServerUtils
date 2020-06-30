@@ -1,6 +1,10 @@
 package net.frankheijden.serverutils.utils;
 
+import java.util.regex.Pattern;
+
 public class VersionUtils {
+
+    private static final Pattern integerPattern = Pattern.compile("[^0-9]");
 
     /**
      * Compares two versions in X.X.X format.
@@ -10,13 +14,14 @@ public class VersionUtils {
      * @return true iff new version is newer than old version.
      */
     public static boolean isNewVersion(String oldVersion, String newVersion) {
+        if (oldVersion == null || newVersion == null) return false;
         String[] oldVersionSplit = oldVersion.split("\\.");
         String[] newVersionSplit = newVersion.split("\\.");
 
         int i = 0;
         while (i < oldVersionSplit.length && i < newVersionSplit.length) {
-            int o = Integer.parseInt(oldVersionSplit[i]);
-            int n = Integer.parseInt(newVersionSplit[i]);
+            int o = extractInteger(oldVersionSplit[i]);
+            int n = extractInteger(newVersionSplit[i]);
             if (i != oldVersionSplit.length - 1 && i != newVersionSplit.length - 1) {
                 if (n < o) return false;
             }
@@ -24,5 +29,9 @@ public class VersionUtils {
             i++;
         }
         return false;
+    }
+
+    private static Integer extractInteger(String str) {
+        return Integer.parseInt(integerPattern.matcher(str).replaceAll(""));
     }
 }
