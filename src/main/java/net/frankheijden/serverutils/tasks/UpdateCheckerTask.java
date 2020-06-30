@@ -1,6 +1,7 @@
 package net.frankheijden.serverutils.tasks;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.File;
@@ -15,13 +16,13 @@ import java.util.logging.Level;
 import net.frankheijden.serverutils.ServerUtils;
 import net.frankheijden.serverutils.config.Config;
 import net.frankheijden.serverutils.config.Messenger;
+import net.frankheijden.serverutils.managers.CloseableResult;
+import net.frankheijden.serverutils.managers.PluginManager;
 import net.frankheijden.serverutils.managers.VersionManager;
 import net.frankheijden.serverutils.utils.FileUtils;
 import net.frankheijden.serverutils.utils.VersionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.InvalidDescriptionException;
-import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class UpdateCheckerTask implements Runnable {
@@ -33,12 +34,10 @@ public class UpdateCheckerTask implements Runnable {
     private final boolean startup;
 
     private static final String GITHUB_LINK = "https://api.github.com/repos/FrankHeijden/ServerUtils/releases/latest";
-    private static final String USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:77.0)"
-            + "Gecko/20100101"
-            + "Firefox/77.0";
 
     private static final String UPDATE_CHECK_START = "Checking for updates...";
     private static final String GENERAL_ERROR = "Error fetching new version of ServerUtils";
+    private static final String TRY_LATER = GENERAL_ERROR + ", please try again later!";
     private static final String CONNECTION_ERROR = GENERAL_ERROR + ": (%s) %s (maybe check your connection?)";
     private static final String UNAVAILABLE = GENERAL_ERROR + ": (%s) %s (no update available)";
     private static final String UPDATE_AVAILABLE = "ServerUtils %s is available!";
@@ -46,6 +45,7 @@ public class UpdateCheckerTask implements Runnable {
     private static final String DOWNLOAD_ERROR = "Error downloading a new version of ServerUtils";
     private static final String UPGRADE_SUCCESS = "Successfully upgraded ServerUtils to v%s!";
     private static final String DOWNLOADED_RESTART = "Downloaded ServerUtils version v%s. Restarting plugin now...";
+    private static final String UP_TO_DATE = "We are up-to-date!";
 
     private UpdateCheckerTask(CommandSender sender, boolean startup) {
         this.sender = sender;
@@ -72,9 +72,9 @@ public class UpdateCheckerTask implements Runnable {
             plugin.getLogger().info(UPDATE_CHECK_START);
         }
 
-        JsonObject jsonObject;
+        JsonElement jsonElement;
         try {
-            jsonObject = FileUtils.readJsonFromUrl(GITHUB_LINK).getAsJsonObject();
+            jsonElement = FileUtils.readJsonFromUrl(GITHUB_LINK);
         } catch (ConnectException | UnknownHostException | SocketTimeoutException ex) {
             plugin.getLogger().severe(String.format(CONNECTION_ERROR, ex.getClass().getSimpleName(), ex.getMessage()));
             return;
@@ -85,18 +85,21 @@ public class UpdateCheckerTask implements Runnable {
             plugin.getLogger().log(Level.SEVERE, ex, () -> GENERAL_ERROR);
             return;
         }
-        String githubVersion = jsonObject.getAsJsonPrimitive("tag_name").getAsString();
-        githubVersion = githubVersion.replace("v", "");
-        String body = jsonObject.getAsJsonPrimitive("body").getAsString();
 
-        JsonArray assets = jsonObject.getAsJsonArray("assets");
-        String downloadLink = null;
-        if (assets != null && assets.size() > 0) {
-            downloadLink = assets.get(0)
-                    .getAsJsonObject()
-                    .getAsJsonPrimitive("browser_download_url")
-                    .getAsString();
+        if (jsonElement == null) {
+            plugin.getLogger().warning(TRY_LATER);
+            return;
         }
+        JsonObject jsonObject = jsonElement.getAsJsonObject();
+        if (jsonObject.has("message")) {
+            plugin.getLogger().warning(jsonObject.get("message").getAsString());
+            return;
+        }
+
+        String githubVersion = getVersion(jsonObject);
+        String body = jsonObject.getAsJsonPrimitive("body").getAsString();
+        String downloadUrl = getDownloadUrl(jsonObject);
+
         if (VersionUtils.isNewVersion(currentVersion, githubVersion)) {
             if (isStartupCheck()) {
                 plugin.getLogger().info(String.format(UPDATE_AVAILABLE, githubVersion));
@@ -104,14 +107,15 @@ public class UpdateCheckerTask implements Runnable {
             }
             if (canDownloadPlugin()) {
                 if (isStartupCheck()) {
-                    plugin.getLogger().info(String.format(DOWNLOAD_START, downloadLink));
+                    plugin.getLogger().info(String.format(DOWNLOAD_START, downloadUrl));
                 } else {
                     Messenger.sendMessage(sender, "serverutils.update.downloading",
                             "%old%", currentVersion,
                             "%new%", githubVersion,
                             "%info%", body);
                 }
-                downloadPlugin(githubVersion, downloadLink);
+                downloadPlugin(githubVersion, downloadUrl);
+                tryReloadPlugin();
             } else if (!isStartupCheck()) {
                 Messenger.sendMessage(sender, "serverutils.update.available",
                         "%old%", currentVersion,
@@ -119,11 +123,23 @@ public class UpdateCheckerTask implements Runnable {
                         "%info%", body);
             }
         } else if (versionManager.hasDownloaded()) {
-            Messenger.sendMessage(sender, "serverutils.update.success",
+            Messenger.sendMessage(sender,  "serverutils.update.success",
                     "%new%", versionManager.getDownloadedVersion());
         } else if (isStartupCheck()) {
-            plugin.getLogger().info("We are up-to-date!");
+            plugin.getLogger().info(UP_TO_DATE);
         }
+    }
+
+    private String getVersion(JsonObject jsonObject) {
+        return jsonObject.getAsJsonPrimitive("tag_name").getAsString().replace("v", "");
+    }
+
+    private String getDownloadUrl(JsonObject jsonObject) {
+        JsonArray assets = jsonObject.getAsJsonArray("assets");
+        if (assets != null && assets.size() > 0) {
+            return assets.get(0).getAsJsonObject().getAsJsonPrimitive("browser_download_url").getAsString();
+        }
+        return null;
     }
 
     private boolean canDownloadPlugin() {
@@ -149,19 +165,19 @@ public class UpdateCheckerTask implements Runnable {
             throw new RuntimeException(DOWNLOAD_ERROR, ex);
         }
 
+        versionManager.setDownloadedVersion(githubVersion);
+    }
+
+    private void tryReloadPlugin() {
+        String downloadedVersion = versionManager.getDownloadedVersion();
+
         if (isStartupCheck()) {
-            plugin.getLogger().info(String.format(DOWNLOADED_RESTART, githubVersion));
-            Bukkit.getPluginManager().disablePlugin(plugin);
-            try {
-                Bukkit.getPluginManager().enablePlugin(Bukkit.getPluginManager().loadPlugin(getPluginFile()));
-            } catch (InvalidPluginException | InvalidDescriptionException ex) {
-                ex.printStackTrace();
-                return;
-            }
-            plugin.getLogger().info(String.format(UPGRADE_SUCCESS, githubVersion));
+            plugin.getLogger().info(String.format(DOWNLOADED_RESTART, downloadedVersion));
+            CloseableResult result = PluginManager.reloadPlugin(plugin);
+            plugin.getLogger().info(String.format(UPGRADE_SUCCESS, downloadedVersion));
+            result.tryClose();
         } else {
-            versionManager.setDownloadedVersion(githubVersion);
-            broadcastDownloadStatus(githubVersion, false);
+            broadcastDownloadStatus(downloadedVersion, false);
         }
     }
 

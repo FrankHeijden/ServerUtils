@@ -9,8 +9,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
@@ -28,10 +28,12 @@ public class FileUtils {
      * @throws IOException If an I/O exception occurs.
      */
     public static void download(String urlString, File target) throws IOException {
-        try (InputStream is = stream(urlString);
-             ReadableByteChannel rbc = Channels.newChannel(is);
-             FileOutputStream fos = new FileOutputStream(target)) {
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        try (InputStream is = stream(urlString)) {
+            if (is == null) return;
+            try (ReadableByteChannel rbc = Channels.newChannel(is);
+                 FileOutputStream fos = new FileOutputStream(target)) {
+                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            }
         }
     }
 
@@ -42,10 +44,11 @@ public class FileUtils {
      * @throws IOException If an I/O exception occurs.
      */
     public static InputStream stream(String url) throws IOException {
-        URLConnection conn = new URL(url).openConnection();
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setRequestProperty("User-Agent", USER_AGENT);
         conn.setConnectTimeout(10000);
-        return conn.getInputStream();
+        int res = conn.getResponseCode();
+        return (res >= 200 && res <= 299) ? conn.getInputStream() : conn.getErrorStream();
     }
 
     /**
@@ -71,6 +74,7 @@ public class FileUtils {
      */
     public static JsonElement readJsonFromUrl(String url) throws IOException {
         try (InputStream is = stream(url)) {
+            if (is == null) return null;
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
             String jsonText = readAll(reader);
             return new JsonParser().parse(jsonText);
