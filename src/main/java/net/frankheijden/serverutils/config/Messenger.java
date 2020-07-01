@@ -41,6 +41,7 @@ public class Messenger extends YamlResource {
      */
     public static String apply(String message, String... replacements) {
         if (message == null || message.isEmpty()) return null;
+        message = message.replace("\\n", "\n");
         for (int i = 0; i < replacements.length; i++, i++) {
             message = message.replace(replacements[i], replacements[i + 1]);
         }
