@@ -54,9 +54,9 @@ public class ListBuilder<T> {
             int i = 1;
             for (T t : list) {
                 sb.append(formatter.format(t));
-                if (i == list.size() - 1) {
+                if (i == list.size() - 1 && lastSeperator != null) {
                     sb.append(lastSeperator);
-                } else if (i != list.size()) {
+                } else if (i != list.size() && seperator != null) {
                     sb.append(seperator);
                 }
                 i++;
