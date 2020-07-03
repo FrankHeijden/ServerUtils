@@ -1,0 +1,24 @@
+group = rootProject.group + '.bukkit'
+String dependencyDir = group + '.dependencies'
+version = rootProject.version
+archivesBaseName = rootProject.name + '-Bukkit'
+
+dependencies {
+    implementation 'co.aikar:acf-paper:0.5.0-SNAPSHOT'
+    implementation 'org.bstats:bstats-bukkit:1.7'
+    implementation project(":Common")
+    compileOnly 'com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT'
+}
+
+processResources {
+    from('src/main/resources') {
+        include 'plugin.yml'
+        expand(version: project.version)
+    }
+}
+
+shadowJar {
+    relocate 'org.bstats.bukkit', dependencyDir + '.bstats'
+    relocate 'co.aikar.commands', dependencyDir + '.acf'
+    relocate 'co.aikar.locales', dependencyDir + '.locales'
+}

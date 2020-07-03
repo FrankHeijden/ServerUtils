@@ -1,61 +1,58 @@
 plugins {
     id 'java'
-    id 'checkstyle'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
-String packagePath = 'net.frankheijden.serverutils'
-group = packagePath
-version '1.5.3'
+group = 'net.frankheijden.serverutils'
+version = '1.5.3'
+
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
-repositories {
-    mavenCentral()
-    maven { url 'https://repo.aikar.co/content/groups/aikar/' }
-    maven { url 'https://papermc.io/repo/repository/maven-public/' }
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'checkstyle'
+    apply plugin: 'com.github.johnrengelman.shadow'
+
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://repo.aikar.co/content/groups/aikar/' }
+        maven { url 'https://papermc.io/repo/repository/maven-public/' }
+    }
+
+    dependencies {
+        testCompile 'org.assertj:assertj-core:3.15.0'
+        testCompile 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+        testCompile 'org.junit.jupiter:junit-jupiter-params:5.6.2'
+        testCompile 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
+    }
+
+    compileJava {
+        options.compilerArgs += ["-parameters"]
+        options.fork = true
+        options.forkOptions.executable = 'javac'
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+
+    checkstyle {
+        toolVersion "8.25"
+        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+
+        ignoreFailures = false
+        maxErrors = 0
+        maxWarnings = 0
+    }
+
+    shadowJar.dependsOn checkstyleMain, checkstyleTest, test
 }
 
 dependencies {
-    implementation 'co.aikar:acf-paper:0.5.0-SNAPSHOT'
-    implementation 'org.bstats:bstats-bukkit:1.7'
-    compileOnly 'com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT'
-
-    testCompile 'org.assertj:assertj-core:3.15.0'
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.6.2'
-    testCompile 'org.junit.jupiter:junit-jupiter-params:5.6.2'
-    testCompile 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
-}
-
-processResources {
-    from('src/main/resources') {
-        include 'plugin.yml'
-        expand(version: project.version)
-    }
-}
-
-compileJava {
-    options.compilerArgs += ["-parameters"]
-    options.fork = true
-    options.forkOptions.executable = 'javac'
-}
-
-shadowJar {
-    relocate 'co.aikar.commands', packagePath + '.acf'
-    relocate 'co.aikar.locales', packagePath + '.locales'
-    relocate 'org.bstats.bukkit', packagePath + '.dependencies.bstats'
-}
-
-checkstyle {
-    toolVersion "8.25"
-    configFile = rootProject.file('config/checkstyle/checkstyle.xml')
-
-    ignoreFailures = false
-    maxErrors = 0
-    maxWarnings = 0
-}
-
-test {
-    useJUnitPlatform()
+    compile project(path: ':Common', configuration: 'shadow')
+    compile project(path: ':Bukkit', configuration: 'shadow')
 }
 
 build.dependsOn shadowJar
