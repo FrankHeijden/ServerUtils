@@ -4,6 +4,7 @@ plugins {
 }
 
 group = 'net.frankheijden.serverutils'
+String dependencyDir = group + '.dependencies'
 version = '1.5.3'
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
@@ -42,17 +43,22 @@ subprojects {
         toolVersion "8.25"
         configFile = rootProject.file('config/checkstyle/checkstyle.xml')
 
-        ignoreFailures = false
-        maxErrors = 0
-        maxWarnings = 0
+//        ignoreFailures = false
+//        maxErrors = 0
+//        maxWarnings = 0
     }
 
     shadowJar.dependsOn checkstyleMain, checkstyleTest, test
 }
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
-    compile project(path: ':Common', configuration: 'shadow')
-    compile project(path: ':Bukkit', configuration: 'shadow')
+    implementation project(path: ':Common', configuration: 'shadow')
+    implementation project(path: ':Bukkit', configuration: 'shadow')
+    implementation project(path: ':Bungee', configuration: 'shadow')
 }
 
 build.dependsOn shadowJar

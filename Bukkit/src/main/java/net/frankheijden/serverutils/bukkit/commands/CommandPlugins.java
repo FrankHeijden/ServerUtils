@@ -6,18 +6,19 @@ import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import net.frankheijden.serverutils.bukkit.config.Messenger;
-import net.frankheijden.serverutils.common.utils.ListBuilder;
-import net.frankheijden.serverutils.common.utils.ListFormat;
-import org.bukkit.Bukkit;
+
+import net.frankheijden.serverutils.bukkit.ServerUtils;
+import net.frankheijden.serverutils.bukkit.utils.BukkitUtils;
+import net.frankheijden.serverutils.common.commands.Plugins;
+import net.frankheijden.serverutils.common.config.Messenger;
+import net.frankheijden.serverutils.common.providers.PluginProvider;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
 @CommandAlias("plugins|pl")
 public class CommandPlugins extends BaseCommand {
+
+    private static final PluginProvider<Plugin> provider = ServerUtils.getInstance().getPlugin().getPluginProvider();
 
     /**
      * Sends the plugin list to the sender, without plugin version.
@@ -27,7 +28,7 @@ public class CommandPlugins extends BaseCommand {
     @CommandPermission("serverutils.plugins")
     @Description("Shows the plugins of this server.")
     public void onPlugins(CommandSender sender) {
-        sendPlugins(sender, pl -> {
+        Plugins.sendPlugins(BukkitUtils.wrap(sender), provider.getPluginsSorted(), pl -> {
             String format = "serverutils.plugins.format" + (pl.isEnabled() ? "" : "_disabled");
             return Messenger.getMessage(format, "%plugin%", pl.getName());
         });
@@ -41,30 +42,11 @@ public class CommandPlugins extends BaseCommand {
     @CommandPermission("serverutils.plugins.version")
     @Description("Shows the plugins of this server with version.")
     public void onPluginsWithVersion(CommandSender sender) {
-        sendPlugins(sender, pl -> {
+        Plugins.sendPlugins(BukkitUtils.wrap(sender), provider.getPluginsSorted(), pl -> {
             String format = "serverutils.plugins.format" + (pl.isEnabled() ? "" : "_disabled");
             String version = Messenger.getMessage("serverutils.plugins.version",
                     "%version%", pl.getDescription().getVersion());
             return Messenger.getMessage(format, "%plugin%", pl.getName()) + version;
         });
-    }
-
-    private static void sendPlugins(CommandSender sender, ListFormat<Plugin> pluginFormat) {
-        Messenger.sendMessage(sender, "serverutils.plugins.header");
-        List<Plugin> plugins = getPluginsSorted();
-        String prefix = Messenger.getMessage("serverutils.plugins.prefix",
-                "%count%", String.valueOf(plugins.size()));
-        sender.sendMessage(Messenger.color(prefix + ListBuilder.create(plugins)
-                .seperator(Messenger.getMessage("serverutils.plugins.seperator"))
-                .lastSeperator(Messenger.getMessage("serverutils.plugins.last_seperator"))
-                .format(pluginFormat)
-                .toString()));
-        Messenger.sendMessage(sender, "serverutils.plugins.footer");
-    }
-
-    private static List<Plugin> getPluginsSorted() {
-        List<Plugin> plugins = Arrays.asList(Bukkit.getPluginManager().getPlugins());
-        plugins.sort(Comparator.comparing(Plugin::getName));
-        return plugins;
     }
 }

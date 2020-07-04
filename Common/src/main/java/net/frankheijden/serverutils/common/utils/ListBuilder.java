@@ -1,5 +1,8 @@
 package net.frankheijden.serverutils.common.utils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class ListBuilder<T> {
@@ -15,6 +18,14 @@ public class ListBuilder<T> {
 
     public static <T> ListBuilder<T> create(List<T> list) {
         return new ListBuilder<>(list);
+    }
+
+    public static <T> ListBuilder<T> create(Collection<T> list) {
+        return new ListBuilder<>(new ArrayList<>(list));
+    }
+
+    public static <T> ListBuilder<T> create(T... elements) {
+        return new ListBuilder<>(Arrays.asList(elements));
     }
 
     /**

@@ -1,4 +1,4 @@
-package net.frankheijden.serverutils.bukkit.reflection;
+package net.frankheijden.serverutils.bukkit.entities;
 
 import net.frankheijden.serverutils.common.reflection.ReflectionUtils;
 import net.frankheijden.serverutils.common.reflection.VersionParam;

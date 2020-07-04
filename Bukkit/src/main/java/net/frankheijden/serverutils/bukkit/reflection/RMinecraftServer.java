@@ -1,5 +1,7 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
+import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
+
 import static net.frankheijden.serverutils.common.reflection.MethodParam.methodOf;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllMethods;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;

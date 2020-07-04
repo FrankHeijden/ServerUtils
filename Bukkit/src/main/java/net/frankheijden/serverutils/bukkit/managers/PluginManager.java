@@ -7,12 +7,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.frankheijden.serverutils.bukkit.ServerUtils;
+import net.frankheijden.serverutils.bukkit.entities.BukkitLoadResult;
 import net.frankheijden.serverutils.bukkit.reflection.RCommandMap;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftingManager;
 import net.frankheijden.serverutils.bukkit.reflection.RJavaPlugin;
 import net.frankheijden.serverutils.bukkit.reflection.RPluginClassLoader;
 import net.frankheijden.serverutils.bukkit.reflection.RSimplePluginManager;
+import net.frankheijden.serverutils.common.entities.CloseableResult;
+import net.frankheijden.serverutils.common.entities.Result;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommand;
@@ -30,7 +33,7 @@ public class PluginManager {
      * @param jarFile The name of the file in the plugins/ folder.
      * @return The result of the loading procedure.
      */
-    public static LoadResult loadPlugin(String jarFile) {
+    public static BukkitLoadResult loadPlugin(String jarFile) {
         return loadPlugin(new File(ServerUtils.getInstance().getDataFolder().getParent(), jarFile));
     }
 
@@ -39,33 +42,33 @@ public class PluginManager {
      * @param file The file to be loaded.
      * @return The result of the loading procedure.
      */
-    public static LoadResult loadPlugin(File file) {
-        if (!file.exists()) return new LoadResult(Result.NOT_EXISTS);
+    public static BukkitLoadResult loadPlugin(File file) {
+        if (!file.exists()) return new BukkitLoadResult(Result.NOT_EXISTS);
 
         Plugin loadedPlugin = getLoadedPlugin(file);
-        if (loadedPlugin != null) return new LoadResult(Result.ALREADY_LOADED);
+        if (loadedPlugin != null) return new BukkitLoadResult(Result.ALREADY_LOADED);
 
         Plugin plugin;
         try {
             plugin = Bukkit.getPluginManager().loadPlugin(file);
         } catch (InvalidDescriptionException ex) {
-            return new LoadResult(Result.INVALID_DESCRIPTION);
+            return new BukkitLoadResult(Result.INVALID_DESCRIPTION);
         } catch (UnknownDependencyException ex) {
-            return new LoadResult(Result.UNKNOWN_DEPENDENCY.arg(ex.getMessage()));
+            return new BukkitLoadResult(Result.UNKNOWN_DEPENDENCY.arg(ex.getMessage()));
         } catch (InvalidPluginException ex) {
             if (ex.getCause() instanceof IllegalArgumentException) {
                 IllegalArgumentException e = (IllegalArgumentException) ex.getCause();
                 if (e.getMessage().equalsIgnoreCase("Plugin already initialized!")) {
-                    return new LoadResult(Result.ALREADY_ENABLED);
+                    return new BukkitLoadResult(Result.ALREADY_ENABLED);
                 }
             }
             ex.printStackTrace();
-            return new LoadResult(Result.ERROR);
+            return new BukkitLoadResult(Result.ERROR);
         }
 
-        if (plugin == null) return new LoadResult(Result.INVALID_PLUGIN);
+        if (plugin == null) return new BukkitLoadResult(Result.INVALID_PLUGIN);
         plugin.onLoad();
-        return new LoadResult(plugin);
+        return new BukkitLoadResult(plugin);
     }
 
     /**
@@ -176,9 +179,9 @@ public class PluginManager {
         File pluginFile = getPluginFile(plugin.getName());
         if (pluginFile == null) return result.set(Result.FILE_DELETED);
 
-        LoadResult loadResult = loadPlugin(pluginFile);
+        BukkitLoadResult loadResult = loadPlugin(pluginFile);
         if (!loadResult.isSuccess()) return result.set(loadResult.getResult());
-        return result.set(enablePlugin(loadResult.getPlugin()));
+        return result.set(enablePlugin(loadResult.get()));
     }
 
     /**
@@ -291,7 +294,7 @@ public class PluginManager {
      * @return The file, or null if invalid or not found.
      */
     public static File getPluginFile(String pluginName) {
-        for (File file : ServerUtils.getInstance().getJars()) {
+        for (File file : ServerUtils.getInstance().getPlugin().getPluginProvider().getPluginJars()) {
             PluginDescriptionFile descriptionFile;
             try {
                 descriptionFile = getPluginDescription(file);

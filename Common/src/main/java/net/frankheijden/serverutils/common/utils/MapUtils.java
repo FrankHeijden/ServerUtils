@@ -14,6 +14,7 @@ public class MapUtils {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static void removeKeys(Map map, Predicate<Object> predicate) {
+        if (map == null) return;
         Set<Object> keysToRemove = new HashSet<>();
         map.forEach((k, v) -> {
             if (predicate.test(k)) {
@@ -30,12 +31,24 @@ public class MapUtils {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static void removeValues(Map map, Predicate<Object> predicate) {
-        Set<Object> keysToRemove = new HashSet<>();
+        if (map == null) return;
+        Set<Object> valuesToRemove = new HashSet<>();
         map.forEach((k, v) -> {
             if (predicate.test(v)) {
-                keysToRemove.add(k);
+                valuesToRemove.add(k);
             }
         });
-        keysToRemove.forEach(map::remove);
+        valuesToRemove.forEach(map::remove);
+    }
+
+    /**
+     * Removes a key from a map.
+     * @param map The map instance.
+     * @param obj The object to remove.
+     */
+    @SuppressWarnings("rawtypes")
+    public static void remove(Map map, Object obj) {
+        if (map == null) return;
+        map.remove(obj);
     }
 }

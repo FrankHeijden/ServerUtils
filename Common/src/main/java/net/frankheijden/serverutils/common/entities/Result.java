@@ -1,7 +1,6 @@
-package net.frankheijden.serverutils.bukkit.managers;
+package net.frankheijden.serverutils.common.entities;
 
-import net.frankheijden.serverutils.bukkit.config.Messenger;
-import org.bukkit.command.CommandSender;
+import net.frankheijden.serverutils.common.config.Messenger;
 
 public enum Result {
     NOT_EXISTS,
@@ -34,7 +33,7 @@ public enum Result {
      * @param action The action which let to the result.
      * @param what An associated variable.
      */
-    public void sendTo(CommandSender sender, String action, String what) {
+    public void sendTo(ServerCommandSender sender, String action, String what) {
         Messenger.sendMessage(sender, "serverutils." + this.name().toLowerCase(),
                 "%action%", action,
                 "%what%", what,

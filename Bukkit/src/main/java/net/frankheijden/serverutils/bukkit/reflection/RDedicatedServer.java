@@ -1,6 +1,8 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import static net.frankheijden.serverutils.bukkit.reflection.BukkitReflection.MINOR;
+import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
+
+import static net.frankheijden.serverutils.bukkit.entities.BukkitReflection.MINOR;
 import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
 import static net.frankheijden.serverutils.common.reflection.MethodParam.methodOf;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get;

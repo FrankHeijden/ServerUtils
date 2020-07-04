@@ -1,7 +1,7 @@
 package net.frankheijden.serverutils.bukkit.commands;
 
-import static net.frankheijden.serverutils.bukkit.config.Messenger.sendMessage;
-import static net.frankheijden.serverutils.bukkit.reflection.BukkitReflection.MINOR;
+import static net.frankheijden.serverutils.bukkit.entities.BukkitReflection.MINOR;
+import static net.frankheijden.serverutils.common.config.Messenger.sendMessage;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
@@ -18,15 +18,17 @@ import java.util.Map;
 import java.util.Set;
 
 import net.frankheijden.serverutils.bukkit.ServerUtils;
-import net.frankheijden.serverutils.bukkit.config.Messenger;
-import net.frankheijden.serverutils.bukkit.managers.CloseableResult;
-import net.frankheijden.serverutils.bukkit.managers.LoadResult;
+import net.frankheijden.serverutils.bukkit.entities.BukkitLoadResult;
 import net.frankheijden.serverutils.bukkit.managers.PluginManager;
-import net.frankheijden.serverutils.bukkit.managers.Result;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
-import net.frankheijden.serverutils.bukkit.utils.FormatBuilder;
-import net.frankheijden.serverutils.bukkit.utils.ForwardFilter;
+import net.frankheijden.serverutils.bukkit.utils.BukkitUtils;
 import net.frankheijden.serverutils.bukkit.utils.ReloadHandler;
+import net.frankheijden.serverutils.common.config.Messenger;
+import net.frankheijden.serverutils.common.entities.CloseableResult;
+import net.frankheijden.serverutils.common.entities.Result;
+import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.utils.FormatBuilder;
+import net.frankheijden.serverutils.common.utils.ForwardFilter;
 import net.frankheijden.serverutils.common.utils.ListBuilder;
 import net.frankheijden.serverutils.common.utils.ListFormat;
 import org.bukkit.Bukkit;
@@ -64,13 +66,14 @@ public class CommandServerUtils extends BaseCommand {
 
     /**
      * Shows the help page to the sender.
-     * @param sender The sender of the command.
+     * @param commandSender The sender of the command.
      */
     @Default
     @Subcommand("help")
     @CommandPermission("serverutils.help")
     @Description("Shows a help page with a few commands.")
-    public void onHelp(CommandSender sender) {
+    public void onHelp(CommandSender commandSender) {
+        ServerCommandSender sender = BukkitUtils.wrap(commandSender);
         Messenger.sendMessage(sender, "serverutils.help.header");
 
         FormatBuilder builder = FormatBuilder.create(Messenger.getMessage("serverutils.help.format"))
@@ -97,26 +100,27 @@ public class CommandServerUtils extends BaseCommand {
     @Description("Reloads the ServerUtils plugin.")
     public void onReload(CommandSender sender) {
         plugin.reload();
-        sendMessage(sender, "serverutils.success",
+        sendMessage(BukkitUtils.wrap(sender), "serverutils.success",
                 "%action%", "reload",
                 "%what%", "ServerUtils configurations");
     }
 
     /**
      * Reloads a config from a set of configurations of the server.
-     * @param sender The sender of the command.
+     * @param commandSender The sender of the command.
      * @param config The configuration to reload.
      */
     @Subcommand("reloadconfig")
     @CommandCompletion("@supportedConfigs")
     @CommandPermission("serverutils.reloadconfig")
     @Description("Reloads individual Server configurations.")
-    public void onReloadCommands(CommandSender sender, String config) {
+    public void onReloadCommands(CommandSender commandSender, String config) {
         ReloadHandler handler = supportedConfigs.get(config);
         if (handler == null) {
-            this.doHelp(sender);
+            this.doHelp(commandSender);
             return;
         }
+        ServerCommandSender sender = BukkitUtils.wrap(commandSender);
 
         String[] replacements = new String[]{ "%action%", "reload", "%what%", config };
 
@@ -138,34 +142,38 @@ public class CommandServerUtils extends BaseCommand {
 
     /**
      * Loads the specified plugin on the server.
-     * @param sender The sender of the command.
+     * @param commandSender The sender of the command.
      * @param jarFile The filename of the plugin in the plugins/ directory.
      */
     @Subcommand("loadplugin")
     @CommandCompletion("@pluginJars")
     @CommandPermission("serverutils.loadplugin")
     @Description("Loads the specified jar file as a plugin.")
-    public void onLoadPlugin(CommandSender sender, String jarFile) {
-        LoadResult loadResult = PluginManager.loadPlugin(jarFile);
+    public void onLoadPlugin(CommandSender commandSender, String jarFile) {
+        ServerCommandSender sender = BukkitUtils.wrap(commandSender);
+
+        BukkitLoadResult loadResult = PluginManager.loadPlugin(jarFile);
         if (!loadResult.isSuccess()) {
             loadResult.getResult().sendTo(sender, "load", jarFile);
             return;
         }
 
-        Result result = PluginManager.enablePlugin(loadResult.getPlugin());
+        Result result = PluginManager.enablePlugin(loadResult.get());
         result.sendTo(sender, "load", jarFile);
     }
 
     /**
      * Unloads the specified plugin from the server.
-     * @param sender The sender of the command.
+     * @param commandSender The sender of the command.
      * @param pluginName The plugin name.
      */
     @Subcommand("unloadplugin")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.unloadplugin")
     @Description("Disables and unloads the specified plugin.")
-    public void onUnloadPlugin(CommandSender sender, String pluginName) {
+    public void onUnloadPlugin(CommandSender commandSender, String pluginName) {
+        ServerCommandSender sender = BukkitUtils.wrap(commandSender);
+
         Result disableResult = PluginManager.disablePlugin(pluginName);
         if (disableResult != Result.SUCCESS && disableResult != Result.ALREADY_DISABLED) {
             disableResult.sendTo(sender, "disabl", pluginName);
@@ -188,7 +196,7 @@ public class CommandServerUtils extends BaseCommand {
     @Description("Reloads a specified plugin.")
     public void onReloadPlugin(CommandSender sender, String pluginName) {
         CloseableResult result = PluginManager.reloadPlugin(pluginName);
-        result.getResult().sendTo(sender, "reload", pluginName);
+        result.getResult().sendTo(BukkitUtils.wrap(sender), "reload", pluginName);
         result.tryClose();
     }
 
@@ -203,7 +211,7 @@ public class CommandServerUtils extends BaseCommand {
     @Description("Enables the loaded plugin.")
     public void onEnablePlugin(CommandSender sender, String pluginName) {
         Result result = PluginManager.enablePlugin(pluginName);
-        result.sendTo(sender, "enabl", pluginName);
+        result.sendTo(BukkitUtils.wrap(sender), "enabl", pluginName);
     }
 
     /**
@@ -217,19 +225,21 @@ public class CommandServerUtils extends BaseCommand {
     @Description("Disables the specified plugin.")
     public void onDisablePlugin(CommandSender sender, String pluginName) {
         Result result = PluginManager.disablePlugin(pluginName);
-        result.sendTo(sender, "disabl", pluginName);
+        result.sendTo(BukkitUtils.wrap(sender), "disabl", pluginName);
     }
 
     /**
      * Shows information about the specified plugin.
-     * @param sender The sender of the command.
+     * @param commandSender The sender of the command.
      * @param pluginName The plugin name.
      */
     @Subcommand("plugininfo")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.plugininfo")
     @Description("Shows information about the specified plugin.")
-    public void onPluginInfo(CommandSender sender, String pluginName) {
+    public void onPluginInfo(CommandSender commandSender, String pluginName) {
+        ServerCommandSender sender = BukkitUtils.wrap(commandSender);
+
         Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
         if (plugin == null) {
             Result.NOT_EXISTS.sendTo(sender, "fetch", pluginName);
@@ -289,14 +299,16 @@ public class CommandServerUtils extends BaseCommand {
 
     /**
      * Shows information about a provided command.
-     * @param sender The sender of the command.
+     * @param commandSender The sender of the command.
      * @param command The command to lookup.
      */
     @Subcommand("commandinfo")
     @CommandCompletion("@commands")
     @CommandPermission("serverutils.commandinfo")
     @Description("Shows information about the specified command.")
-    public void onCommandInfo(CommandSender sender, String command) {
+    public void onCommandInfo(CommandSender commandSender, String command) {
+        ServerCommandSender sender = BukkitUtils.wrap(commandSender);
+
         Command cmd = PluginManager.getCommand(command);
         if (cmd == null) {
             Messenger.sendMessage(sender, "serverutils.commandinfo.not_exists");

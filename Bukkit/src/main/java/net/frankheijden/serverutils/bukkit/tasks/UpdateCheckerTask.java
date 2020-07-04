@@ -14,22 +14,24 @@ import java.net.UnknownHostException;
 import java.util.logging.Level;
 
 import net.frankheijden.serverutils.bukkit.ServerUtils;
-import net.frankheijden.serverutils.bukkit.config.Config;
-import net.frankheijden.serverutils.bukkit.config.Messenger;
-import net.frankheijden.serverutils.bukkit.managers.CloseableResult;
 import net.frankheijden.serverutils.bukkit.managers.PluginManager;
 import net.frankheijden.serverutils.bukkit.managers.VersionManager;
+import net.frankheijden.serverutils.common.config.Config;
+import net.frankheijden.serverutils.common.config.Messenger;
+import net.frankheijden.serverutils.common.config.YamlConfig;
+import net.frankheijden.serverutils.common.entities.CloseableResult;
+import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.utils.FileUtils;
 import net.frankheijden.serverutils.common.utils.VersionUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class UpdateCheckerTask implements Runnable {
 
     private static final ServerUtils plugin = ServerUtils.getInstance();
+    private static final YamlConfig config = Config.getInstance().getConfig();
     private static final VersionManager versionManager = VersionManager.getInstance();
-    private final CommandSender sender;
+    private final ServerCommandSender sender;
     private final String currentVersion;
     private final boolean startup;
 
@@ -47,17 +49,17 @@ public class UpdateCheckerTask implements Runnable {
     private static final String DOWNLOADED_RESTART = "Downloaded ServerUtils version v%s. Restarting plugin now...";
     private static final String UP_TO_DATE = "We are up-to-date!";
 
-    private UpdateCheckerTask(CommandSender sender, boolean startup) {
+    private UpdateCheckerTask(ServerCommandSender sender, boolean startup) {
         this.sender = sender;
         this.currentVersion = plugin.getDescription().getVersion();
         this.startup = startup;
     }
 
-    public static void start(CommandSender sender) {
+    public static void start(ServerCommandSender sender) {
         start(sender, false);
     }
 
-    public static void start(CommandSender sender, boolean startup) {
+    public static void start(ServerCommandSender sender, boolean startup) {
         UpdateCheckerTask task = new UpdateCheckerTask(sender, startup);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, task);
     }
@@ -143,8 +145,8 @@ public class UpdateCheckerTask implements Runnable {
     }
 
     private boolean canDownloadPlugin() {
-        if (isStartupCheck()) return Config.getInstance().getBoolean("settings.download-at-startup-and-update");
-        return Config.getInstance().getBoolean("settings.download-updates");
+        if (isStartupCheck()) return config.getBoolean("settings.download-at-startup-and-update");
+        return config.getBoolean("settings.download-updates");
     }
 
     private void downloadPlugin(String githubVersion, String downloadLink) {

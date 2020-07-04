@@ -1,10 +1,11 @@
-package net.frankheijden.serverutils.bukkit.utils;
+package net.frankheijden.serverutils.common.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import net.frankheijden.serverutils.bukkit.config.Messenger;
-import org.bukkit.command.CommandSender;
+import net.frankheijden.serverutils.common.config.Messenger;
+import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 
 public class FormatBuilder {
 
@@ -43,13 +44,13 @@ public class FormatBuilder {
      * Builds the format and sends it to the CommandSender.
      * @param sender The receiver of the list.
      */
-    public void sendTo(CommandSender sender) {
+    public void sendTo(ServerCommandSender sender) {
         valueList.forEach(values -> {
             int length = Math.min(values.length, orderedKeys.length);
             String message = format;
             for (int i = 0; i < length; i++) {
                 String value = values[i];
-                if ((value == null || value.isEmpty()) && !alwaysSend) return;
+                if (value == null && !alwaysSend) return;
                 message = message.replace(orderedKeys[i], String.valueOf(value));
             }
             Messenger.sendRawMessage(sender, message);

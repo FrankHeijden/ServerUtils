@@ -1,13 +1,15 @@
-package net.frankheijden.serverutils.bukkit.utils;
+package net.frankheijden.serverutils.common.utils;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import net.frankheijden.serverutils.common.utils.PredicateFilter;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
+import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 
 public class ForwardFilter extends PredicateFilter {
+
+    private static final char INFO_COLOR = 'a';
+    private static final char WARNING_COLOR = '6';
+    private static final char SEVERE_COLOR = 'c';
 
     private boolean warnings;
 
@@ -15,13 +17,13 @@ public class ForwardFilter extends PredicateFilter {
      * Creates a filter which forwards all output to the sender.
      * @param sender The sender to forward logs to.
      */
-    public ForwardFilter(CommandSender sender) {
+    public ForwardFilter(ServerCommandSender sender) {
         this.warnings = false;
 
         setPredicate(rec -> {
-            ChatColor color = getColor(rec.getLevel());
-            if (color != ChatColor.GREEN) warnings = true;
-            sender.sendMessage(color + format(rec));
+            char color = getColor(rec.getLevel());
+            if (color != INFO_COLOR) warnings = true;
+            sender.sendMessage('&' + color + format(rec));
             return true;
         });
     }
@@ -30,13 +32,13 @@ public class ForwardFilter extends PredicateFilter {
         return warnings;
     }
 
-    private static ChatColor getColor(Level level) {
+    private static char getColor(Level level) {
         if (Level.SEVERE.equals(level)) {
-            return ChatColor.RED;
+            return SEVERE_COLOR;
         } else if (Level.WARNING.equals(level)) {
-            return ChatColor.GOLD;
+            return WARNING_COLOR;
         }
-        return ChatColor.GREEN;
+        return INFO_COLOR;
     }
 
     private static String format(LogRecord record) {

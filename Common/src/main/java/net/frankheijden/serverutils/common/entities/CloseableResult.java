@@ -1,4 +1,4 @@
-package net.frankheijden.serverutils.bukkit.managers;
+package net.frankheijden.serverutils.common.entities;
 
 import java.io.Closeable;
 import java.io.IOException;

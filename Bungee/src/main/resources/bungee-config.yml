@@ -1,0 +1,5 @@
+settings:
+  check-updates: true
+  check-updates-login: false
+  download-updates: false
+  download-at-startup-and-update: false
