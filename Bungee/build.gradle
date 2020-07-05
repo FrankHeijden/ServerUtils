@@ -1,0 +1,28 @@
+group = rootProject.group + '.bungee'
+String dependencyDir = group + '.dependencies'
+version = rootProject.version
+archivesBaseName = rootProject.name + '-Bungee'
+
+repositories {
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+}
+
+dependencies {
+    implementation 'co.aikar:acf-bungee:0.5.0-SNAPSHOT'
+    implementation 'org.bstats:bstats-bungeecord:1.7'
+    implementation project(":Common")
+    compileOnly 'net.md-5:bungeecord-api:1.16-R0.2-SNAPSHOT'
+}
+
+processResources {
+    from('src/main/resources') {
+        include 'bungee.yml'
+        expand(version: project.version)
+    }
+}
+
+shadowJar {
+    relocate 'org.bstats.bungeecord', dependencyDir + '.bstats'
+    relocate 'co.aikar.commands', dependencyDir + '.acf'
+    relocate 'co.aikar.locales', dependencyDir + '.locales'
+}

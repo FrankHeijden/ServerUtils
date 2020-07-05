@@ -3,58 +3,58 @@ package net.frankheijden.serverutils.bukkit;
 import co.aikar.commands.BukkitCommandCompletionContext;
 import co.aikar.commands.CommandCompletions;
 import co.aikar.commands.PaperCommandManager;
-import java.io.File;
+
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
 import net.frankheijden.serverutils.bukkit.commands.CommandPlugins;
 import net.frankheijden.serverutils.bukkit.commands.CommandServerUtils;
-import net.frankheijden.serverutils.bukkit.config.Config;
-import net.frankheijden.serverutils.bukkit.config.Messenger;
-import net.frankheijden.serverutils.bukkit.listeners.MainListener;
-import net.frankheijden.serverutils.bukkit.managers.VersionManager;
-import net.frankheijden.serverutils.bukkit.reflection.BukkitReflection;
+import net.frankheijden.serverutils.bukkit.entities.BukkitPlugin;
+import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
+import net.frankheijden.serverutils.bukkit.listeners.BukkitListener;
+import net.frankheijden.serverutils.bukkit.managers.BukkitPluginManager;
 import net.frankheijden.serverutils.bukkit.reflection.RCommandMap;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
-import net.frankheijden.serverutils.bukkit.tasks.UpdateCheckerTask;
+import net.frankheijden.serverutils.common.ServerUtilsApp;
+import net.frankheijden.serverutils.common.config.Config;
+import net.frankheijden.serverutils.common.config.Messenger;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.defaults.PluginsCommand;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ServerUtils extends JavaPlugin implements CommandExecutor {
 
-    private static final int BSTATS_METRICS_ID = 7790;
-
     private static ServerUtils instance;
+    private static final String CONFIG_RESOURCE = "bukkit-config.yml";
+    private static final String MESSAGES_RESOURCE = "bukkit-messages.yml";
+
+    private BukkitPlugin plugin;
     private PaperCommandManager commandManager;
     private CommandPlugins commandPlugins;
-
-    public static ServerUtils getInstance() {
-        return instance;
-    }
 
     @Override
     public void onEnable() {
         super.onEnable();
         instance = this;
 
-        new Metrics(this, BSTATS_METRICS_ID);
+        this.plugin = new BukkitPlugin(this);
+        ServerUtilsApp.init(this, plugin);
+
+        new Metrics(this, ServerUtilsApp.BSTATS_METRICS_ID);
         new BukkitReflection();
 
         this.commandManager = new PaperCommandManager(this);
         commandManager.registerCommand(new CommandServerUtils());
         this.commandPlugins = null;
 
+        BukkitPluginManager manager = plugin.getPluginManager();
         CommandCompletions<BukkitCommandCompletionContext> completions = commandManager.getCommandCompletions();
-        completions.registerAsyncCompletion("plugins", context -> getPluginNames());
-        completions.registerAsyncCompletion("pluginJars", context -> getPluginFileNames());
+        completions.registerAsyncCompletion("plugins", context -> manager.getPluginNames());
+        completions.registerAsyncCompletion("pluginJars", context -> manager.getPluginFileNames());
         completions.registerAsyncCompletion("supportedConfigs  ", context -> CommandServerUtils.getSupportedConfigs());
         completions.registerAsyncCompletion("commands", context -> {
             try {
@@ -66,28 +66,23 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         });
         reload();
 
-        Bukkit.getPluginManager().registerEvents(new MainListener(), this);
+        Bukkit.getPluginManager().registerEvents(new BukkitListener(), this);
 
-        new VersionManager();
-        checkForUpdates();
+        ServerUtilsApp.tryCheckForUpdates();
+    }
+
+    public static ServerUtils getInstance() {
+        return instance;
+    }
+
+    public BukkitPlugin getPlugin() {
+        return plugin;
     }
 
     @Override
     public void onDisable() {
         super.onDisable();
         restoreBukkitPluginCommand();
-    }
-
-    private List<String> getPluginNames() {
-        return Arrays.stream(Bukkit.getPluginManager().getPlugins())
-                .map(Plugin::getName)
-                .collect(Collectors.toList());
-    }
-
-    private List<String> getPluginFileNames() {
-        return Arrays.stream(getJars())
-                .map(File::getName)
-                .collect(Collectors.toList());
     }
 
     private void removeCommands(String... commands) {
@@ -118,10 +113,10 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
             restoreBukkitPluginCommand();
         }
 
-        new Config(copyResourceIfNotExists("config.yml", "bukkit-config.yml"));
-        new Messenger(copyResourceIfNotExists("messages.yml", "bukkit-messages.yml"));
+        new Config("config.yml", CONFIG_RESOURCE);
+        new Messenger("messages.yml", MESSAGES_RESOURCE);
 
-        if (!Config.getInstance().getBoolean("settings.disable-plugins-command")) {
+        if (!Config.getInstance().getConfig().getBoolean("settings.disable-plugins-command")) {
             this.removeCommands("pl", "plugins");
             this.commandPlugins = new CommandPlugins();
             commandManager.registerCommand(commandPlugins);
@@ -130,40 +125,5 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
 
     public PaperCommandManager getCommandManager() {
         return commandManager;
-    }
-
-    /**
-     * Retrieves all files with a jar extension in the plugins/ folder.
-     * @return An array of jar files.
-     */
-    public File[] getJars() {
-        File parent = getDataFolder().getParentFile();
-        if (parent == null) return new File[0];
-        return parent.listFiles(f -> f.getName().endsWith(".jar"));
-    }
-
-    private void createDataFolderIfNotExists() {
-        if (!getDataFolder().exists()) {
-            getDataFolder().mkdirs();
-        }
-    }
-
-    private File copyResourceIfNotExists(String targetName, String resource) {
-        createDataFolderIfNotExists();
-
-        File file = new File(getDataFolder(), targetName);
-        if (!file.exists()) {
-            getLogger().info(String.format("'%s' not found, creating!", targetName));
-            saveResource(resource, false);
-            File copiedFile = new File(getDataFolder(), resource);
-            copiedFile.renameTo(file);
-        }
-        return file;
-    }
-
-    private void checkForUpdates() {
-        if (Config.getInstance().getBoolean("settings.check-updates")) {
-            UpdateCheckerTask.start(Bukkit.getConsoleSender(), true);
-        }
     }
 }

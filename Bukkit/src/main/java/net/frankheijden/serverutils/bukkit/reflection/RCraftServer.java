@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 import org.bukkit.Bukkit;
 import org.bukkit.Warning;
 import org.bukkit.command.Command;

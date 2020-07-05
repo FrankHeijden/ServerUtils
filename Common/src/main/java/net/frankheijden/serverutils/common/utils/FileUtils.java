@@ -14,6 +14,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 public class FileUtils {
 
@@ -79,5 +80,18 @@ public class FileUtils {
             String jsonText = readAll(reader);
             return new JsonParser().parse(jsonText);
         }
+    }
+
+    /**
+     * Saves an InputStream to a file.
+     * @param in The InputStream.
+     * @param target The target file.
+     * @return Whether or not file was created / already exists.
+     * @throws IOException If an I/O exception occurs.
+     */
+    public static boolean saveResource(InputStream in, File target) throws IOException {
+        if (target.exists()) return false;
+        Files.copy(in, target.toPath());
+        return true;
     }
 }

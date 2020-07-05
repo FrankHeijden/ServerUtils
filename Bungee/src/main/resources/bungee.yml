@@ -1,0 +1,4 @@
+name: ServerUtils
+main: net.frankheijden.serverutils.bungee.ServerUtils
+version: ${version}
+author: FrankHeijden

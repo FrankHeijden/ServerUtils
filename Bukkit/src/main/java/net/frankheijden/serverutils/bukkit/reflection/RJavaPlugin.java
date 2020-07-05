@@ -5,6 +5,7 @@ import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.invoke;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -20,7 +21,8 @@ public class RJavaPlugin {
         try {
             javaPluginClass = JavaPlugin.class;
             methods = getAllMethods(javaPluginClass,
-                    methodOf("getClassLoader", ALL_VERSIONS));
+                    methodOf("getClassLoader", ALL_VERSIONS),
+                    methodOf("getFile", ALL_VERSIONS));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -28,5 +30,9 @@ public class RJavaPlugin {
 
     public static ClassLoader getClassLoader(Object instance) throws InvocationTargetException, IllegalAccessException {
         return (ClassLoader) invoke(methods, instance, "getClassLoader");
+    }
+
+    public static File getFile(Object instance) throws ReflectiveOperationException {
+        return (File) invoke(methods, instance, "getFile");
     }
 }

@@ -1,0 +1,56 @@
+serverutils:
+  success: "&3Successfully %action%ed &b%what%&3!"
+  warning: "&3Successfully %action%ed &b%what%&3, but with warnings."
+  error: "&cAn error occurred while %action%ing &4%what%&c, please check the console!"
+  not_exists: "&cAn error occurred while %action%ing &4%what%&c, plugin does not exist!"
+  not_enabled: "&cAn error occurred while %action%ing &4%what%&c, plugin is not enabled!"
+  already_loaded: "&cAn error occurred while %action%ing &4%what%&c, plugin is already loaded!"
+  already_enabled: "&cAn error occurred while %action%ing &4%what%&c, plugin is already enabled!"
+  already_disabled: "&cAn error occurred while %action%ing &4%what%&c, plugin is already disabled!"
+  file_deleted: "&cAccessing the jar file while %action%ing &4%what%&c went wrong, plugin has been deleted!"
+  invalid_description: "&cAn error occurred while %action%ing &4%what%&c, plugin doesn't have a valid description, please check the console!"
+  invalid_plugin: "&cAn error occurred while %action%ing &4%what%&c, plugin is invalid!"
+  unknown_dependency: "&cAn error occurred while %action%ing &4%what%&c, plugin has a dependeny which is not loaded: &4%arg%"
+  update:
+    available: |-
+      &8&m---------=&r&8[ &b&lServerUtils Bungee Update&r &8]&m=----------
+       &3Current version: &b%old%
+       &3New version: &b%new%
+       &3Release info: &b%info%
+      &8&m-------------------------------------------------
+    downloading: |-
+      &8&m---------=&r&8[ &b&lServerUtils Bungee Update&r &8]&m=----------
+       &3A new version of ServerUtils will be downloaded and installed after a restart!
+       &3Current version: &b%old%
+       &3New version: &b%new%
+       &3Release info: &b%info%
+      &8&m-------------------------------------------------
+    download_failed: "&cFailed to download version %new% of ServerUtils. Please update manually."
+    download_success: "&3ServerUtils has been downloaded and will be installed on the next restart."
+  help:
+    header: "&8&m----------=&r&8[ &b&lServerUtils Bungee Help&r &8]&m=----------"
+    format: "&8/&3%command%&b%subcommand% &f(&7%help%&f)"
+    footer: "&8&m-------------------------------------------------"
+  plugins:
+    header: "&8&m---------=&r&8[ &b&lServerUtils Bungee Plugins&r &8]&m=--------"
+    prefix: " &3Plugins &8(&a%count%&8)&b: "
+    format: "&3%plugin%"
+    seperator: "&b, "
+    last_seperator: " &band "
+    version: " &8(&a%version%&8)"
+    footer: "&8&m-------------------------------------------------"
+  plugininfo:
+    header: "&8&m-------=&r&8[ &b&lServerUtils Bungee PluginInfo&r &8]&m=-------"
+    format: " &3%key%&8: &b%value%"
+    list_format: "&b%value%"
+    seperator: "&8, "
+    last_seperator: " &8and "
+    footer: "&8&m-------------------------------------------------"
+  commandinfo:
+    header: "&8&m------=&r&8[ &b&lServerUtils Bungee CommandInfo&r &8]&m=-------"
+    format: " &3%key%&8: &b%value%"
+    list_format: "&b%value%"
+    seperator: "&8, "
+    last_seperator: " &8and "
+    footer: "&8&m-------------------------------------------------"
+    not_exists: "&cThat command is not a valid registered command."

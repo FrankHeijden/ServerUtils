@@ -1,6 +1,6 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import static net.frankheijden.serverutils.bukkit.reflection.BukkitReflection.MINOR;
+import static net.frankheijden.serverutils.bukkit.entities.BukkitReflection.MINOR;
 import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
+import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 import org.bukkit.plugin.Plugin;
 
 public class RMinecraftKey {

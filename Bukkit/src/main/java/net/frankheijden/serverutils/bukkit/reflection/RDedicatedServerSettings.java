@@ -7,6 +7,8 @@ import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VE
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
+
 public class RDedicatedServerSettings {
 
     private static Class<?> serverSettingsClass;
