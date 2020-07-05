@@ -9,9 +9,14 @@ import net.frankheijden.serverutils.bungee.entities.BungeePlugin;
 import net.frankheijden.serverutils.bungee.entities.BungeeReflection;
 import net.frankheijden.serverutils.bungee.listeners.BungeeListener;
 import net.frankheijden.serverutils.bungee.managers.BungeePluginManager;
+import net.frankheijden.serverutils.bungee.reflection.RPluginClassLoader;
+import net.frankheijden.serverutils.bungee.reflection.RPluginManager;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.config.Config;
 import net.frankheijden.serverutils.common.config.Messenger;
+import net.frankheijden.serverutils.common.entities.CloseableResult;
+import net.frankheijden.serverutils.common.entities.Result;
+import net.frankheijden.serverutils.common.utils.MapUtils;
 import net.md_5.bungee.api.plugin.Plugin;
 import org.bstats.bungeecord.Metrics;
 
@@ -47,7 +52,18 @@ public class ServerUtils extends Plugin {
         reload();
         getProxy().getPluginManager().registerListener(this, new BungeeListener());
 
+        loadClasses();
         ServerUtilsApp.tryCheckForUpdates();
+    }
+
+    /**
+     * Loads some classes in memory so they're available during updating.
+     */
+    private void loadClasses() {
+        new RPluginManager();
+        new MapUtils();
+        new CloseableResult(Result.SUCCESS);
+        new RPluginClassLoader();
     }
 
     public static ServerUtils getInstance() {

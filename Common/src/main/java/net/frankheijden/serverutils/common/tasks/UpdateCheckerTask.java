@@ -175,7 +175,7 @@ public class UpdateCheckerTask implements Runnable {
 
         if (isStartupCheck()) {
             plugin.getLogger().info(String.format(DOWNLOADED_RESTART, downloadedVersion));
-            CloseableResult result = plugin.getPluginManager().reloadPlugin(ServerUtilsApp.getPlatformPlugin());
+            CloseableResult result = plugin.getPluginManager().reloadPlugin((Object)ServerUtilsApp.getPlatformPlugin());
             plugin.getLogger().info(String.format(UPGRADE_SUCCESS, downloadedVersion));
             result.tryClose();
         } else {

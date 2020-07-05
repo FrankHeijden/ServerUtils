@@ -123,6 +123,7 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
     public CloseableResult reloadPlugin(Plugin plugin) {
         CloseableResult result = unloadPlugin(plugin);
         if (result.getResult() != Result.SUCCESS) return result;
+        result.tryClose();
 
         File file = getPluginFile(plugin.getDescription().getName());
         if (file == null) return result.set(Result.FILE_DELETED);
@@ -145,13 +146,16 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
         plugin.onDisable();
         proxy.getPluginManager().unregisterCommands(plugin);
         proxy.getPluginManager().unregisterListeners(plugin);
+        proxy.getScheduler().cancel(plugin);
+        Closeable closeable;
         try {
             RPluginManager.clearPlugin(proxy.getPluginManager(), plugin);
+            closeable = (Closeable) RPluginClassLoader.getPluginClassLoader(plugin);
         } catch (Exception ex) {
             ex.printStackTrace();
             return new CloseableResult(Result.ERROR);
         }
-        return new CloseableResult(getCloseable(plugin));
+        return new CloseableResult(closeable);
     }
 
     public static File getPluginFileExact(String fileName) {
@@ -214,17 +218,6 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
         JarEntry entry = jar.getJarEntry("bungee.yml");
         if (entry == null) return jar.getJarEntry("plugin.yml");
         return entry;
-    }
-
-    /**
-     * Retrieves the closable classloader of the plugin, if possible.
-     * @param plugin The plugin.
-     * @return The closable instance.
-     */
-    public static Closeable getCloseable(Plugin plugin) {
-        ClassLoader loader = plugin.getClass().getClassLoader();
-        if (loader instanceof Closeable) return (Closeable) loader;
-        return null;
     }
 
     @Override
