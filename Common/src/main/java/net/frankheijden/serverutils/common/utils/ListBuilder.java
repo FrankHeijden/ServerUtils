@@ -24,6 +24,7 @@ public class ListBuilder<T> {
         return new ListBuilder<>(new ArrayList<>(list));
     }
 
+    @SafeVarargs
     public static <T> ListBuilder<T> create(T... elements) {
         return new ListBuilder<>(Arrays.asList(elements));
     }

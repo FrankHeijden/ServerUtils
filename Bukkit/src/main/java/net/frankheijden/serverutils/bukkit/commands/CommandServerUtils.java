@@ -19,7 +19,7 @@ import java.util.Set;
 
 import net.frankheijden.serverutils.bukkit.ServerUtils;
 import net.frankheijden.serverutils.bukkit.entities.BukkitLoadResult;
-import net.frankheijden.serverutils.bukkit.managers.PluginManager;
+import net.frankheijden.serverutils.bukkit.managers.BukkitPluginManager;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
 import net.frankheijden.serverutils.bukkit.utils.BukkitUtils;
 import net.frankheijden.serverutils.bukkit.utils.ReloadHandler;
@@ -152,13 +152,13 @@ public class CommandServerUtils extends BaseCommand {
     public void onLoadPlugin(CommandSender commandSender, String jarFile) {
         ServerCommandSender sender = BukkitUtils.wrap(commandSender);
 
-        BukkitLoadResult loadResult = PluginManager.loadPlugin(jarFile);
+        BukkitLoadResult loadResult = BukkitPluginManager.get().loadPlugin(jarFile);
         if (!loadResult.isSuccess()) {
             loadResult.getResult().sendTo(sender, "load", jarFile);
             return;
         }
 
-        Result result = PluginManager.enablePlugin(loadResult.get());
+        Result result = BukkitPluginManager.get().enablePlugin(loadResult.get());
         result.sendTo(sender, "load", jarFile);
     }
 
@@ -174,13 +174,13 @@ public class CommandServerUtils extends BaseCommand {
     public void onUnloadPlugin(CommandSender commandSender, String pluginName) {
         ServerCommandSender sender = BukkitUtils.wrap(commandSender);
 
-        Result disableResult = PluginManager.disablePlugin(pluginName);
+        Result disableResult = BukkitPluginManager.disablePlugin(pluginName);
         if (disableResult != Result.SUCCESS && disableResult != Result.ALREADY_DISABLED) {
             disableResult.sendTo(sender, "disabl", pluginName);
             return;
         }
 
-        CloseableResult result = PluginManager.unloadPlugin(pluginName);
+        CloseableResult result = BukkitPluginManager.get().unloadPlugin(pluginName);
         result.getResult().sendTo(sender, "unload", pluginName);
         result.tryClose();
     }
@@ -195,7 +195,7 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.reloadplugin")
     @Description("Reloads a specified plugin.")
     public void onReloadPlugin(CommandSender sender, String pluginName) {
-        CloseableResult result = PluginManager.reloadPlugin(pluginName);
+        CloseableResult result = BukkitPluginManager.get().reloadPlugin(pluginName);
         result.getResult().sendTo(BukkitUtils.wrap(sender), "reload", pluginName);
         result.tryClose();
     }
@@ -210,7 +210,7 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.enableplugin")
     @Description("Enables the loaded plugin.")
     public void onEnablePlugin(CommandSender sender, String pluginName) {
-        Result result = PluginManager.enablePlugin(pluginName);
+        Result result = BukkitPluginManager.get().enablePlugin(pluginName);
         result.sendTo(BukkitUtils.wrap(sender), "enabl", pluginName);
     }
 
@@ -224,7 +224,7 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.disableplugin")
     @Description("Disables the specified plugin.")
     public void onDisablePlugin(CommandSender sender, String pluginName) {
-        Result result = PluginManager.disablePlugin(pluginName);
+        Result result = BukkitPluginManager.disablePlugin(pluginName);
         result.sendTo(BukkitUtils.wrap(sender), "disabl", pluginName);
     }
 
@@ -309,7 +309,7 @@ public class CommandServerUtils extends BaseCommand {
     public void onCommandInfo(CommandSender commandSender, String command) {
         ServerCommandSender sender = BukkitUtils.wrap(commandSender);
 
-        Command cmd = PluginManager.getCommand(command);
+        Command cmd = BukkitPluginManager.getCommand(command);
         if (cmd == null) {
             Messenger.sendMessage(sender, "serverutils.commandinfo.not_exists");
             return;

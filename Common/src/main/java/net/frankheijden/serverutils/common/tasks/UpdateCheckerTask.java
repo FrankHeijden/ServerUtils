@@ -1,21 +1,19 @@
-package net.frankheijden.serverutils.bukkit.tasks;
+package net.frankheijden.serverutils.common.tasks;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 
-import net.frankheijden.serverutils.bukkit.ServerUtils;
-import net.frankheijden.serverutils.bukkit.managers.PluginManager;
-import net.frankheijden.serverutils.bukkit.managers.VersionManager;
+import net.frankheijden.serverutils.common.ServerUtilsApp;
+import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
+import net.frankheijden.serverutils.common.managers.AbstractVersionManager;
 import net.frankheijden.serverutils.common.config.Config;
 import net.frankheijden.serverutils.common.config.Messenger;
 import net.frankheijden.serverutils.common.config.YamlConfig;
@@ -23,16 +21,14 @@ import net.frankheijden.serverutils.common.entities.CloseableResult;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.utils.FileUtils;
 import net.frankheijden.serverutils.common.utils.VersionUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class UpdateCheckerTask implements Runnable {
 
-    private static final ServerUtils plugin = ServerUtils.getInstance();
+    private static final ServerUtilsPlugin plugin = ServerUtilsApp.getPlugin();
     private static final YamlConfig config = Config.getInstance().getConfig();
-    private static final VersionManager versionManager = VersionManager.getInstance();
+
+    private final AbstractVersionManager versionManager;
     private final ServerCommandSender sender;
-    private final String currentVersion;
     private final boolean startup;
 
     private static final String GITHUB_LINK = "https://api.github.com/repos/FrankHeijden/ServerUtils/releases/latest";
@@ -50,8 +46,8 @@ public class UpdateCheckerTask implements Runnable {
     private static final String UP_TO_DATE = "We are up-to-date!";
 
     private UpdateCheckerTask(ServerCommandSender sender, boolean startup) {
+        this.versionManager = plugin.getVersionManager();
         this.sender = sender;
-        this.currentVersion = plugin.getDescription().getVersion();
         this.startup = startup;
     }
 
@@ -61,7 +57,7 @@ public class UpdateCheckerTask implements Runnable {
 
     public static void start(ServerCommandSender sender, boolean startup) {
         UpdateCheckerTask task = new UpdateCheckerTask(sender, startup);
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, task);
+        plugin.getTaskManager().runTaskAsynchronously(task);
     }
 
     public boolean isStartupCheck() {
@@ -102,7 +98,9 @@ public class UpdateCheckerTask implements Runnable {
         String body = jsonObject.getAsJsonPrimitive("body").getAsString();
         String downloadUrl = getDownloadUrl(jsonObject);
 
-        if (VersionUtils.isNewVersion(currentVersion, githubVersion)) {
+        String downloaded = versionManager.getDownloadedVersion();
+        String current = versionManager.getCurrentVersion();
+        if (VersionUtils.isNewVersion(downloaded, githubVersion)) {
             if (isStartupCheck()) {
                 plugin.getLogger().info(String.format(UPDATE_AVAILABLE, githubVersion));
                 plugin.getLogger().info("Release info: " + body);
@@ -112,7 +110,7 @@ public class UpdateCheckerTask implements Runnable {
                     plugin.getLogger().info(String.format(DOWNLOAD_START, downloadUrl));
                 } else {
                     Messenger.sendMessage(sender, "serverutils.update.downloading",
-                            "%old%", currentVersion,
+                            "%old%", current,
                             "%new%", githubVersion,
                             "%info%", body);
                 }
@@ -120,7 +118,7 @@ public class UpdateCheckerTask implements Runnable {
                 tryReloadPlugin();
             } else if (!isStartupCheck()) {
                 Messenger.sendMessage(sender, "serverutils.update.available",
-                        "%old%", currentVersion,
+                        "%old%", current,
                         "%new%", githubVersion,
                         "%info%", body);
             }
@@ -150,7 +148,7 @@ public class UpdateCheckerTask implements Runnable {
     }
 
     private void downloadPlugin(String githubVersion, String downloadLink) {
-        if (versionManager.isDownloadedVersion(githubVersion)) {
+        if (versionManager.isDownloaded(githubVersion)) {
             broadcastDownloadStatus(githubVersion, false);
             return;
         }
@@ -161,13 +159,13 @@ public class UpdateCheckerTask implements Runnable {
         }
 
         try {
-            FileUtils.download(downloadLink, getPluginFile());
+            FileUtils.download(downloadLink, plugin.getPluginManager().getPluginFile(ServerUtilsApp.getPlatformPlugin()));
         } catch (IOException ex) {
             broadcastDownloadStatus(githubVersion, true);
             throw new RuntimeException(DOWNLOAD_ERROR, ex);
         }
 
-        versionManager.setDownloadedVersion(githubVersion);
+        versionManager.setDownloaded(githubVersion);
     }
 
     private void tryReloadPlugin() {
@@ -175,7 +173,7 @@ public class UpdateCheckerTask implements Runnable {
 
         if (isStartupCheck()) {
             plugin.getLogger().info(String.format(DOWNLOADED_RESTART, downloadedVersion));
-            CloseableResult result = PluginManager.reloadPlugin(plugin);
+            CloseableResult result = plugin.getPluginManager().reloadPlugin(ServerUtilsApp.getPlatformPlugin());
             plugin.getLogger().info(String.format(UPGRADE_SUCCESS, downloadedVersion));
             result.tryClose();
         } else {
@@ -185,20 +183,7 @@ public class UpdateCheckerTask implements Runnable {
 
     private void broadcastDownloadStatus(String githubVersion, boolean isError) {
         final String path = "serverutils.update." + (isError ? "failed" : "success");
-        Bukkit.getOnlinePlayers().forEach((p) -> {
-            if (p.hasPermission("serverutils.notification.update")) {
-                Messenger.sendMessage(sender, path, "%new%", githubVersion);
-            }
-        });
-    }
-
-    private File getPluginFile() {
-        try {
-            Method method = JavaPlugin.class.getDeclaredMethod("getFile");
-            method.setAccessible(true);
-            return (File) method.invoke(plugin);
-        } catch (ReflectiveOperationException ex) {
-            throw new RuntimeException("Error retrieving current plugin file", ex);
-        }
+        String message = Messenger.getMessage(path,"%new%", githubVersion);
+        plugin.getChatProvider().broadcast("serverutils.notification.update", message);
     }
 }

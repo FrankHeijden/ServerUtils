@@ -6,9 +6,7 @@ import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Subcommand;
-import net.frankheijden.serverutils.bungee.ServerUtils;
-import net.frankheijden.serverutils.bungee.entities.BungeePluginProvider;
+import net.frankheijden.serverutils.bungee.managers.BungeePluginManager;
 import net.frankheijden.serverutils.bungee.utils.BungeeUtils;
 import net.frankheijden.serverutils.common.commands.Plugins;
 import net.frankheijden.serverutils.common.config.Messenger;
@@ -17,8 +15,7 @@ import net.md_5.bungee.api.CommandSender;
 @CommandAlias("bpl|bplugins|bungeepl")
 public class CommandPlugins extends BaseCommand {
 
-    private static final ServerUtils plugin = ServerUtils.getInstance();
-    private static final BungeePluginProvider provider = (BungeePluginProvider) plugin.getPlugin().getPluginProvider();
+    private static final BungeePluginManager manager = BungeePluginManager.get();
 
     /**
      * Sends the plugin list to the sender.
@@ -33,7 +30,7 @@ public class CommandPlugins extends BaseCommand {
     public void onPlugins(CommandSender sender, String... args) {
         boolean version = contains(args, "-v");
         boolean modules = contains(args, "-m");
-        Plugins.sendPlugins(BungeeUtils.wrap(sender), provider.getPluginsSorted(modules), pl -> {
+        Plugins.sendPlugins(BungeeUtils.wrap(sender), manager.getPluginsSorted(modules), pl -> {
             String ver = version ? Messenger.getMessage("serverutils.plugins.version",
                     "%version%", pl.getDescription().getVersion()) : "";
             return Messenger.getMessage("serverutils.plugins.format",

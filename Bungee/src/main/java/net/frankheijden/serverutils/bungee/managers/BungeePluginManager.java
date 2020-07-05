@@ -3,9 +3,9 @@ package net.frankheijden.serverutils.bungee.managers;
 import com.google.common.base.Preconditions;
 import net.frankheijden.serverutils.bungee.ServerUtils;
 import net.frankheijden.serverutils.bungee.entities.BungeeLoadResult;
-import net.frankheijden.serverutils.bungee.entities.BungeePluginProvider;
 import net.frankheijden.serverutils.bungee.reflection.RPluginClassLoader;
 import net.frankheijden.serverutils.bungee.reflection.RPluginManager;
+import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.entities.CloseableResult;
 import net.frankheijden.serverutils.common.entities.Result;
 import net.md_5.bungee.api.ProxyServer;
@@ -18,15 +18,29 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
-public class PluginManager {
+public class BungeePluginManager extends AbstractPluginManager<Plugin> {
 
     private static final ProxyServer proxy = ProxyServer.getInstance();
     private static final ServerUtils plugin = ServerUtils.getInstance();
-    private static final BungeePluginProvider provider = (BungeePluginProvider) plugin.getPlugin().getPluginProvider();
+
+    private static BungeePluginManager instance;
+
+    public BungeePluginManager() {
+        instance = this;
+    }
+
+    public static BungeePluginManager get() {
+        return instance;
+    }
 
     /**
      * Checks whether a loaded plugin is a module.
@@ -46,13 +60,15 @@ public class PluginManager {
         return !isModule(plugin);
     }
 
-    public static BungeeLoadResult loadPlugin(String fileName) {
-        File file = getPluginFileExact(fileName);
+    @Override
+    public BungeeLoadResult loadPlugin(String pluginFile) {
+        File file = getPluginFileExact(pluginFile);
         if (!file.exists()) return new BungeeLoadResult(Result.NOT_EXISTS);
         return loadPlugin(file);
     }
 
-    public static BungeeLoadResult loadPlugin(File file) {
+    @Override
+    public BungeeLoadResult loadPlugin(File file) {
         PluginDescription desc;
         try {
             desc = getPluginDescription(file);
@@ -80,7 +96,8 @@ public class PluginManager {
         }
     }
 
-    public static Result enablePlugin(Plugin plugin) {
+    @Override
+    public Result enablePlugin(Plugin plugin) {
         PluginDescription desc = plugin.getDescription();
         String name = desc.getName();
         try {
@@ -95,13 +112,15 @@ public class PluginManager {
         }
     }
 
-    public static CloseableResult reloadPlugin(String pluginName) {
+    @Override
+    public CloseableResult reloadPlugin(String pluginName) {
         Plugin plugin = proxy.getPluginManager().getPlugin(pluginName);
         if (plugin == null) return new CloseableResult(Result.NOT_ENABLED);
         return reloadPlugin(plugin);
     }
 
-    public static CloseableResult reloadPlugin(Plugin plugin) {
+    @Override
+    public CloseableResult reloadPlugin(Plugin plugin) {
         CloseableResult result = unloadPlugin(plugin);
         if (result.getResult() != Result.SUCCESS) return result;
 
@@ -114,13 +133,15 @@ public class PluginManager {
         return result.set(enablePlugin(loadResult.get()));
     }
 
-    public static CloseableResult unloadPlugin(String pluginName) {
+    @Override
+    public CloseableResult unloadPlugin(String pluginName) {
         Plugin plugin = proxy.getPluginManager().getPlugin(pluginName);
         if (plugin == null) return new CloseableResult(Result.NOT_ENABLED);
         return unloadPlugin(plugin);
     }
 
-    public static CloseableResult unloadPlugin(Plugin plugin) {
+    @Override
+    public CloseableResult unloadPlugin(Plugin plugin) {
         plugin.onDisable();
         proxy.getPluginManager().unregisterCommands(plugin);
         proxy.getPluginManager().unregisterListeners(plugin);
@@ -137,8 +158,8 @@ public class PluginManager {
         return new File(proxy.getPluginsFolder(), fileName);
     }
 
-    public static File getPluginFile(String pluginName) {
-        for (File file : provider.getPluginJars()) {
+    public File getPluginFile(String pluginName) {
+        for (File file : getPluginJars()) {
             PluginDescription desc;
             try {
                 desc = getPluginDescription(file);
@@ -178,5 +199,39 @@ public class PluginManager {
         ClassLoader loader = plugin.getClass().getClassLoader();
         if (loader instanceof Closeable) return (Closeable) loader;
         return null;
+    }
+
+    @Override
+    public File getPluginsFolder() {
+        return plugin.getProxy().getPluginsFolder();
+    }
+
+    @Override
+    public List<Plugin> getPlugins() {
+        return getPlugins(false);
+    }
+
+    public List<Plugin> getPlugins(boolean modules) {
+        Collection<Plugin> plugins = plugin.getProxy().getPluginManager().getPlugins();
+        if (modules) return new ArrayList<>(plugins);
+        return plugins.stream()
+                .filter(BungeePluginManager::isPlugin)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getPluginName(Plugin plugin) {
+        return plugin.getDataFolder().getName();
+    }
+
+    @Override
+    public File getPluginFile(Plugin plugin) {
+        return plugin.getFile();
+    }
+
+    public List<Plugin> getPluginsSorted(boolean modules) {
+        List<Plugin> plugins = getPlugins(modules);
+        plugins.sort(Comparator.comparing(this::getPluginName));
+        return plugins;
     }
 }

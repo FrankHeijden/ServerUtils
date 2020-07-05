@@ -15,4 +15,9 @@ public class BukkitCommandSender implements ServerCommandSender {
     public void sendMessage(String message) {
         sender.sendMessage(message);
     }
+
+    @Override
+    public boolean hasPermission(String permission) {
+        return sender.hasPermission(permission);
+    }
 }

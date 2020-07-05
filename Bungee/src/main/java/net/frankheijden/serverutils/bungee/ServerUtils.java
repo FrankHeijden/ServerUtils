@@ -7,10 +7,11 @@ import net.frankheijden.serverutils.bungee.commands.CommandPlugins;
 import net.frankheijden.serverutils.bungee.commands.CommandServerUtils;
 import net.frankheijden.serverutils.bungee.entities.BungeePlugin;
 import net.frankheijden.serverutils.bungee.entities.BungeeReflection;
+import net.frankheijden.serverutils.bungee.listeners.BungeeListener;
+import net.frankheijden.serverutils.bungee.managers.BungeePluginManager;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.config.Config;
 import net.frankheijden.serverutils.common.config.Messenger;
-import net.frankheijden.serverutils.common.providers.PluginProvider;
 import net.md_5.bungee.api.plugin.Plugin;
 import org.bstats.bungeecord.Metrics;
 
@@ -29,7 +30,7 @@ public class ServerUtils extends Plugin {
         instance = this;
 
         this.plugin = new BungeePlugin(this);
-        ServerUtilsApp.init(plugin);
+        ServerUtilsApp.init(this, plugin);
 
         new Metrics(this, ServerUtilsApp.BSTATS_METRICS_ID);
         new BungeeReflection();
@@ -38,12 +39,15 @@ public class ServerUtils extends Plugin {
         commandManager.registerCommand(new CommandPlugins());
         commandManager.registerCommand(new CommandServerUtils());
 
-        PluginProvider<Plugin> provider = plugin.getPluginProvider();
+        BungeePluginManager manager = plugin.getPluginManager();
         CommandCompletions<BungeeCommandCompletionContext> commandCompletions = commandManager.getCommandCompletions();
-        commandCompletions.registerAsyncCompletion("plugins", context -> provider.getPluginNames());
-        commandCompletions.registerAsyncCompletion("pluginJars", context -> provider.getPluginFileNames());
+        commandCompletions.registerAsyncCompletion("plugins", context -> manager.getPluginNames());
+        commandCompletions.registerAsyncCompletion("pluginJars", context -> manager.getPluginFileNames());
 
         reload();
+        getProxy().getPluginManager().registerListener(this, new BungeeListener());
+
+        ServerUtilsApp.checkForUpdates();
     }
 
     public static ServerUtils getInstance() {

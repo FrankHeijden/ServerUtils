@@ -2,23 +2,26 @@ package net.frankheijden.serverutils.common.entities;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
-import net.frankheijden.serverutils.common.providers.ColorProvider;
-import net.frankheijden.serverutils.common.providers.PluginProvider;
+import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
+import net.frankheijden.serverutils.common.managers.AbstractTaskManager;
+import net.frankheijden.serverutils.common.managers.AbstractVersionManager;
+import net.frankheijden.serverutils.common.providers.ChatProvider;
 import net.frankheijden.serverutils.common.providers.ResourceProvider;
 import net.frankheijden.serverutils.common.utils.FileUtils;
 
 public abstract class ServerUtilsPlugin {
 
-    public abstract <T> PluginProvider<T> getPluginProvider();
+    public abstract <T> AbstractPluginManager<T> getPluginManager();
+
+    public abstract AbstractTaskManager getTaskManager();
 
     public abstract ResourceProvider getResourceProvider();
 
-    public abstract ColorProvider getColorProvider();
+    public abstract ChatProvider getChatProvider();
+
+    public abstract AbstractVersionManager getVersionManager();
 
     public abstract Logger getLogger();
 

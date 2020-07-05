@@ -11,23 +11,19 @@ import java.util.Map;
 import net.frankheijden.serverutils.bukkit.commands.CommandPlugins;
 import net.frankheijden.serverutils.bukkit.commands.CommandServerUtils;
 import net.frankheijden.serverutils.bukkit.entities.BukkitPlugin;
-import net.frankheijden.serverutils.bukkit.listeners.MainListener;
-import net.frankheijden.serverutils.bukkit.managers.VersionManager;
+import net.frankheijden.serverutils.bukkit.listeners.BukkitListener;
+import net.frankheijden.serverutils.bukkit.managers.BukkitPluginManager;
 import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 import net.frankheijden.serverutils.bukkit.reflection.RCommandMap;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
-import net.frankheijden.serverutils.bukkit.tasks.UpdateCheckerTask;
-import net.frankheijden.serverutils.bukkit.utils.BukkitUtils;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.config.Config;
 import net.frankheijden.serverutils.common.config.Messenger;
-import net.frankheijden.serverutils.common.providers.PluginProvider;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.defaults.PluginsCommand;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ServerUtils extends JavaPlugin implements CommandExecutor {
@@ -46,7 +42,7 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         instance = this;
 
         this.plugin = new BukkitPlugin(this);
-        ServerUtilsApp.init(plugin);
+        ServerUtilsApp.init(this, plugin);
 
         new Metrics(this, ServerUtilsApp.BSTATS_METRICS_ID);
         new BukkitReflection();
@@ -55,10 +51,10 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         commandManager.registerCommand(new CommandServerUtils());
         this.commandPlugins = null;
 
-        PluginProvider<Plugin> provider = plugin.getPluginProvider();
+        BukkitPluginManager manager = plugin.getPluginManager();
         CommandCompletions<BukkitCommandCompletionContext> completions = commandManager.getCommandCompletions();
-        completions.registerAsyncCompletion("plugins", context -> provider.getPluginNames());
-        completions.registerAsyncCompletion("pluginJars", context -> provider.getPluginFileNames());
+        completions.registerAsyncCompletion("plugins", context -> manager.getPluginNames());
+        completions.registerAsyncCompletion("pluginJars", context -> manager.getPluginFileNames());
         completions.registerAsyncCompletion("supportedConfigs  ", context -> CommandServerUtils.getSupportedConfigs());
         completions.registerAsyncCompletion("commands", context -> {
             try {
@@ -70,10 +66,9 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         });
         reload();
 
-        Bukkit.getPluginManager().registerEvents(new MainListener(), this);
+        Bukkit.getPluginManager().registerEvents(new BukkitListener(), this);
 
-        new VersionManager();
-        checkForUpdates();
+        ServerUtilsApp.checkForUpdates();
     }
 
     public static ServerUtils getInstance() {
@@ -130,11 +125,5 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
 
     public PaperCommandManager getCommandManager() {
         return commandManager;
-    }
-
-    private void checkForUpdates() {
-        if (Config.getInstance().getConfig().getBoolean("settings.check-updates")) {
-            UpdateCheckerTask.start(BukkitUtils.wrap(Bukkit.getConsoleSender()), true);
-        }
     }
 }

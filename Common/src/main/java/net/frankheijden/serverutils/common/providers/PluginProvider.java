@@ -14,6 +14,8 @@ public abstract class PluginProvider<T> {
 
     public abstract String getPluginName(T plugin);
 
+    public abstract File getPluginFile(T plugin);
+
     public List<T> getPluginsSorted() {
         List<T> plugins = getPlugins();
         plugins.sort(Comparator.comparing(this::getPluginName));

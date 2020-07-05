@@ -1,17 +1,15 @@
 package net.frankheijden.serverutils.bungee.commands;
 
 import co.aikar.commands.BaseCommand;
-import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
-import com.google.common.collect.SetMultimap;
 import net.frankheijden.serverutils.bungee.ServerUtils;
 import net.frankheijden.serverutils.bungee.entities.BungeeLoadResult;
-import net.frankheijden.serverutils.bungee.managers.PluginManager;
+import net.frankheijden.serverutils.bungee.managers.BungeePluginManager;
 import net.frankheijden.serverutils.bungee.reflection.RPluginManager;
 import net.frankheijden.serverutils.bungee.utils.BungeeUtils;
 import net.frankheijden.serverutils.common.config.Messenger;
@@ -101,14 +99,14 @@ public class CommandServerUtils extends BaseCommand {
     public void onLoadPlugin(CommandSender commandSender, String jarFile) {
         ServerCommandSender sender = BungeeUtils.wrap(commandSender);
 
-        BungeeLoadResult loadResult = PluginManager.loadPlugin(jarFile);
+        BungeeLoadResult loadResult = BungeePluginManager.get().loadPlugin(jarFile);
         if (!loadResult.isSuccess()) {
             loadResult.getResult().sendTo(sender, "load", jarFile);
             return;
         }
 
         Plugin plugin = loadResult.get();
-        Result result = PluginManager.enablePlugin(plugin);
+        Result result = BungeePluginManager.get().enablePlugin(plugin);
         result.sendTo(sender, "load", plugin.getDescription().getName());
     }
 
@@ -122,7 +120,7 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.unloadplugin")
     @Description("Disables and unloads the specified plugin.")
     public void onUnloadPlugin(CommandSender commandSender, String pluginName) {
-        CloseableResult result = PluginManager.unloadPlugin(pluginName);
+        CloseableResult result = BungeePluginManager.get().unloadPlugin(pluginName);
         result.getResult().sendTo(BungeeUtils.wrap(commandSender), "unload", pluginName);
         result.tryClose();
     }
@@ -137,7 +135,7 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.reloadplugin")
     @Description("Reloads a specified plugin.")
     public void onReloadPlugin(CommandSender sender, String pluginName) {
-        CloseableResult result = PluginManager.reloadPlugin(pluginName);
+        CloseableResult result = BungeePluginManager.get().reloadPlugin(pluginName);
         result.getResult().sendTo(BungeeUtils.wrap(sender), "reload", pluginName);
         result.tryClose();
     }

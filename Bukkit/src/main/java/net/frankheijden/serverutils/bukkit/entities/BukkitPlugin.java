@@ -4,18 +4,19 @@ import java.io.File;
 import java.util.logging.Logger;
 
 import net.frankheijden.serverutils.bukkit.ServerUtils;
-import net.frankheijden.serverutils.common.providers.ColorProvider;
-import net.frankheijden.serverutils.common.providers.PluginProvider;
-import net.frankheijden.serverutils.common.providers.ResourceProvider;
+import net.frankheijden.serverutils.bukkit.managers.BukkitPluginManager;
+import net.frankheijden.serverutils.bukkit.managers.BukkitTaskManager;
+import net.frankheijden.serverutils.bukkit.managers.BukkitVersionManager;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
-import org.bukkit.plugin.Plugin;
 
 public class BukkitPlugin extends ServerUtilsPlugin {
 
     private final ServerUtils plugin;
-    private final PluginProvider<Plugin> pluginProvider;
-    private final ResourceProvider resourceProvider;
-    private final ColorProvider colorProvider;
+    private final BukkitPluginManager pluginManager;
+    private final BukkitTaskManager taskManager;
+    private final BukkitResourceProvider resourceProvider;
+    private final BukkitChatProvider chatProvider;
+    private final BukkitVersionManager versionManager;
 
     /**
      * Creates a new BukkitPlugin instance of ServerUtils.
@@ -23,25 +24,37 @@ public class BukkitPlugin extends ServerUtilsPlugin {
      */
     public BukkitPlugin(ServerUtils plugin) {
         this.plugin = plugin;
-        this.pluginProvider = new BukkitPluginProvider(plugin);
+        this.pluginManager = new BukkitPluginManager(plugin);
+        this.taskManager = new BukkitTaskManager();
         this.resourceProvider = new BukkitResourceProvider(plugin);
-        this.colorProvider = new BukkitColorProvider();
+        this.chatProvider = new BukkitChatProvider();
+        this.versionManager = new BukkitVersionManager(plugin);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public PluginProvider<Plugin> getPluginProvider() {
-        return pluginProvider;
+    public BukkitPluginManager getPluginManager() {
+        return pluginManager;
     }
 
     @Override
-    public ResourceProvider getResourceProvider() {
+    public BukkitTaskManager getTaskManager() {
+        return taskManager;
+    }
+
+    @Override
+    public BukkitResourceProvider getResourceProvider() {
         return resourceProvider;
     }
 
     @Override
-    public ColorProvider getColorProvider() {
-        return colorProvider;
+    public BukkitChatProvider getChatProvider() {
+        return chatProvider;
+    }
+
+    @Override
+    public BukkitVersionManager getVersionManager() {
+        return versionManager;
     }
 
     @Override

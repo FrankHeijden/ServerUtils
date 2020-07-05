@@ -30,7 +30,7 @@ public class Messenger extends YamlResource {
         if (message != null) {
             return StringUtils.apply(message, replacements);
         } else {
-            instance.plugin.getLogger().severe("Missing locale in messages.yml at path '" + path + "'!");
+            Messenger.plugin.getLogger().severe("Missing locale in messages.yml at path '" + path + "'!");
         }
         return null;
     }
@@ -44,7 +44,7 @@ public class Messenger extends YamlResource {
     public static void sendRawMessage(ServerCommandSender sender, String msg, String... replacements) {
         String message = StringUtils.apply(msg, replacements);
         if (message != null) {
-            sender.sendMessage(instance.plugin.getColorProvider().apply(message));
+            sender.sendMessage(Messenger.plugin.getChatProvider().color(message));
         }
     }
 
@@ -57,11 +57,11 @@ public class Messenger extends YamlResource {
     public static void sendMessage(ServerCommandSender sender, String path, String... replacements) {
         String message = getMessage(path, replacements);
         if (message != null) {
-            sender.sendMessage(instance.plugin.getColorProvider().apply(message));
+            sender.sendMessage(Messenger.plugin.getChatProvider().color(message));
         }
     }
 
     public static String color(String str) {
-        return instance.plugin.getColorProvider().apply(str);
+        return Messenger.plugin.getChatProvider().color(str);
     }
 }

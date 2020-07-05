@@ -2,6 +2,8 @@ package net.frankheijden.serverutils.bukkit.managers;
 
 import java.io.Closeable;
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,6 +16,7 @@ import net.frankheijden.serverutils.bukkit.reflection.RCraftingManager;
 import net.frankheijden.serverutils.bukkit.reflection.RJavaPlugin;
 import net.frankheijden.serverutils.bukkit.reflection.RPluginClassLoader;
 import net.frankheijden.serverutils.bukkit.reflection.RSimplePluginManager;
+import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.entities.CloseableResult;
 import net.frankheijden.serverutils.common.entities.Result;
 import org.bukkit.Bukkit;
@@ -26,14 +29,27 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.UnknownDependencyException;
 
-public class PluginManager {
+public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
+
+    private final ServerUtils plugin;
+    private static BukkitPluginManager instance;
+
+    public BukkitPluginManager(ServerUtils plugin) {
+        this.plugin = plugin;
+        instance = this;
+    }
+
+    public static BukkitPluginManager get() {
+        return instance;
+    }
 
     /**
      * Loads the specified file as a plugin.
      * @param jarFile The name of the file in the plugins/ folder.
      * @return The result of the loading procedure.
      */
-    public static BukkitLoadResult loadPlugin(String jarFile) {
+    @Override
+    public BukkitLoadResult loadPlugin(String jarFile) {
         return loadPlugin(new File(ServerUtils.getInstance().getDataFolder().getParent(), jarFile));
     }
 
@@ -42,7 +58,8 @@ public class PluginManager {
      * @param file The file to be loaded.
      * @return The result of the loading procedure.
      */
-    public static BukkitLoadResult loadPlugin(File file) {
+    @Override
+    public BukkitLoadResult loadPlugin(File file) {
         if (!file.exists()) return new BukkitLoadResult(Result.NOT_EXISTS);
 
         Plugin loadedPlugin = getLoadedPlugin(file);
@@ -104,7 +121,8 @@ public class PluginManager {
      * @param pluginName The plugin to unload.
      * @return The result of the unload.
      */
-    public static CloseableResult unloadPlugin(String pluginName) {
+    @Override
+    public CloseableResult unloadPlugin(String pluginName) {
         return unloadPlugin(Bukkit.getPluginManager().getPlugin(pluginName));
     }
 
@@ -113,7 +131,8 @@ public class PluginManager {
      * @param plugin The plugin to unload.
      * @return The result of the unload.
      */
-    public static CloseableResult unloadPlugin(Plugin plugin) {
+    @Override
+    public CloseableResult unloadPlugin(Plugin plugin) {
         if (plugin == null) return new CloseableResult(Result.NOT_EXISTS);
         Closeable closeable;
         try {
@@ -132,7 +151,7 @@ public class PluginManager {
      * @param pluginName The plugin to enable.
      * @return The result of the enabling.
      */
-    public static Result enablePlugin(String pluginName) {
+    public Result enablePlugin(String pluginName) {
         return enablePlugin(Bukkit.getPluginManager().getPlugin(pluginName));
     }
 
@@ -141,7 +160,8 @@ public class PluginManager {
      * @param plugin The plugin to enable.
      * @return The result of the enabling.
      */
-    public static Result enablePlugin(Plugin plugin) {
+    @Override
+    public Result enablePlugin(Plugin plugin) {
         if (plugin == null) return Result.NOT_EXISTS;
         if (Bukkit.getPluginManager().isPluginEnabled(plugin.getName())) return Result.ALREADY_ENABLED;
         Bukkit.getPluginManager().enablePlugin(plugin);
@@ -156,7 +176,8 @@ public class PluginManager {
      * @param pluginName The plugin to reload.
      * @return The result of the reload.
      */
-    public static CloseableResult reloadPlugin(String pluginName) {
+    @Override
+    public CloseableResult reloadPlugin(String pluginName) {
         Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
         if (plugin == null) return new CloseableResult(Result.NOT_EXISTS);
         return reloadPlugin(plugin);
@@ -167,7 +188,8 @@ public class PluginManager {
      * @param plugin The plugin to reload.
      * @return The result of the reload.
      */
-    public static CloseableResult reloadPlugin(Plugin plugin) {
+    @Override
+    public CloseableResult reloadPlugin(Plugin plugin) {
         Result disableResult = disablePlugin(plugin);
         if (disableResult != Result.SUCCESS && disableResult != Result.ALREADY_DISABLED) {
             return new CloseableResult(disableResult);
@@ -293,8 +315,8 @@ public class PluginManager {
      * @param pluginName The plugin name.
      * @return The file, or null if invalid or not found.
      */
-    public static File getPluginFile(String pluginName) {
-        for (File file : ServerUtils.getInstance().getPlugin().getPluginProvider().getPluginJars()) {
+    public File getPluginFile(String pluginName) {
+        for (File file : getPluginJars()) {
             PluginDescriptionFile descriptionFile;
             try {
                 descriptionFile = getPluginDescription(file);
@@ -305,5 +327,29 @@ public class PluginManager {
             if (descriptionFile.getName().equals(pluginName)) return file;
         }
         return null;
+    }
+
+    @Override
+    public File getPluginsFolder() {
+        return plugin.getDataFolder().getParentFile();
+    }
+
+    @Override
+    public List<Plugin> getPlugins() {
+        return Arrays.asList(Bukkit.getPluginManager().getPlugins());
+    }
+
+    @Override
+    public String getPluginName(Plugin plugin) {
+        return plugin.getName();
+    }
+
+    @Override
+    public File getPluginFile(Plugin plugin) {
+        try {
+            return RJavaPlugin.getFile(plugin);
+        } catch (ReflectiveOperationException ex) {
+            throw new RuntimeException("Error retrieving current plugin file", ex);
+        }
     }
 }

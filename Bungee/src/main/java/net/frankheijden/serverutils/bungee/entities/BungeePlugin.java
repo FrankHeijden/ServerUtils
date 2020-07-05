@@ -4,18 +4,19 @@ import java.io.File;
 import java.util.logging.Logger;
 
 import net.frankheijden.serverutils.bungee.ServerUtils;
-import net.frankheijden.serverutils.common.providers.ColorProvider;
-import net.frankheijden.serverutils.common.providers.PluginProvider;
-import net.frankheijden.serverutils.common.providers.ResourceProvider;
+import net.frankheijden.serverutils.bungee.managers.BungeePluginManager;
+import net.frankheijden.serverutils.bungee.managers.BungeeTaskManager;
+import net.frankheijden.serverutils.bungee.managers.BungeeVersionManager;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
-import net.md_5.bungee.api.plugin.Plugin;
 
 public class BungeePlugin extends ServerUtilsPlugin {
 
     private final ServerUtils plugin;
-    private final PluginProvider<Plugin> pluginProvider;
-    private final ResourceProvider resourceProvider;
-    private final ColorProvider colorProvider;
+    private final BungeePluginManager pluginManager;
+    private final BungeeTaskManager taskManager;
+    private final BungeeResourceProvider resourceProvider;
+    private final BungeeChatProvider chatProvider;
+    private final BungeeVersionManager versionManager;
 
     /**
      * Creates a new BungeePlugin instance of ServerUtils.
@@ -23,25 +24,37 @@ public class BungeePlugin extends ServerUtilsPlugin {
      */
     public BungeePlugin(ServerUtils plugin) {
         this.plugin = plugin;
-        this.pluginProvider = new BungeePluginProvider(plugin);
+        this.pluginManager = new BungeePluginManager();
+        this.taskManager = new BungeeTaskManager();
         this.resourceProvider = new BungeeResourceProvider(plugin);
-        this.colorProvider = new BungeeColorProvider();
+        this.chatProvider = new BungeeChatProvider();
+        this.versionManager = new BungeeVersionManager(plugin);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public PluginProvider<Plugin> getPluginProvider() {
-        return pluginProvider;
+    public BungeePluginManager getPluginManager() {
+        return pluginManager;
     }
 
     @Override
-    public ResourceProvider getResourceProvider() {
+    public BungeeTaskManager getTaskManager() {
+        return taskManager;
+    }
+
+    @Override
+    public BungeeResourceProvider getResourceProvider() {
         return resourceProvider;
     }
 
     @Override
-    public ColorProvider getColorProvider() {
-        return colorProvider;
+    public BungeeChatProvider getChatProvider() {
+        return chatProvider;
+    }
+
+    @Override
+    public BungeeVersionManager getVersionManager() {
+        return versionManager;
     }
 
     @Override
