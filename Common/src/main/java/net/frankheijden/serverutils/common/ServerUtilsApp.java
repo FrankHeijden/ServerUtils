@@ -24,7 +24,10 @@ public class ServerUtilsApp<T> {
         new ServerUtilsApp<>(obj, plugin);
     }
 
-    public static void checkForUpdates() {
+    /**
+     * Tries checking for updates if enabled by the config.
+     */
+    public static void tryCheckForUpdates() {
         if (Config.getInstance().getConfig().getBoolean("settings.check-updates")) {
             UpdateCheckerTask.start(getPlugin().getChatProvider().getConsoleSender(), true);
         }

@@ -1,7 +1,7 @@
 package net.frankheijden.serverutils.bukkit.listeners;
 
-import net.frankheijden.serverutils.common.listeners.ServerListener;
 import net.frankheijden.serverutils.bukkit.utils.BukkitUtils;
+import net.frankheijden.serverutils.common.listeners.ServerListener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;

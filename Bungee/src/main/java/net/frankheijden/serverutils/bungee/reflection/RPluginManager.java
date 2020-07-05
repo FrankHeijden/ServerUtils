@@ -5,10 +5,11 @@ import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;
 
+import com.google.common.collect.Multimap;
+
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import com.google.common.collect.Multimap;
 import net.frankheijden.serverutils.common.utils.MapUtils;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -60,6 +61,13 @@ public class RPluginManager {
         return (Map<String, Command>) get(fields, instance, "commandMap");
     }
 
+    /**
+     * Retrieves the registered plugin of the command.
+     * @param instance The PluginManager instance.
+     * @param cmd The command to check the plugin of.
+     * @return The plugin of the command
+     * @throws IllegalAccessException Iff some reflection error occurred.
+     */
     @SuppressWarnings("unchecked")
     public static Plugin getPlugin(Object instance, Command cmd) throws IllegalAccessException {
         Object obj = get(fields, instance, "commandsByPlugin");

@@ -43,9 +43,9 @@ subprojects {
         toolVersion "8.25"
         configFile = rootProject.file('config/checkstyle/checkstyle.xml')
 
-//        ignoreFailures = false
-//        maxErrors = 0
-//        maxWarnings = 0
+        ignoreFailures = false
+        maxErrors = 0
+        maxWarnings = 0
     }
 
     shadowJar.dependsOn checkstyleMain, checkstyleTest, test

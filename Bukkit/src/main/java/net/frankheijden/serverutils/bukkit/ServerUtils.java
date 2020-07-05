@@ -11,9 +11,9 @@ import java.util.Map;
 import net.frankheijden.serverutils.bukkit.commands.CommandPlugins;
 import net.frankheijden.serverutils.bukkit.commands.CommandServerUtils;
 import net.frankheijden.serverutils.bukkit.entities.BukkitPlugin;
+import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 import net.frankheijden.serverutils.bukkit.listeners.BukkitListener;
 import net.frankheijden.serverutils.bukkit.managers.BukkitPluginManager;
-import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 import net.frankheijden.serverutils.bukkit.reflection.RCommandMap;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
@@ -68,7 +68,7 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
 
         Bukkit.getPluginManager().registerEvents(new BukkitListener(), this);
 
-        ServerUtilsApp.checkForUpdates();
+        ServerUtilsApp.tryCheckForUpdates();
     }
 
     public static ServerUtils getInstance() {

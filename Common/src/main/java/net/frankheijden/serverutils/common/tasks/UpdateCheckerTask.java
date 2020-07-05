@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -12,13 +13,13 @@ import java.net.UnknownHostException;
 import java.util.logging.Level;
 
 import net.frankheijden.serverutils.common.ServerUtilsApp;
-import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
-import net.frankheijden.serverutils.common.managers.AbstractVersionManager;
 import net.frankheijden.serverutils.common.config.Config;
 import net.frankheijden.serverutils.common.config.Messenger;
 import net.frankheijden.serverutils.common.config.YamlConfig;
 import net.frankheijden.serverutils.common.entities.CloseableResult;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
+import net.frankheijden.serverutils.common.managers.AbstractVersionManager;
 import net.frankheijden.serverutils.common.utils.FileUtils;
 import net.frankheijden.serverutils.common.utils.VersionUtils;
 
@@ -158,8 +159,9 @@ public class UpdateCheckerTask implements Runnable {
             return;
         }
 
+        File pluginFile = plugin.getPluginManager().getPluginFile(ServerUtilsApp.getPlatformPlugin());
         try {
-            FileUtils.download(downloadLink, plugin.getPluginManager().getPluginFile(ServerUtilsApp.getPlatformPlugin()));
+            FileUtils.download(downloadLink, pluginFile);
         } catch (IOException ex) {
             broadcastDownloadStatus(githubVersion, true);
             throw new RuntimeException(DOWNLOAD_ERROR, ex);

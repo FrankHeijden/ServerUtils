@@ -1,5 +1,7 @@
 package net.frankheijden.serverutils.bungee.commands;
 
+import static net.frankheijden.serverutils.common.config.Messenger.sendMessage;
+
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
@@ -7,6 +9,11 @@ import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import net.frankheijden.serverutils.bungee.ServerUtils;
 import net.frankheijden.serverutils.bungee.entities.BungeeLoadResult;
 import net.frankheijden.serverutils.bungee.managers.BungeePluginManager;
@@ -24,12 +31,6 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.PluginDescription;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import static net.frankheijden.serverutils.common.config.Messenger.sendMessage;
 
 @CommandAlias("bsu|bserverutils")
 public class CommandServerUtils extends BaseCommand {

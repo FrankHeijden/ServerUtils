@@ -1,7 +1,5 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
-
 import static net.frankheijden.serverutils.bukkit.entities.BukkitReflection.MINOR;
 import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
 import static net.frankheijden.serverutils.common.reflection.MethodParam.methodOf;
@@ -17,6 +15,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
+
+import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 
 public class RDedicatedServer {
 

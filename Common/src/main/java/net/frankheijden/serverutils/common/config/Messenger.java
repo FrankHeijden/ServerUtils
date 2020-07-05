@@ -5,16 +5,28 @@ import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.utils.StringUtils;
 
+/**
+ * The general common messenger class.
+ */
 public class Messenger extends YamlResource {
 
     private static Messenger instance;
     private static final ServerUtilsPlugin plugin = ServerUtilsApp.getPlugin();
 
+    /**
+     * Constructs a new Messenger with the messages file name and the resource name from the jar.
+     * @param fileName The file name in the data folder.
+     * @param resource The resource name in the jar file.
+     */
     public Messenger(String fileName, String resource) {
         super(fileName, resource);
         instance = this;
     }
 
+    /**
+     * Retrieves the current instance of the Messenger.
+     * @return The current instance.
+     */
     public static Messenger getInstance() {
         return instance;
     }
@@ -61,6 +73,11 @@ public class Messenger extends YamlResource {
         }
     }
 
+    /**
+     * Colorizes the given string.
+     * @param str The string to color.
+     * @return The colored string.
+     */
     public static String color(String str) {
         return Messenger.plugin.getChatProvider().color(str);
     }

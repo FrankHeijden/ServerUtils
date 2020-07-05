@@ -9,6 +9,10 @@ public class ServerListener {
 
     private static final YamlConfig config = Config.getInstance().getConfig();
 
+    /**
+     * Handles the update check on the given ServerCommandSender.
+     * @param sender The sender which triggered the update.
+     */
     public static void handleUpdate(ServerCommandSender sender) {
         if (!config.getBoolean("settings.check-updates-login")) return;
 

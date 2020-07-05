@@ -7,6 +7,9 @@ import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.utils.ListBuilder;
 import net.frankheijden.serverutils.common.utils.ListFormat;
 
+/**
+ * Provides some common utility methods for the Plugins command.
+ */
 public class Plugins {
 
     /**

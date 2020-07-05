@@ -7,6 +7,9 @@ import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.providers.ResourceProvider;
 
+/**
+ * A class which provides functionality for loading and setting defaults of Yaml Configurations.
+ */
 public class YamlResource {
 
     private static final ServerUtilsPlugin plugin = ServerUtilsApp.getPlugin();
@@ -26,6 +29,10 @@ public class YamlResource {
         config = YamlConfig.init(provider.load(is), provider.load(file));
     }
 
+    /**
+     * Retrieves the YamlConfig of this resource.
+     * @return The YamlConfig.
+     */
     public YamlConfig getConfig() {
         return config;
     }

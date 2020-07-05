@@ -1,7 +1,5 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
-
 import static net.frankheijden.serverutils.common.reflection.MethodParam.methodOf;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllMethods;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.invoke;
@@ -10,6 +8,8 @@ import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VE
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
+
+import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 
 public class RJsonList {
 

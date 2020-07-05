@@ -1,9 +1,9 @@
 package net.frankheijden.serverutils.common.providers;
 
-import net.frankheijden.serverutils.common.config.YamlConfig;
-
 import java.io.File;
 import java.io.InputStream;
+
+import net.frankheijden.serverutils.common.config.YamlConfig;
 
 public interface ResourceProvider {
 

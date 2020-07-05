@@ -16,12 +16,20 @@ public abstract class PluginProvider<T> {
 
     public abstract File getPluginFile(T plugin);
 
+    /**
+     * Retrieves a list of plugins, sorted by name.
+     * @return The list of plugins.
+     */
     public List<T> getPluginsSorted() {
         List<T> plugins = getPlugins();
         plugins.sort(Comparator.comparing(this::getPluginName));
         return plugins;
     }
 
+    /**
+     * Retrieves a list of plugin names.
+     * @return The plugin names.
+     */
     public List<String> getPluginNames() {
         return getPlugins().stream()
                 .map(this::getPluginName)

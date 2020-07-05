@@ -1,13 +1,13 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
-
 import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;
 
 import java.lang.reflect.Field;
 import java.util.Map;
+
+import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 
 public class RDedicatedServerProperties {
 

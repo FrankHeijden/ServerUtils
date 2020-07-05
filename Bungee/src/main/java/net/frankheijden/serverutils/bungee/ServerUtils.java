@@ -47,7 +47,7 @@ public class ServerUtils extends Plugin {
         reload();
         getProxy().getPluginManager().registerListener(this, new BungeeListener());
 
-        ServerUtilsApp.checkForUpdates();
+        ServerUtilsApp.tryCheckForUpdates();
     }
 
     public static ServerUtils getInstance() {

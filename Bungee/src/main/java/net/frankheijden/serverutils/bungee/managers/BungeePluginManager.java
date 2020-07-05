@@ -1,17 +1,6 @@
 package net.frankheijden.serverutils.bungee.managers;
 
 import com.google.common.base.Preconditions;
-import net.frankheijden.serverutils.bungee.ServerUtils;
-import net.frankheijden.serverutils.bungee.entities.BungeeLoadResult;
-import net.frankheijden.serverutils.bungee.reflection.RPluginClassLoader;
-import net.frankheijden.serverutils.bungee.reflection.RPluginManager;
-import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
-import net.frankheijden.serverutils.common.entities.CloseableResult;
-import net.frankheijden.serverutils.common.entities.Result;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.api.plugin.PluginDescription;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.Closeable;
 import java.io.File;
@@ -26,6 +15,18 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+
+import net.frankheijden.serverutils.bungee.ServerUtils;
+import net.frankheijden.serverutils.bungee.entities.BungeeLoadResult;
+import net.frankheijden.serverutils.bungee.reflection.RPluginClassLoader;
+import net.frankheijden.serverutils.bungee.reflection.RPluginManager;
+import net.frankheijden.serverutils.common.entities.CloseableResult;
+import net.frankheijden.serverutils.common.entities.Result;
+import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.api.plugin.PluginDescription;
+import org.yaml.snakeyaml.Yaml;
 
 public class BungeePluginManager extends AbstractPluginManager<Plugin> {
 
@@ -73,7 +74,7 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
         try {
             desc = getPluginDescription(file);
         } catch (Exception ex) {
-            proxy.getLogger().log(Level.WARNING, "Could not load plugin from file " + file, ex );
+            proxy.getLogger().log(Level.WARNING, "Could not load plugin from file " + file, ex);
             return new BungeeLoadResult(Result.INVALID_DESCRIPTION);
         }
 
@@ -102,9 +103,8 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
         String name = desc.getName();
         try {
             plugin.onEnable();
-            proxy.getLogger().log(Level.INFO, "Enabled plugin {0} version {1} by {2}", new Object[] {
-                    name, desc.getVersion(), desc.getAuthor()
-            });
+            Object[] args = new Object[] { name, desc.getVersion(), desc.getAuthor() };
+            proxy.getLogger().log(Level.INFO, "Enabled plugin {0} version {1} by {2}", args);
             return Result.SUCCESS;
         } catch (Throwable th) {
             proxy.getLogger().log(Level.WARNING, "Exception encountered when loading plugin: " + name, th);
@@ -158,6 +158,11 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
         return new File(proxy.getPluginsFolder(), fileName);
     }
 
+    /**
+     * Retrieves the File of a plugin associated with a name.
+     * @param pluginName The plugin name to search for.
+     * @return The File if the plugin exists with that name.
+     */
     public File getPluginFile(String pluginName) {
         for (File file : getPluginJars()) {
             PluginDescription desc;
@@ -172,6 +177,17 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
         return null;
     }
 
+    @Override
+    public File getPluginFile(Plugin plugin) {
+        return plugin.getFile();
+    }
+
+    /**
+     * Retrieves the PluginDescription of a (plugin's) File.
+     * @param file The file.
+     * @return The PluginDescription.
+     * @throws Exception Iff and I/O exception occurred, or notNullChecks failed.
+     */
     public static PluginDescription getPluginDescription(File file) throws Exception {
         try (JarFile jar = new JarFile(file)) {
             JarEntry entry = getPluginDescriptionEntry(jar);
@@ -189,12 +205,22 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
         }
     }
 
+    /**
+     * Retrieves the JarEntry which contains the Description file of the JarFile.
+     * @param jar The JarFile.
+     * @return The description JarEntry.
+     */
     public static JarEntry getPluginDescriptionEntry(JarFile jar) {
         JarEntry entry = jar.getJarEntry("bungee.yml");
         if (entry == null) return jar.getJarEntry("plugin.yml");
         return entry;
     }
 
+    /**
+     * Retrieves the closable classloader of the plugin, if possible.
+     * @param plugin The plugin.
+     * @return The closable instance.
+     */
     public static Closeable getCloseable(Plugin plugin) {
         ClassLoader loader = plugin.getClass().getClassLoader();
         if (loader instanceof Closeable) return (Closeable) loader;
@@ -211,6 +237,11 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
         return getPlugins(false);
     }
 
+    /**
+     * Retrieves a list of plugins.
+     * @param modules Whether or not to include `module` plugins.
+     * @return The list of plugins.
+     */
     public List<Plugin> getPlugins(boolean modules) {
         Collection<Plugin> plugins = plugin.getProxy().getPluginManager().getPlugins();
         if (modules) return new ArrayList<>(plugins);
@@ -224,11 +255,11 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
         return plugin.getDataFolder().getName();
     }
 
-    @Override
-    public File getPluginFile(Plugin plugin) {
-        return plugin.getFile();
-    }
-
+    /**
+     * Retrieves the plugins sorted by their names.
+     * @param modules Whether or not to include `module` plugins
+     * @return The sorted plugins.
+     */
     public List<Plugin> getPluginsSorted(boolean modules) {
         List<Plugin> plugins = getPlugins(modules);
         plugins.sort(Comparator.comparing(this::getPluginName));

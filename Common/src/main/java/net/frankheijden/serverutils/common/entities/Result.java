@@ -2,6 +2,9 @@ package net.frankheijden.serverutils.common.entities;
 
 import net.frankheijden.serverutils.common.config.Messenger;
 
+/**
+ * An enum containing possible results.
+ */
 public enum Result {
     NOT_EXISTS,
     NOT_ENABLED,
@@ -17,10 +20,18 @@ public enum Result {
 
     private String arg;
 
+    /**
+     * private constructor which initializes a result with an empty argument.
+     */
     Result() {
         this.arg = "";
     }
 
+    /**
+     * Sets the argument of the result's message.
+     * @param arg The argument
+     * @return The current instance.
+     */
     public Result arg(String arg) {
         this.arg = arg;
         return this;

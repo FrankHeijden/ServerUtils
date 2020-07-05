@@ -16,9 +16,9 @@ import net.frankheijden.serverutils.bukkit.reflection.RCraftingManager;
 import net.frankheijden.serverutils.bukkit.reflection.RJavaPlugin;
 import net.frankheijden.serverutils.bukkit.reflection.RPluginClassLoader;
 import net.frankheijden.serverutils.bukkit.reflection.RSimplePluginManager;
-import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.entities.CloseableResult;
 import net.frankheijden.serverutils.common.entities.Result;
+import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommand;
@@ -330,6 +330,15 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
     }
 
     @Override
+    public File getPluginFile(Plugin plugin) {
+        try {
+            return RJavaPlugin.getFile(plugin);
+        } catch (ReflectiveOperationException ex) {
+            throw new RuntimeException("Error retrieving current plugin file", ex);
+        }
+    }
+
+    @Override
     public File getPluginsFolder() {
         return plugin.getDataFolder().getParentFile();
     }
@@ -342,14 +351,5 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
     @Override
     public String getPluginName(Plugin plugin) {
         return plugin.getName();
-    }
-
-    @Override
-    public File getPluginFile(Plugin plugin) {
-        try {
-            return RJavaPlugin.getFile(plugin);
-        } catch (ReflectiveOperationException ex) {
-            throw new RuntimeException("Error retrieving current plugin file", ex);
-        }
     }
 }

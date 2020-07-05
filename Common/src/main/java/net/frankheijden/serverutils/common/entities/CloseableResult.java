@@ -3,6 +3,9 @@ package net.frankheijden.serverutils.common.entities;
 import java.io.Closeable;
 import java.io.IOException;
 
+/**
+ * A result which should be closed when done.
+ */
 public class CloseableResult implements Closeable {
 
     private Result result;
@@ -20,18 +23,35 @@ public class CloseableResult implements Closeable {
         this.closeable = closeable;
     }
 
+    /**
+     * Constructs a new closable result with no closable instance.
+     * @param result The result of the procedure
+     */
     public CloseableResult(Result result) {
         this(result, null);
     }
 
+    /**
+     * Constructs a new closable result with a closable instance and success result.
+     * @param closeable The closable of the procedure.
+     */
     public CloseableResult(Closeable closeable) {
         this(Result.SUCCESS, closeable);
     }
 
+    /**
+     * Retrieves the result.
+     * @return The result.
+     */
     public Result getResult() {
         return result;
     }
 
+    /**
+     * Sets the result of this instance.
+     * @param result The result to set.
+     * @return The current instance.
+     */
     public CloseableResult set(Result result) {
         this.result = result;
         return this;
@@ -49,6 +69,10 @@ public class CloseableResult implements Closeable {
         }
     }
 
+    /**
+     * Closes the closable.
+     * @throws IOException Iff an I/O error occurred.
+     */
     @Override
     public void close() throws IOException {
         closeable.close();

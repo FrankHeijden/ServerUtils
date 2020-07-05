@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.InputStream;
 
 import net.frankheijden.serverutils.bukkit.ServerUtils;
-import net.frankheijden.serverutils.common.providers.ResourceProvider;
 import net.frankheijden.serverutils.common.config.YamlConfig;
+import net.frankheijden.serverutils.common.providers.ResourceProvider;
 
 public class BukkitResourceProvider implements ResourceProvider {
 
