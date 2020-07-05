@@ -3,6 +3,7 @@ package net.frankheijden.serverutils.bukkit.entities;
 import net.frankheijden.serverutils.bukkit.utils.BukkitUtils;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.providers.ChatProvider;
+import net.frankheijden.serverutils.common.utils.HexUtils;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 
@@ -27,7 +28,7 @@ public class BukkitChatProvider extends ChatProvider {
      */
     @Override
     public String color(String str) {
-        return ChatColor.translateAlternateColorCodes('&', str);
+        return ChatColor.translateAlternateColorCodes('&', HexUtils.convertHexString(str));
     }
 
     /**

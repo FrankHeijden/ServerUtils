@@ -3,6 +3,7 @@ package net.frankheijden.serverutils.bungee.entities;
 import net.frankheijden.serverutils.bungee.utils.BungeeUtils;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.providers.ChatProvider;
+import net.frankheijden.serverutils.common.utils.HexUtils;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 
@@ -15,7 +16,7 @@ public class BungeeChatProvider extends ChatProvider {
 
     @Override
     public String color(String str) {
-        return ChatColor.translateAlternateColorCodes('&', str);
+        return ChatColor.translateAlternateColorCodes('&', HexUtils.convertHexString(str));
     }
 
     @Override
