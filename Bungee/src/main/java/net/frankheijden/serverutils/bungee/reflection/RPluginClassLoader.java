@@ -3,7 +3,6 @@ package net.frankheijden.serverutils.bungee.reflection;
 import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -27,8 +26,8 @@ public class RPluginClassLoader {
             constructor = loaderClass.getDeclaredConstructor(ProxyServer.class, PluginDescription.class, URL[].class);
             constructor.setAccessible(true);
             fields = getAllFields(loaderClass,
-                    fieldOf("allLoaders", ALL_VERSIONS),
-                    fieldOf("plugin", ALL_VERSIONS));
+                    fieldOf("allLoaders"),
+                    fieldOf("plugin"));
         } catch (Exception ex) {
             ex.printStackTrace();
         }

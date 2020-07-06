@@ -8,7 +8,6 @@ import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllMethods;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.invoke;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.set;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.min;
 
 import java.lang.reflect.Field;
@@ -30,23 +29,23 @@ public class RDedicatedServer {
                     BukkitReflection.NMS));
 
             fields = getAllFields(dedicatedServerClass,
-                    fieldOf("propertyManager", ALL_VERSIONS),
-                    fieldOf("options", ALL_VERSIONS),
-                    fieldOf("autosavePeriod", ALL_VERSIONS),
+                    fieldOf("propertyManager"),
+                    fieldOf("options"),
+                    fieldOf("autosavePeriod"),
                     fieldOf("o", min(13)));
             methods = getAllMethods(dedicatedServerClass,
-                    methodOf("setSpawnAnimals", ALL_VERSIONS, boolean.class),
-                    methodOf("getSpawnAnimals", ALL_VERSIONS),
-                    methodOf("setPVP", ALL_VERSIONS, boolean.class),
-                    methodOf("getPVP", ALL_VERSIONS),
-                    methodOf("setAllowFlight", ALL_VERSIONS, boolean.class),
-                    methodOf("getAllowFlight", ALL_VERSIONS),
-                    methodOf("setMotd", ALL_VERSIONS, String.class),
-                    methodOf("getMotd", ALL_VERSIONS),
-                    methodOf("setSpawnNPCs", ALL_VERSIONS, boolean.class),
-                    methodOf("setAllowFlight", ALL_VERSIONS, boolean.class),
-                    methodOf("setResourcePack", ALL_VERSIONS, String.class, String.class),
-                    methodOf("setForceGamemode", ALL_VERSIONS, boolean.class),
+                    methodOf("setSpawnAnimals", boolean.class),
+                    methodOf("getSpawnAnimals"),
+                    methodOf("setPVP", boolean.class),
+                    methodOf("getPVP"),
+                    methodOf("setAllowFlight", boolean.class),
+                    methodOf("getAllowFlight"),
+                    methodOf("setMotd", String.class),
+                    methodOf("getMotd"),
+                    methodOf("setSpawnNPCs", boolean.class),
+                    methodOf("setAllowFlight", boolean.class),
+                    methodOf("setResourcePack", String.class, String.class),
+                    methodOf("setForceGamemode", boolean.class),
                     methodOf("n", min(13), boolean.class));
         } catch (Exception ex) {
             ex.printStackTrace();

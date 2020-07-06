@@ -9,7 +9,6 @@ import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getDeclaredMethod;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.invoke;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.set;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.max;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.min;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.versionOf;
@@ -50,24 +49,24 @@ public class RCraftServer {
             commandMap = (SimpleCommandMap) getDeclaredField(craftServerClass, "commandMap").get(Bukkit.getServer());
 
             fields = getAllFields(craftServerClass,
-                    fieldOf("configuration", ALL_VERSIONS),
-                    fieldOf("console", ALL_VERSIONS),
-                    fieldOf("commandsConfiguration", ALL_VERSIONS),
-                    fieldOf("overrideAllCommandBlockCommands", ALL_VERSIONS),
+                    fieldOf("configuration"),
+                    fieldOf("console"),
+                    fieldOf("commandsConfiguration"),
+                    fieldOf("overrideAllCommandBlockCommands"),
                     fieldOf("unrestrictedAdvancements", versionOf(12)),
                     fieldOf("ignoreVanillaPermissions", min(13)),
-                    fieldOf("monsterSpawn", ALL_VERSIONS),
-                    fieldOf("animalSpawn", ALL_VERSIONS),
-                    fieldOf("waterAnimalSpawn", ALL_VERSIONS),
-                    fieldOf("ambientSpawn", ALL_VERSIONS),
-                    fieldOf("warningState", ALL_VERSIONS),
+                    fieldOf("monsterSpawn"),
+                    fieldOf("animalSpawn"),
+                    fieldOf("waterAnimalSpawn"),
+                    fieldOf("ambientSpawn"),
+                    fieldOf("warningState"),
                     fieldOf("minimumAPI", min(14)),
-                    fieldOf("printSaveWarning", ALL_VERSIONS),
+                    fieldOf("printSaveWarning"),
                     fieldOf("chunkGCPeriod", max(12)),
                     fieldOf("chunkGCLoadThresh", max(12)),
-                    fieldOf("playerList", ALL_VERSIONS));
+                    fieldOf("playerList"));
             methods = getAllMethods(craftServerClass,
-                    methodOf("loadIcon", ALL_VERSIONS));
+                    methodOf("loadIcon"));
         } catch (Exception ex) {
             ex.printStackTrace();
         }

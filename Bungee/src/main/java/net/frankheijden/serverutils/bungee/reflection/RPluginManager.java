@@ -3,7 +3,6 @@ package net.frankheijden.serverutils.bungee.reflection;
 import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;
 
 import com.google.common.collect.Multimap;
 
@@ -24,11 +23,11 @@ public class RPluginManager {
         try {
             pluginManagerClass = Class.forName("net.md_5.bungee.api.plugin.PluginManager");
             fields = getAllFields(pluginManagerClass,
-                    fieldOf("yaml", ALL_VERSIONS),
-                    fieldOf("plugins", ALL_VERSIONS),
-                    fieldOf("commandMap", ALL_VERSIONS),
-                    fieldOf("toLoad", ALL_VERSIONS),
-                    fieldOf("commandsByPlugin", ALL_VERSIONS));
+                    fieldOf("yaml"),
+                    fieldOf("plugins"),
+                    fieldOf("commandMap"),
+                    fieldOf("toLoad"),
+                    fieldOf("commandsByPlugin"));
         } catch (Exception ex) {
             ex.printStackTrace();
         }

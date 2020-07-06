@@ -1,5 +1,7 @@
 package net.frankheijden.serverutils.common.reflection;
 
+import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;
+
 public class FieldParam {
     public String field;
     public VersionParam versionParam;
@@ -11,5 +13,9 @@ public class FieldParam {
 
     public static FieldParam fieldOf(String field, VersionParam versionParam) {
         return new FieldParam(field, versionParam);
+    }
+
+    public static FieldParam fieldOf(String field) {
+        return fieldOf(field, ALL_VERSIONS);
     }
 }

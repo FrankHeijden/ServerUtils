@@ -3,7 +3,6 @@ package net.frankheijden.serverutils.bukkit.reflection;
 import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -23,7 +22,7 @@ public class RRegistrySimple {
             registrySimpleClass = Class.forName(String.format("net.minecraft.server.%s.RegistrySimple",
                     BukkitReflection.NMS));
             fields = getAllFields(registrySimpleClass,
-                    fieldOf("c", ALL_VERSIONS));
+                    fieldOf("c"));
         } catch (Exception ex) {
             ex.printStackTrace();
         }

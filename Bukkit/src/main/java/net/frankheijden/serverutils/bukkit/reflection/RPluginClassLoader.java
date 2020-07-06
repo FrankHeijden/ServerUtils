@@ -3,7 +3,6 @@ package net.frankheijden.serverutils.bukkit.reflection;
 import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.set;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;
 
 import java.io.Closeable;
 import java.lang.reflect.Field;
@@ -18,8 +17,8 @@ public class RPluginClassLoader {
         try {
             pluginClassLoaderClass = Class.forName("org.bukkit.plugin.java.PluginClassLoader");
             fields = getAllFields(pluginClassLoaderClass,
-                    fieldOf("plugin", ALL_VERSIONS),
-                    fieldOf("pluginInit", ALL_VERSIONS));
+                    fieldOf("plugin"),
+                    fieldOf("pluginInit"));
         } catch (Exception ex) {
             ex.printStackTrace();
         }

@@ -2,7 +2,6 @@ package net.frankheijden.serverutils.bukkit.reflection;
 
 import static net.frankheijden.serverutils.common.reflection.MethodParam.methodOf;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllMethods;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -16,7 +15,7 @@ public class ROptionSet {
         try {
             optionSetClass = Class.forName("joptsimple.OptionSet");
             methods = getAllMethods(optionSetClass,
-                    methodOf("valueOf", ALL_VERSIONS, String.class));
+                    methodOf("valueOf", String.class));
         } catch (Exception ex) {
             ex.printStackTrace();
         }

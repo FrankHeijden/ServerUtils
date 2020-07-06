@@ -3,7 +3,6 @@ package net.frankheijden.serverutils.bukkit.reflection;
 import static net.frankheijden.serverutils.common.reflection.MethodParam.methodOf;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllMethods;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.invoke;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -21,8 +20,8 @@ public class RJavaPlugin {
         try {
             javaPluginClass = JavaPlugin.class;
             methods = getAllMethods(javaPluginClass,
-                    methodOf("getClassLoader", ALL_VERSIONS),
-                    methodOf("getFile", ALL_VERSIONS));
+                    methodOf("getClassLoader"),
+                    methodOf("getFile"));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
