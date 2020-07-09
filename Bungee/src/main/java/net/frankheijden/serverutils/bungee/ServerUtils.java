@@ -48,6 +48,7 @@ public class ServerUtils extends Plugin {
         CommandCompletions<BungeeCommandCompletionContext> commandCompletions = commandManager.getCommandCompletions();
         commandCompletions.registerAsyncCompletion("plugins", context -> manager.getPluginNames());
         commandCompletions.registerAsyncCompletion("pluginJars", context -> manager.getPluginFileNames());
+        commandCompletions.registerAsyncCompletion("commands", context -> manager.getCommands());
 
         reload();
         getProxy().getPluginManager().registerListener(this, new BungeeListener());

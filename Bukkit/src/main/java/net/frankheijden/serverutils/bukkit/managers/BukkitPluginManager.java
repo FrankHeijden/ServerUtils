@@ -3,8 +3,10 @@ package net.frankheijden.serverutils.bukkit.managers;
 import java.io.Closeable;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -336,6 +338,13 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
         } catch (ReflectiveOperationException ex) {
             throw new RuntimeException("Error retrieving current plugin file", ex);
         }
+    }
+
+    @Override
+    public Set<String> getCommands() {
+        Map<String, Command> knownCommands = getKnownCommands();
+        if (knownCommands == null) return Collections.emptySet();
+        return knownCommands.keySet();
     }
 
     @Override

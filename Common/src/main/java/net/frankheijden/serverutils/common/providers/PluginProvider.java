@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class PluginProvider<T> {
@@ -15,6 +16,8 @@ public abstract class PluginProvider<T> {
     public abstract String getPluginName(T plugin);
 
     public abstract File getPluginFile(T plugin);
+
+    public abstract Set<String> getCommands();
 
     /**
      * Retrieves a list of plugins, sorted by name.
