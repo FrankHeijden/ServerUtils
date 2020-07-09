@@ -55,7 +55,7 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         CommandCompletions<BukkitCommandCompletionContext> completions = commandManager.getCommandCompletions();
         completions.registerAsyncCompletion("plugins", context -> manager.getPluginNames());
         completions.registerAsyncCompletion("pluginJars", context -> manager.getPluginFileNames());
-        completions.registerAsyncCompletion("supportedConfigs  ", context -> CommandServerUtils.getSupportedConfigs());
+        completions.registerAsyncCompletion("supportedConfigs", context -> CommandServerUtils.getSupportedConfigs());
         completions.registerAsyncCompletion("commands", context -> {
             try {
                 return RCommandMap.getKnownCommands(RCraftServer.getCommandMap()).keySet();
