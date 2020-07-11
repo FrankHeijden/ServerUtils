@@ -97,7 +97,7 @@ public class UpdateCheckerTask implements Runnable {
 
         String githubVersion = getVersion(jsonObject);
         String body = jsonObject.getAsJsonPrimitive("body").getAsString();
-        String downloadUrl = getDownloadUrl(jsonObject);
+        GitHubAsset asset = getAsset(jsonObject);
 
         String downloaded = versionManager.getDownloadedVersion();
         String current = versionManager.getCurrentVersion();
@@ -106,16 +106,19 @@ public class UpdateCheckerTask implements Runnable {
                 plugin.getLogger().info(String.format(UPDATE_AVAILABLE, githubVersion));
                 plugin.getLogger().info("Release info: " + body);
             }
-            if (canDownloadPlugin()) {
+            if (canDownloadPlugin() && asset != null) {
                 if (isStartupCheck()) {
-                    plugin.getLogger().info(String.format(DOWNLOAD_START, downloadUrl));
+                    plugin.getLogger().info(String.format(DOWNLOAD_START, asset.downloadUrl));
                 } else {
                     Messenger.sendMessage(sender, "serverutils.update.downloading",
                             "%old%", current,
                             "%new%", githubVersion,
                             "%info%", body);
                 }
-                downloadPlugin(githubVersion, downloadUrl);
+
+                File target = new File(plugin.getPluginManager().getPluginsFolder(), asset.name);
+                downloadPlugin(githubVersion, asset.downloadUrl, target);
+                plugin.getPluginManager().getPluginFile(ServerUtilsApp.getPlatformPlugin()).delete();
                 tryReloadPlugin();
             } else if (!isStartupCheck()) {
                 Messenger.sendMessage(sender, "serverutils.update.available",
@@ -135,10 +138,14 @@ public class UpdateCheckerTask implements Runnable {
         return jsonObject.getAsJsonPrimitive("tag_name").getAsString().replace("v", "");
     }
 
-    private String getDownloadUrl(JsonObject jsonObject) {
+    private GitHubAsset getAsset(JsonObject jsonObject) {
         JsonArray assets = jsonObject.getAsJsonArray("assets");
         if (assets != null && assets.size() > 0) {
-            return assets.get(0).getAsJsonObject().getAsJsonPrimitive("browser_download_url").getAsString();
+            JsonObject assetJson = assets.get(0).getAsJsonObject();
+            return new GitHubAsset(
+                    assetJson.get("name").getAsString(),
+                    assetJson.get("browser_download_url").getAsString()
+            );
         }
         return null;
     }
@@ -148,7 +155,7 @@ public class UpdateCheckerTask implements Runnable {
         return config.getBoolean("settings.download-updates");
     }
 
-    private void downloadPlugin(String githubVersion, String downloadLink) {
+    private void downloadPlugin(String githubVersion, String downloadLink, File target) {
         if (versionManager.isDownloaded(githubVersion)) {
             broadcastDownloadStatus(githubVersion, false);
             return;
@@ -159,9 +166,8 @@ public class UpdateCheckerTask implements Runnable {
             return;
         }
 
-        File pluginFile = plugin.getPluginManager().getPluginFile(ServerUtilsApp.getPlatformPlugin());
         try {
-            FileUtils.download(downloadLink, pluginFile);
+            FileUtils.download(downloadLink, target);
         } catch (IOException ex) {
             broadcastDownloadStatus(githubVersion, true);
             throw new RuntimeException(DOWNLOAD_ERROR, ex);
@@ -187,5 +193,15 @@ public class UpdateCheckerTask implements Runnable {
         final String path = "serverutils.update." + (isError ? "failed" : "success");
         String message = Messenger.getMessage(path,"%new%", githubVersion);
         plugin.getChatProvider().broadcast("serverutils.notification.update", message);
+    }
+
+    private static class GitHubAsset {
+        private final String name;
+        private final String downloadUrl;
+
+        public GitHubAsset(String name, String downloadUrl) {
+            this.name = name;
+            this.downloadUrl = downloadUrl;
+        }
     }
 }
