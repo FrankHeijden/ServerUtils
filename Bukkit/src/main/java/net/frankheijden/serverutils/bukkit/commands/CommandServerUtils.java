@@ -32,6 +32,7 @@ import net.frankheijden.serverutils.common.utils.ForwardFilter;
 import net.frankheijden.serverutils.common.utils.ListBuilder;
 import net.frankheijden.serverutils.common.utils.ListFormat;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginIdentifiableCommand;
@@ -195,6 +196,16 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.reloadplugin")
     @Description("Reloads a specified plugin.")
     public void onReloadPlugin(CommandSender sender, String pluginName) {
+        if (pluginName.equalsIgnoreCase("ServerUtils")) {
+            String result = BukkitPluginManager.get().reloadPlugin(pluginName).toString();
+            if (result.equals("SUCCESS")) {
+                sender.sendMessage(ChatColor.GREEN + "Successfully reloaded ServerUtils.");
+            } else {
+                sender.sendMessage(ChatColor.RED + "Something went wrong reloading ServerUtils.");
+            }
+            return;
+        }
+
         Result result = BukkitPluginManager.get().reloadPlugin(pluginName);
         result.sendTo(BukkitUtils.wrap(sender), "reload", pluginName);
     }

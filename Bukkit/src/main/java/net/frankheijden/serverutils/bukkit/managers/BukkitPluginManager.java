@@ -2,6 +2,8 @@ package net.frankheijden.serverutils.bukkit.managers;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +18,7 @@ import net.frankheijden.serverutils.bukkit.reflection.RCommandMap;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftingManager;
 import net.frankheijden.serverutils.bukkit.reflection.RJavaPlugin;
+import net.frankheijden.serverutils.bukkit.reflection.RJavaPluginLoader;
 import net.frankheijden.serverutils.bukkit.reflection.RPluginClassLoader;
 import net.frankheijden.serverutils.bukkit.reflection.RSimplePluginManager;
 import net.frankheijden.serverutils.common.entities.CloseableResult;
@@ -136,16 +139,34 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
     @Override
     public CloseableResult unloadPlugin(Plugin plugin) {
         if (plugin == null) return new CloseableResult(Result.NOT_EXISTS);
-        Closeable closeable;
+        List<Closeable> closeables = new ArrayList<>();
         try {
             RSimplePluginManager.getPlugins(Bukkit.getPluginManager()).remove(plugin);
             RSimplePluginManager.removeLookupName(Bukkit.getPluginManager(), plugin.getName());
-            closeable = RPluginClassLoader.clearClassLoader(RJavaPlugin.getClassLoader(plugin));
+
+            ClassLoader loader = RJavaPlugin.getClassLoader(plugin);
+            RPluginClassLoader.clearClassLoader(loader);
+            addIfInstance(closeables, (Closeable) () -> {
+                try {
+                    Map<String, Class<?>> classes = RPluginClassLoader.getClasses(loader);
+                    RJavaPluginLoader.removeClasses(getPluginLoader(getPluginFile(plugin)), classes.keySet());
+                } catch (IllegalAccessException ex) {
+                    throw new IOException(ex);
+                }
+            });
+            addIfInstance(closeables, loader);
+            addIfInstance(closeables, RJavaPlugin.clearJavaPlugin(plugin));
         } catch (Exception ex) {
             ex.printStackTrace();
             return new CloseableResult(Result.ERROR);
         }
-        return new CloseableResult(closeable);
+        return new CloseableResult(closeables);
+    }
+
+    private static void addIfInstance(List<Closeable> list, Object obj) {
+        if (obj instanceof Closeable) {
+            list.add((Closeable) obj);
+        }
     }
 
     /**

@@ -26,6 +26,7 @@ import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.utils.FormatBuilder;
 import net.frankheijden.serverutils.common.utils.ListBuilder;
 import net.frankheijden.serverutils.common.utils.ListFormat;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Command;
@@ -136,6 +137,16 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.reloadplugin")
     @Description("Reloads a specified plugin.")
     public void onReloadPlugin(CommandSender sender, String pluginName) {
+        if (pluginName.equalsIgnoreCase("ServerUtils")) {
+            String result = BungeePluginManager.get().reloadPlugin(pluginName).toString();
+            if (result.equals("SUCCESS")) {
+                sender.sendMessage(ChatColor.GREEN + "Successfully reloaded ServerUtils.");
+            } else {
+                sender.sendMessage(ChatColor.RED + "Something went wrong reloading ServerUtils.");
+            }
+            return;
+        }
+
         Result result = BungeePluginManager.get().reloadPlugin(pluginName);
         result.sendTo(BungeeUtils.wrap(sender), "reload", pluginName);
     }

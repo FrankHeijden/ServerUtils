@@ -2,6 +2,8 @@ package net.frankheijden.serverutils.common.entities;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A result which should be closed when done.
@@ -9,18 +11,18 @@ import java.io.IOException;
 public class CloseableResult implements Closeable {
 
     private Result result;
-    private final Closeable closeable;
+    private final List<Closeable> closeables;
 
     /**
      * Constructs a new closable result.
      * Used for unloading / reloading a plugin.
      * NB: The closable needs to be closed to fully ensure that the old plugin doesn't work anymore!
      * @param result The result of the procedure
-     * @param closeable The closable of the procedure.
+     * @param closeables The list of closable's of the procedure.
      */
-    public CloseableResult(Result result, Closeable closeable) {
+    public CloseableResult(Result result, List<Closeable> closeables) {
         this.result = result;
-        this.closeable = closeable;
+        this.closeables = closeables;
     }
 
     /**
@@ -36,7 +38,15 @@ public class CloseableResult implements Closeable {
      * @param closeable The closable of the procedure.
      */
     public CloseableResult(Closeable closeable) {
-        this(Result.SUCCESS, closeable);
+        this(Result.SUCCESS, Collections.singletonList(closeable));
+    }
+
+    /**
+     * Constructs a new closable result with a closable instance and success result.
+     * @param closeables The list of closable's of the procedure.
+     */
+    public CloseableResult(List<Closeable> closeables) {
+        this(Result.SUCCESS, closeables);
     }
 
     /**
@@ -61,7 +71,7 @@ public class CloseableResult implements Closeable {
      * Attempts to close the closable, essentially wrapping it with try-catch.
      */
     public void tryClose() {
-        if (closeable == null) return;
+        if (closeables == null) return;
         try {
             close();
         } catch (IOException ex) {
@@ -75,6 +85,8 @@ public class CloseableResult implements Closeable {
      */
     @Override
     public void close() throws IOException {
-        closeable.close();
+        for (Closeable closeable : closeables) {
+            closeable.close();
+        }
     }
 }

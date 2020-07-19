@@ -1,10 +1,10 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
 import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
+import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.set;
 
-import java.io.Closeable;
 import java.lang.reflect.Field;
 import java.util.Map;
 
@@ -18,7 +18,8 @@ public class RPluginClassLoader {
             pluginClassLoaderClass = Class.forName("org.bukkit.plugin.java.PluginClassLoader");
             fields = getAllFields(pluginClassLoaderClass,
                     fieldOf("plugin"),
-                    fieldOf("pluginInit"));
+                    fieldOf("pluginInit"),
+                    fieldOf("classes"));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -31,17 +32,13 @@ public class RPluginClassLoader {
     /**
      * Clears and closes the provided classloader.
      * @param loader The classloader instance.
-     * @return The Closeable object.
      * @throws IllegalAccessException When prohibited access to the field.
      */
-    public static Closeable clearClassLoader(ClassLoader loader) throws IllegalAccessException {
-        if (loader == null) return null;
+    public static void clearClassLoader(ClassLoader loader) throws IllegalAccessException {
+        if (loader == null) return;
         if (isInstance(loader)) {
-            clearUrlClassLoader(loader);
+            clearPluginClassLoader(loader);
         }
-
-        if (loader instanceof Closeable) return (Closeable) loader;
-        return null;
     }
 
     /**
@@ -49,9 +46,14 @@ public class RPluginClassLoader {
      * @param pluginLoader The plugin loader instance.
      * @throws IllegalAccessException When prohibited access to the field.
      */
-    public static void clearUrlClassLoader(Object pluginLoader) throws IllegalAccessException {
+    public static void clearPluginClassLoader(Object pluginLoader) throws IllegalAccessException {
         if (pluginLoader == null) return;
         set(fields, pluginLoader, "plugin", null);
         set(fields, pluginLoader, "pluginInit", null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Map<String, Class<?>> getClasses(Object pluginLoader) throws IllegalAccessException {
+        return (Map<String,Class<?>>) get(fields, pluginLoader, "classes");
     }
 }
