@@ -15,9 +15,9 @@ public abstract class AbstractPluginManager<T> extends PluginProvider<T> {
 
     public abstract Result enablePlugin(T plugin);
 
-    public abstract CloseableResult reloadPlugin(String pluginName);
+    public abstract Result reloadPlugin(String pluginName);
 
-    public abstract CloseableResult reloadPlugin(T plugin);
+    public abstract Result reloadPlugin(T plugin);
 
     public abstract CloseableResult unloadPlugin(String pluginName);
 

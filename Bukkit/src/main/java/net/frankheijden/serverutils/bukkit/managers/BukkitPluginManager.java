@@ -179,9 +179,9 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
      * @return The result of the reload.
      */
     @Override
-    public CloseableResult reloadPlugin(String pluginName) {
+    public Result reloadPlugin(String pluginName) {
         Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
-        if (plugin == null) return new CloseableResult(Result.NOT_EXISTS);
+        if (plugin == null) return Result.NOT_EXISTS;
         return reloadPlugin(plugin);
     }
 
@@ -191,21 +191,22 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
      * @return The result of the reload.
      */
     @Override
-    public CloseableResult reloadPlugin(Plugin plugin) {
+    public Result reloadPlugin(Plugin plugin) {
         Result disableResult = disablePlugin(plugin);
         if (disableResult != Result.SUCCESS && disableResult != Result.ALREADY_DISABLED) {
-            return new CloseableResult(disableResult);
+            return disableResult;
         }
 
         CloseableResult result = unloadPlugin(plugin);
-        if (result.getResult() != Result.SUCCESS) return result;
+        if (result.getResult() != Result.SUCCESS) return result.getResult();
+        result.tryClose();
 
         File pluginFile = getPluginFile(plugin.getName());
-        if (pluginFile == null) return result.set(Result.FILE_DELETED);
+        if (pluginFile == null) return Result.FILE_DELETED;
 
         BukkitLoadResult loadResult = loadPlugin(pluginFile);
-        if (!loadResult.isSuccess()) return result.set(loadResult.getResult());
-        return result.set(enablePlugin(loadResult.get()));
+        if (!loadResult.isSuccess()) return loadResult.getResult();
+        return enablePlugin(loadResult.get());
     }
 
     /**

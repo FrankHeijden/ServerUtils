@@ -136,9 +136,8 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.reloadplugin")
     @Description("Reloads a specified plugin.")
     public void onReloadPlugin(CommandSender sender, String pluginName) {
-        CloseableResult result = BungeePluginManager.get().reloadPlugin(pluginName);
-        result.getResult().sendTo(BungeeUtils.wrap(sender), "reload", pluginName);
-        result.tryClose();
+        Result result = BungeePluginManager.get().reloadPlugin(pluginName);
+        result.sendTo(BungeeUtils.wrap(sender), "reload", pluginName);
     }
 
     /**

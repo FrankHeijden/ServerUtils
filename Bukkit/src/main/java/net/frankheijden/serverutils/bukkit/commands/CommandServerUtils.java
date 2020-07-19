@@ -195,9 +195,8 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.reloadplugin")
     @Description("Reloads a specified plugin.")
     public void onReloadPlugin(CommandSender sender, String pluginName) {
-        CloseableResult result = BukkitPluginManager.get().reloadPlugin(pluginName);
-        result.getResult().sendTo(BukkitUtils.wrap(sender), "reload", pluginName);
-        result.tryClose();
+        Result result = BukkitPluginManager.get().reloadPlugin(pluginName);
+        result.sendTo(BukkitUtils.wrap(sender), "reload", pluginName);
     }
 
     /**

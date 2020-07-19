@@ -115,25 +115,25 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
     }
 
     @Override
-    public CloseableResult reloadPlugin(String pluginName) {
+    public Result reloadPlugin(String pluginName) {
         Plugin plugin = proxy.getPluginManager().getPlugin(pluginName);
-        if (plugin == null) return new CloseableResult(Result.NOT_ENABLED);
+        if (plugin == null) return Result.NOT_ENABLED;
         return reloadPlugin(plugin);
     }
 
     @Override
-    public CloseableResult reloadPlugin(Plugin plugin) {
+    public Result reloadPlugin(Plugin plugin) {
         CloseableResult result = unloadPlugin(plugin);
-        if (result.getResult() != Result.SUCCESS) return result;
+        if (result.getResult() != Result.SUCCESS) return result.getResult();
         result.tryClose();
 
         File file = getPluginFile(plugin.getDescription().getName());
-        if (file == null) return result.set(Result.FILE_DELETED);
+        if (file == null) return Result.FILE_DELETED;
 
         BungeeLoadResult loadResult = loadPlugin(file);
-        if (!loadResult.isSuccess()) return result.set(loadResult.getResult());
+        if (!loadResult.isSuccess()) return loadResult.getResult();
 
-        return result.set(enablePlugin(loadResult.get()));
+        return enablePlugin(loadResult.get());
     }
 
     @Override

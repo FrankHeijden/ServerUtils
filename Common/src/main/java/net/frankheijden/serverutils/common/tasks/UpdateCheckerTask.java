@@ -16,7 +16,6 @@ import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.config.Config;
 import net.frankheijden.serverutils.common.config.Messenger;
 import net.frankheijden.serverutils.common.config.YamlConfig;
-import net.frankheijden.serverutils.common.entities.CloseableResult;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.managers.AbstractVersionManager;
@@ -181,9 +180,8 @@ public class UpdateCheckerTask implements Runnable {
 
         if (isStartupCheck()) {
             plugin.getLogger().info(String.format(DOWNLOADED_RESTART, downloadedVersion));
-            CloseableResult result = plugin.getPluginManager().reloadPlugin((Object)ServerUtilsApp.getPlatformPlugin());
+            plugin.getPluginManager().reloadPlugin((Object)ServerUtilsApp.getPlatformPlugin());
             plugin.getLogger().info(String.format(UPGRADE_SUCCESS, downloadedVersion));
-            result.tryClose();
         } else {
             broadcastDownloadStatus(downloadedVersion, false);
         }
