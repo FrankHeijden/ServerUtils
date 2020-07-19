@@ -8,6 +8,8 @@ import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllMethods;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.invoke;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.set;
+import static net.frankheijden.serverutils.common.reflection.VersionParam.between;
+import static net.frankheijden.serverutils.common.reflection.VersionParam.max;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.min;
 
 import java.lang.reflect.Field;
@@ -32,9 +34,9 @@ public class RDedicatedServer {
                     fieldOf("propertyManager"),
                     fieldOf("options"),
                     fieldOf("autosavePeriod"),
-                    fieldOf("o", min(13)));
+                    fieldOf("o", between(13, 15)));
             methods = getAllMethods(dedicatedServerClass,
-                    methodOf("setSpawnAnimals", boolean.class),
+                    methodOf("setSpawnAnimals", max(15), boolean.class),
                     methodOf("getSpawnAnimals"),
                     methodOf("setPVP", boolean.class),
                     methodOf("getPVP"),
@@ -42,11 +44,14 @@ public class RDedicatedServer {
                     methodOf("getAllowFlight"),
                     methodOf("setMotd", String.class),
                     methodOf("getMotd"),
-                    methodOf("setSpawnNPCs", boolean.class),
+                    methodOf("setSpawnNPCs", max(15), boolean.class),
                     methodOf("setAllowFlight", boolean.class),
                     methodOf("setResourcePack", String.class, String.class),
                     methodOf("setForceGamemode", boolean.class),
-                    methodOf("n", min(13), boolean.class));
+                    methodOf("n", between(13, 15), boolean.class),
+                    methodOf("aZ", max(15)),
+                    methodOf("i", min(16), boolean.class),
+                    methodOf("aY", min(16)));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -68,16 +73,23 @@ public class RDedicatedServer {
             Object propertyManager = RDedicatedServerSettings.newInstance(options);
             set(fields, console, "propertyManager", propertyManager);
             Object config = invoke(RDedicatedServerSettings.getMethods(), propertyManager, "getProperties");
-            invoke(methods, console, "setSpawnAnimals", getConfigValue(config, "spawnAnimals"));
-            invoke(methods, console, "setSpawnNPCs", getConfigValue(config, "spawnNpcs"));
             invoke(methods, console, "setPVP", getConfigValue(config, "pvp"));
             invoke(methods, console, "setAllowFlight", getConfigValue(config, "allowFlight"));
-            invoke(methods, console, "setResourcePack", getConfigValue(config, "resourcePack"),
-                    invoke(methods, console, "aZ"));
             invoke(methods, console, "setMotd", getConfigValue(config, "motd"));
             invoke(methods, console, "setForceGamemode", getConfigValue(config, "forceGamemode"));
-            invoke(methods, console, "n", getConfigValue(config, "enforceWhitelist"));
-            set(fields, console, "o", getConfigValue(config, "gamemode"));
+
+            if (MINOR <= 15) {
+                invoke(methods, console, "setSpawnAnimals", getConfigValue(config, "spawnAnimals"));
+                invoke(methods, console, "setSpawnNPCs", getConfigValue(config, "spawnNpcs"));
+                invoke(methods, console, "setResourcePack", getConfigValue(config, "resourcePack"),
+                        invoke(methods, console, "aZ"));
+                invoke(methods, console, "n", getConfigValue(config, "enforceWhitelist"));
+                set(fields, console, "o", getConfigValue(config, "gamemode"));
+            } else {
+                invoke(methods, console, "setResourcePack", getConfigValue(config, "resourcePack"),
+                        invoke(methods, console, "aY"));
+                invoke(methods, console, "i", getConfigValue(config, "enforceWhitelist"));
+            }
         } else {
             Object config = RPropertyManager.newInstance(options);
             setConfigValue(config, console, "getSpawnAnimals", "setSpawnAnimals", "getBoolean", "spawn-animals");
