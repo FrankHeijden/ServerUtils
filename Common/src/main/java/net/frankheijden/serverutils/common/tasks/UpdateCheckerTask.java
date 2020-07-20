@@ -117,7 +117,7 @@ public class UpdateCheckerTask implements Runnable {
 
                 File target = new File(plugin.getPluginManager().getPluginsFolder(), asset.name);
                 downloadPlugin(githubVersion, asset.downloadUrl, target);
-                plugin.getPluginManager().getPluginFile(ServerUtilsApp.getPlatformPlugin()).delete();
+                plugin.getPluginManager().getPluginFile((Object) ServerUtilsApp.getPlatformPlugin()).delete();
                 tryReloadPlugin();
             } else if (!isStartupCheck()) {
                 Messenger.sendMessage(sender, "serverutils.update.available",
