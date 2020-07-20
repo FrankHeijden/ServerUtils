@@ -149,15 +149,22 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
         proxy.getPluginManager().unregisterCommands(plugin);
         proxy.getPluginManager().unregisterListeners(plugin);
         proxy.getScheduler().cancel(plugin);
-        Closeable closeable;
+        List<Closeable> closeables = new ArrayList<>();
         try {
             RPluginManager.clearPlugin(proxy.getPluginManager(), plugin);
-            closeable = (Closeable) RPluginClassLoader.getPluginClassLoader(plugin);
+            addIfInstance(closeables, RPluginClassLoader.getPluginClassLoader(plugin));
+            addIfInstance(closeables, plugin.getClass().getClassLoader());
         } catch (Exception ex) {
             ex.printStackTrace();
             return new CloseableResult(Result.ERROR);
         }
-        return new CloseableResult(closeable);
+        return new CloseableResult(closeables);
+    }
+
+    private static void addIfInstance(List<Closeable> list, Object obj) {
+        if (obj instanceof Closeable) {
+            list.add((Closeable) obj);
+        }
     }
 
     public static File getPluginFileExact(String fileName) {
