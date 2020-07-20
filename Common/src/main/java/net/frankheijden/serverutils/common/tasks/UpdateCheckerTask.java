@@ -176,15 +176,17 @@ public class UpdateCheckerTask implements Runnable {
     }
 
     private void tryReloadPlugin() {
-        String downloadedVersion = versionManager.getDownloadedVersion();
+        plugin.getTaskManager().runTask(() -> {
+            String downloadedVersion = versionManager.getDownloadedVersion();
 
-        if (isStartupCheck()) {
-            plugin.getLogger().info(String.format(DOWNLOADED_RESTART, downloadedVersion));
-            plugin.getPluginManager().reloadPlugin((Object)ServerUtilsApp.getPlatformPlugin());
-            plugin.getLogger().info(String.format(UPGRADE_SUCCESS, downloadedVersion));
-        } else {
-            broadcastDownloadStatus(downloadedVersion, false);
-        }
+            if (isStartupCheck()) {
+                plugin.getLogger().info(String.format(DOWNLOADED_RESTART, downloadedVersion));
+                plugin.getPluginManager().reloadPlugin((Object)ServerUtilsApp.getPlatformPlugin());
+                plugin.getLogger().info(String.format(UPGRADE_SUCCESS, downloadedVersion));
+            } else {
+                broadcastDownloadStatus(downloadedVersion, false);
+            }
+        });
     }
 
     private void broadcastDownloadStatus(String githubVersion, boolean isError) {
