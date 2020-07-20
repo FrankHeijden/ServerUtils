@@ -17,4 +17,10 @@ public interface ServerCommandSender {
      * @return Whether or not they have the permission.
      */
     boolean hasPermission(String permission);
+
+    /**
+     * Whether or not the given instance is a player.
+     * @return Boolean true or false.
+     */
+    boolean isPlayer();
 }

@@ -17,6 +17,10 @@ public abstract class PluginProvider<T> {
 
     public abstract File getPluginFile(T plugin);
 
+    public abstract File getPluginFile(String pluginName);
+
+    public abstract T getPlugin(String pluginName);
+
     public abstract Set<String> getCommands();
 
     /**

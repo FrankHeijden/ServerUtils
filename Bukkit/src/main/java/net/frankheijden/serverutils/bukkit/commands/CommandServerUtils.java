@@ -24,6 +24,7 @@ import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
 import net.frankheijden.serverutils.bukkit.utils.BukkitUtils;
 import net.frankheijden.serverutils.bukkit.utils.ReloadHandler;
 import net.frankheijden.serverutils.common.config.Messenger;
+import net.frankheijden.serverutils.common.entities.AbstractResult;
 import net.frankheijden.serverutils.common.entities.CloseableResult;
 import net.frankheijden.serverutils.common.entities.Result;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
@@ -235,6 +236,35 @@ public class CommandServerUtils extends BaseCommand {
     public void onDisablePlugin(CommandSender sender, String pluginName) {
         Result result = BukkitPluginManager.disablePlugin(pluginName);
         result.sendTo(BukkitUtils.wrap(sender), "disabl", pluginName);
+    }
+
+    /**
+     * Watches the given plugin and reloads it when a change is detected to the file.
+     * @param sender The sender of the command.
+     * @param pluginName The plugin name.
+     */
+    @Subcommand("watchplugin")
+    @CommandCompletion("@plugins")
+    @CommandPermission("serverutils.watchplugin")
+    @Description("Watches the specified plugin for changes.")
+    public void onWatchPlugin(CommandSender sender, String pluginName) {
+        ServerCommandSender commandSender = BukkitUtils.wrap(sender);
+        AbstractResult result = BukkitPluginManager.get().watchPlugin(commandSender, pluginName);
+        result.sendTo(commandSender, "watch", pluginName);
+    }
+
+    /**
+     * Stops watching the given plugin.
+     * @param sender The sender of the command.
+     * @param pluginName The plugin name.
+     */
+    @Subcommand("unwatchplugin")
+    @CommandCompletion("@plugins")
+    @CommandPermission("serverutils.unwatchplugin")
+    @Description("Stops watching the specified plugin for changes.")
+    public void onUnwatchPlugin(CommandSender sender, String pluginName) {
+        AbstractResult result = BukkitPluginManager.get().unwatchPlugin(pluginName);
+        result.sendTo(BukkitUtils.wrap(sender), "unwatch", pluginName);
     }
 
     /**

@@ -53,8 +53,16 @@ public class ServerUtils extends Plugin {
         reload();
         getProxy().getPluginManager().registerListener(this, new BungeeListener());
 
+        plugin.enable();
+
         loadClasses();
         ServerUtilsApp.tryCheckForUpdates();
+    }
+
+    @Override
+    public void onDisable() {
+        super.onDisable();
+        plugin.disable();
     }
 
     /**

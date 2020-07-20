@@ -11,6 +11,11 @@ serverutils:
   invalid_description: "&cAn error occurred while %action%ing &4%what%&c, plugin doesn't have a valid description, please check the console!"
   invalid_plugin: "&cAn error occurred while %action%ing &4%what%&c, plugin is invalid!"
   unknown_dependency: "&cAn error occurred while %action%ing &4%what%&c, plugin has a dependeny which is not loaded: &4%arg%"
+  watcher:
+    start: "&3Started watching &b%what%&3!"
+    change: "&3Change detected for plugin &b%what%&3, reloading now..."
+    stopped: "&3Stopped watching &b%what%&3!"
+    not_watching: "&cWe aren't watching that plugin!"
   update:
     available: |-
       &8&m---------=&r&8[ &b&lServerUtils Bungee Update&r &8]&m=----------

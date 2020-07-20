@@ -4,8 +4,6 @@ import co.aikar.commands.BukkitCommandCompletionContext;
 import co.aikar.commands.CommandCompletions;
 import co.aikar.commands.PaperCommandManager;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
 import java.util.Map;
 
 import net.frankheijden.serverutils.bukkit.commands.CommandPlugins;
@@ -60,6 +58,7 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         reload();
 
         Bukkit.getPluginManager().registerEvents(new BukkitListener(), this);
+        plugin.enable();
 
         ServerUtilsApp.tryCheckForUpdates();
     }
@@ -76,6 +75,7 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
     public void onDisable() {
         super.onDisable();
         restoreBukkitPluginCommand();
+        plugin.disable();
     }
 
     private void removeCommands(String... commands) {

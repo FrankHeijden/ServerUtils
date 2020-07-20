@@ -176,6 +176,7 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
      * @param pluginName The plugin name to search for.
      * @return The File if the plugin exists with that name.
      */
+    @Override
     public File getPluginFile(String pluginName) {
         for (File file : getPluginJars()) {
             PluginDescription desc;
@@ -193,6 +194,11 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
     @Override
     public File getPluginFile(Plugin plugin) {
         return plugin.getFile();
+    }
+
+    @Override
+    public Plugin getPlugin(String pluginName) {
+        return proxy.getPluginManager().getPlugin(pluginName);
     }
 
     @Override

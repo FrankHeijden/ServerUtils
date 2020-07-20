@@ -2,6 +2,7 @@ package net.frankheijden.serverutils.bukkit.entities;
 
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 /**
  * A wrap for a Bukkit CommandSender.
@@ -35,5 +36,14 @@ public class BukkitCommandSender implements ServerCommandSender {
     @Override
     public boolean hasPermission(String permission) {
         return sender.hasPermission(permission);
+    }
+
+    /**
+     * Whether or not the given instance is a player.
+     * @return Boolean true or false.
+     */
+    @Override
+    public boolean isPlayer() {
+        return sender instanceof Player;
     }
 }

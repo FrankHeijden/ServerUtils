@@ -38,6 +38,7 @@ public class BungeePlugin extends ServerUtilsPlugin {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public BungeeTaskManager getTaskManager() {
         return taskManager;
     }

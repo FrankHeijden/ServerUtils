@@ -5,7 +5,7 @@ import net.frankheijden.serverutils.common.config.Messenger;
 /**
  * An enum containing possible results.
  */
-public enum Result {
+public enum Result implements AbstractResult {
     NOT_EXISTS,
     NOT_ENABLED,
     ALREADY_LOADED,
@@ -44,6 +44,7 @@ public enum Result {
      * @param action The action which let to the result.
      * @param what An associated variable.
      */
+    @Override
     public void sendTo(ServerCommandSender sender, String action, String what) {
         Messenger.sendMessage(sender, "serverutils." + this.name().toLowerCase(),
                 "%action%", action,

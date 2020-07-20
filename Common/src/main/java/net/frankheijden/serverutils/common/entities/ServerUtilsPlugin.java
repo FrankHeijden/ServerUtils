@@ -15,7 +15,7 @@ public abstract class ServerUtilsPlugin {
 
     public abstract <T> AbstractPluginManager<T> getPluginManager();
 
-    public abstract AbstractTaskManager getTaskManager();
+    public abstract <T> AbstractTaskManager<T> getTaskManager();
 
     public abstract ResourceProvider getResourceProvider();
 
@@ -51,5 +51,13 @@ public abstract class ServerUtilsPlugin {
             }
         }
         return file;
+    }
+
+    public void enable() {
+
+    }
+
+    public void disable() {
+        getTaskManager().cancelAllTasks();
     }
 }

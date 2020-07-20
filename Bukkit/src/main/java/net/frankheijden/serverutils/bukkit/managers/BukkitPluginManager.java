@@ -334,11 +334,21 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
         return loader.getPluginDescription(file);
     }
 
+    @Override
+    public File getPluginFile(Plugin plugin) {
+        try {
+            return RJavaPlugin.getFile(plugin);
+        } catch (ReflectiveOperationException ex) {
+            throw new RuntimeException("Error retrieving current plugin file", ex);
+        }
+    }
+
     /**
      * Attempts to retrieve the plugin file by plugin name.
      * @param pluginName The plugin name.
      * @return The file, or null if invalid or not found.
      */
+    @Override
     public File getPluginFile(String pluginName) {
         for (File file : getPluginJars()) {
             PluginDescriptionFile descriptionFile;
@@ -354,12 +364,8 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
     }
 
     @Override
-    public File getPluginFile(Plugin plugin) {
-        try {
-            return RJavaPlugin.getFile(plugin);
-        } catch (ReflectiveOperationException ex) {
-            throw new RuntimeException("Error retrieving current plugin file", ex);
-        }
+    public Plugin getPlugin(String pluginName) {
+        return Bukkit.getPluginManager().getPlugin(pluginName);
     }
 
     @Override

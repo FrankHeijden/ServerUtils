@@ -38,6 +38,7 @@ public class BukkitPlugin extends ServerUtilsPlugin {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public BukkitTaskManager getTaskManager() {
         return taskManager;
     }
