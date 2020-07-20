@@ -2,6 +2,7 @@ package net.frankheijden.serverutils.common.config;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * A wrap for a Yaml Configuration file.
@@ -14,6 +15,13 @@ public interface YamlConfig {
      * @return The object.
      */
     Object get(String path);
+
+    /**
+     * Retrieves a map with key/values for the path specified.
+     * @param path The path.
+     * @return The map object with key/values.
+     */
+    Map<String, Object> getMap(String path);
 
     /**
      * Sets a value to a path.

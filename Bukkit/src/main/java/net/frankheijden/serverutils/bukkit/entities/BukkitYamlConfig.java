@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.frankheijden.serverutils.common.config.YamlConfig;
 import org.bukkit.configuration.MemorySection;
@@ -35,6 +37,16 @@ public class BukkitYamlConfig implements YamlConfig {
             return new BukkitYamlConfig((MemorySection) obj);
         }
         return obj;
+    }
+
+    @Override
+    public Map<String, Object> getMap(String path) {
+        Object obj = config.get(path);
+        if (obj instanceof MemorySection) {
+            System.out.println("yes");
+            return ((MemorySection) obj).getValues(false);
+        }
+        return new HashMap<>();
     }
 
     @Override

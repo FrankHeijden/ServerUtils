@@ -29,6 +29,7 @@ import net.frankheijden.serverutils.common.entities.Result;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.utils.FormatBuilder;
 import net.frankheijden.serverutils.common.utils.ForwardFilter;
+import net.frankheijden.serverutils.common.utils.HexUtils;
 import net.frankheijden.serverutils.common.utils.ListBuilder;
 import net.frankheijden.serverutils.common.utils.ListFormat;
 import org.bukkit.Bukkit;
@@ -196,18 +197,16 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.reloadplugin")
     @Description("Reloads a specified plugin.")
     public void onReloadPlugin(CommandSender sender, String pluginName) {
-        if (pluginName.equalsIgnoreCase("ServerUtils")) {
-            String result = BukkitPluginManager.get().reloadPlugin(pluginName).toString();
-            if (result.equals("SUCCESS")) {
-                sender.sendMessage(ChatColor.GREEN + "Successfully reloaded ServerUtils.");
-            } else {
-                sender.sendMessage(ChatColor.RED + "Something went wrong reloading ServerUtils.");
-            }
-            return;
-        }
+        // Wacky method to have the resources needed for the reload in memory, in case of a self reload.
+        HexUtils utils = new HexUtils();
+        Map<String, Object> section = Messenger.getInstance().getConfig().getMap("serverutils");
+        String result = BukkitPluginManager.get().reloadPlugin(pluginName).toString();
 
-        Result result = BukkitPluginManager.get().reloadPlugin(pluginName);
-        result.sendTo(BukkitUtils.wrap(sender), "reload", pluginName);
+        String msg = (String) section.get(result.toLowerCase());
+        if (msg != null && !msg.isEmpty()) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', utils.convertHexString(
+                    msg.replace("%action%", "reload").replace("%what%", pluginName))));
+        }
     }
 
     /**

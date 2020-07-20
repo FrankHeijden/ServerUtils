@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.frankheijden.serverutils.common.config.YamlConfig;
 import net.md_5.bungee.config.Configuration;
@@ -36,6 +38,21 @@ public class BungeeYamlConfig implements YamlConfig {
             return new BungeeYamlConfig((Configuration) obj);
         }
         return obj;
+    }
+
+    @Override
+    public Map<String, Object> getMap(String path) {
+        Object obj = config.get(path);
+        if (obj instanceof Configuration) {
+            Configuration section = (Configuration) obj;
+            Collection<String> keys = section.getKeys();
+            Map<String, Object> map = new HashMap<>(keys.size());
+            for (String key : keys) {
+                map.put(key, section.get(key));
+            }
+            return map;
+        }
+        return new HashMap<>();
     }
 
     @Override
