@@ -43,7 +43,6 @@ public class BukkitYamlConfig implements YamlConfig {
     public Map<String, Object> getMap(String path) {
         Object obj = config.get(path);
         if (obj instanceof MemorySection) {
-            System.out.println("yes");
             return ((MemorySection) obj).getValues(false);
         }
         return new HashMap<>();
