@@ -62,6 +62,7 @@ public class ServerUtils extends Plugin {
     @Override
     public void onDisable() {
         super.onDisable();
+        commandManager.unregisterCommands();
         plugin.disable();
     }
 

@@ -75,6 +75,7 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
     public void onDisable() {
         super.onDisable();
         restoreBukkitPluginCommand();
+        commandManager.unregisterCommands();
         plugin.disable();
     }
 
