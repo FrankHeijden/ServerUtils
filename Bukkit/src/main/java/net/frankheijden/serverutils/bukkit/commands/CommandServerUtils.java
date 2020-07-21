@@ -85,7 +85,7 @@ public class CommandServerUtils extends BaseCommand {
                 .filter(c -> !ALIASES.contains(c.getCommandName().toLowerCase()))
                 .forEach(rootCommand -> {
                     builder.add(rootCommand.getCommandName(), "", rootCommand.getDescription());
-                    rootCommand.getSubCommands().forEach((str, cmd) -> {
+                    rootCommand.getSubCommands().values().forEach(cmd -> {
                         if (cmd.getPrefSubCommand().isEmpty()) return;
                         builder.add(rootCommand.getCommandName(), " " + cmd.getPrefSubCommand(), cmd.getHelpText());
                     });
