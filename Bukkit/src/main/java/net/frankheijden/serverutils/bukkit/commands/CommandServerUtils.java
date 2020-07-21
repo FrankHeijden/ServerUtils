@@ -260,7 +260,7 @@ public class CommandServerUtils extends BaseCommand {
      */
     @Subcommand("unwatchplugin")
     @CommandCompletion("@plugins")
-    @CommandPermission("serverutils.unwatchplugin")
+    @CommandPermission("serverutils.watchplugin")
     @Description("Stops watching the specified plugin for changes.")
     public void onUnwatchPlugin(CommandSender sender, String pluginName) {
         AbstractResult result = BukkitPluginManager.get().unwatchPlugin(pluginName);
