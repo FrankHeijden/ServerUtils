@@ -12,12 +12,17 @@ public class BukkitTaskManager extends AbstractTaskManager<BukkitTask> {
     }
 
     @Override
-    public void runTask(Runnable runnable) {
-        addTask(Bukkit.getScheduler().runTask(ServerUtils.getInstance(), runnable));
+    protected BukkitTask runTaskImpl(Runnable runnable) {
+        return Bukkit.getScheduler().runTask(ServerUtils.getInstance(), runnable);
     }
 
     @Override
-    public void runTaskAsynchronously(Runnable runnable) {
-        addTask(Bukkit.getScheduler().runTaskAsynchronously(ServerUtils.getInstance(), runnable));
+    protected BukkitTask runTaskAsynchronouslyImpl(Runnable runnable) {
+        return Bukkit.getScheduler().runTaskAsynchronously(ServerUtils.getInstance(), runnable);
+    }
+
+    @Override
+    public void cancelTask(BukkitTask task) {
+        task.cancel();
     }
 }

@@ -12,7 +12,7 @@ public abstract class AbstractTaskManager<T> {
 
     private final List<T> serverTasks;
     private final Consumer<T> taskCloser;
-    private final Map<String, AbstractTask> tasks;
+    private final Map<String, RunningTask> tasks;
 
     /**
      * Constructs a new TaskManager with a consumer which closes a task.
@@ -24,23 +24,48 @@ public abstract class AbstractTaskManager<T> {
         this.tasks = new HashMap<>();
     }
 
-    public abstract void runTask(Runnable runnable);
+    protected abstract T runTaskImpl(Runnable runnable);
 
-    public void runTask(String key, AbstractTask task) {
-        tasks.put(key, task);
-        runTask(task);
+    public T runTask(Runnable runnable) {
+        return addTask(runTaskImpl(runnable));
     }
 
-    public abstract void runTaskAsynchronously(Runnable runnable);
-
-    public void runTaskAsynchronously(String key, AbstractTask task) {
-        tasks.put(key, task);
-        runTaskAsynchronously(task);
+    /**
+     * Associates a synchronous task with a key which can be cancelled later by that key.
+     * @param key The key of the task.
+     * @param abstractTask The AbstractTask.
+     * @return The implementation-specific scheduled task.
+     */
+    public T runTask(String key, AbstractTask abstractTask) {
+        T task = runTask(abstractTask);
+        tasks.put(key, new RunningTask(task, abstractTask));
+        return task;
     }
 
-    public void addTask(T task) {
+    protected abstract T runTaskAsynchronouslyImpl(Runnable runnable);
+
+    public T runTaskAsynchronously(Runnable runnable) {
+        return addTask(runTaskAsynchronouslyImpl(runnable));
+    }
+
+    /**
+     * Associates an asynchronous task with a key which can be cancelled later by that key.
+     * @param key The key of the task.
+     * @param abstractTask The AbstractTask.
+     * @return The implementation-specific scheduled task.
+     */
+    public T runTaskAsynchronously(String key, AbstractTask abstractTask) {
+        T task = runTaskAsynchronously(abstractTask);
+        tasks.put(key, new RunningTask(task, abstractTask));
+        return task;
+    }
+
+    private T addTask(T task) {
         serverTasks.add(task);
+        return task;
     }
+
+    public abstract void cancelTask(T task);
 
     /**
      * Cancels a single task by key.
@@ -48,7 +73,7 @@ public abstract class AbstractTaskManager<T> {
      * @return Whether or not the task existed.
      */
     public boolean cancelTask(String key) {
-        AbstractTask task = tasks.remove(key);
+        RunningTask task = tasks.remove(key);
         if (task == null) return false;
         task.cancel();
         return true;
@@ -58,7 +83,7 @@ public abstract class AbstractTaskManager<T> {
      * Cancels all tasks.
      */
     public void cancelAllTasks() {
-        for (AbstractTask task : tasks.values()) {
+        for (RunningTask task : tasks.values()) {
             task.cancel();
         }
         tasks.clear();
@@ -67,5 +92,20 @@ public abstract class AbstractTaskManager<T> {
             taskCloser.accept(task);
         }
         serverTasks.clear();
+    }
+
+    private final class RunningTask {
+        private final T task;
+        private final AbstractTask abstractTask;
+
+        private RunningTask(T task, AbstractTask abstractTask) {
+            this.task = task;
+            this.abstractTask = abstractTask;
+        }
+
+        public void cancel() {
+            cancelTask(task);
+            abstractTask.cancel();
+        }
     }
 }

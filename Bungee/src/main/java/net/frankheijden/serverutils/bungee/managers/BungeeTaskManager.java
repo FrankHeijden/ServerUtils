@@ -12,12 +12,17 @@ public class BungeeTaskManager extends AbstractTaskManager<ScheduledTask> {
     }
 
     @Override
-    public void runTask(Runnable runnable) {
-        runTaskAsynchronously(runnable);
+    protected ScheduledTask runTaskImpl(Runnable runnable) {
+        return runTaskAsynchronously(runnable);
     }
 
     @Override
-    public void runTaskAsynchronously(Runnable runnable) {
-        ProxyServer.getInstance().getScheduler().runAsync(ServerUtils.getInstance(), runnable);
+    protected ScheduledTask runTaskAsynchronouslyImpl(Runnable runnable) {
+        return ProxyServer.getInstance().getScheduler().runAsync(ServerUtils.getInstance(), runnable);
+    }
+
+    @Override
+    public void cancelTask(ScheduledTask task) {
+        task.cancel();
     }
 }

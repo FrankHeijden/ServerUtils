@@ -4,6 +4,7 @@ import com.sun.nio.file.SensitivityWatchEventModifier;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.FileSystems;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
@@ -41,6 +42,8 @@ public class PluginWatcherTask extends AbstractTask {
     private File file;
     private final AtomicBoolean run;
 
+    private WatchService watchService;
+
     /**
      * Constructs a new PluginWatcherTask for the specified plugin.
      * @param pluginName The name of the plugin.
@@ -55,6 +58,8 @@ public class PluginWatcherTask extends AbstractTask {
     @Override
     public void run() {
         try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
+            this.watchService = watchService;
+
             File folder = pluginManager.getPluginsFolder();
             folder.toPath().register(watchService, EVENTS, SensitivityWatchEventModifier.HIGH);
 
@@ -76,9 +81,9 @@ public class PluginWatcherTask extends AbstractTask {
                     break;
                 }
             }
-        } catch (IOException ex) {
+        } catch (IOException | InterruptedException ex) {
             ex.printStackTrace();
-        } catch (InterruptedException ignored) {
+        } catch (ClosedWatchServiceException ignored) {
             //
         }
     }
@@ -93,5 +98,10 @@ public class PluginWatcherTask extends AbstractTask {
     @Override
     public void cancel() {
         run.set(false);
+        try {
+            watchService.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }
