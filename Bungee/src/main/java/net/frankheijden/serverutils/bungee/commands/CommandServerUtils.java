@@ -96,7 +96,7 @@ public class CommandServerUtils extends BaseCommand {
      * @param commandSender The sender of the command.
      * @param jarFile The filename of the plugin in the plugins/ directory.
      */
-    @Subcommand("loadplugin")
+    @Subcommand("loadplugin|lp")
     @CommandCompletion("@pluginJars")
     @CommandPermission("serverutils.loadplugin")
     @Description("Loads the specified jar file as a plugin.")
@@ -119,7 +119,7 @@ public class CommandServerUtils extends BaseCommand {
      * @param commandSender The sender of the command.
      * @param pluginName The plugin name.
      */
-    @Subcommand("unloadplugin")
+    @Subcommand("unloadplugin|up")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.unloadplugin")
     @Description("Disables and unloads the specified plugin.")
@@ -134,7 +134,7 @@ public class CommandServerUtils extends BaseCommand {
      * @param sender The sender of the command.
      * @param pluginName The plugin name.
      */
-    @Subcommand("reloadplugin")
+    @Subcommand("reloadplugin|rp")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.reloadplugin")
     @Description("Reloads a specified plugin.")
@@ -156,7 +156,7 @@ public class CommandServerUtils extends BaseCommand {
      * @param sender The sender of the command.
      * @param pluginName The plugin name.
      */
-    @Subcommand("watchplugin")
+    @Subcommand("watchplugin|wp")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.watchplugin")
     @Description("Watches the specified plugin for changes.")
@@ -171,7 +171,7 @@ public class CommandServerUtils extends BaseCommand {
      * @param sender The sender of the command.
      * @param pluginName The plugin name.
      */
-    @Subcommand("unwatchplugin")
+    @Subcommand("unwatchplugin|uwp")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.watchplugin")
     @Description("Stops watching the specified plugin for changes.")
@@ -185,7 +185,7 @@ public class CommandServerUtils extends BaseCommand {
      * @param commandSender The sender of the command.
      * @param pluginName The plugin name.
      */
-    @Subcommand("plugininfo")
+    @Subcommand("plugininfo|pi")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.plugininfo")
     @Description("Shows information about the specified plugin.")
@@ -236,7 +236,7 @@ public class CommandServerUtils extends BaseCommand {
      * @param commandSender The sender of the command.
      * @param command The command to lookup.
      */
-    @Subcommand("commandinfo")
+    @Subcommand("commandinfo|ci")
     @CommandCompletion("@commands")
     @CommandPermission("serverutils.commandinfo")
     @Description("Shows information about the specified command.")
