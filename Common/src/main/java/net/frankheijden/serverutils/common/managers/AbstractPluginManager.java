@@ -20,6 +20,8 @@ public abstract class AbstractPluginManager<T> extends PluginProvider<T> {
 
     public abstract Result enablePlugin(T plugin);
 
+    public abstract Result disablePlugin(T plugin);
+
     public abstract Result reloadPlugin(String pluginName);
 
     public abstract Result reloadPlugin(T plugin);

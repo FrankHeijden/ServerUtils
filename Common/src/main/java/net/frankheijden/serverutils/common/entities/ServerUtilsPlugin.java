@@ -27,6 +27,8 @@ public abstract class ServerUtilsPlugin {
 
     public abstract File getDataFolder();
 
+    public abstract <T> T fetchUpdaterData();
+
     public void createDataFolderIfNotExists() {
         if (getDataFolder().exists()) return;
         getDataFolder().mkdirs();

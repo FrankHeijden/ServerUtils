@@ -115,6 +115,19 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
     }
 
     @Override
+    public Result disablePlugin(Plugin plugin) {
+        PluginDescription desc = plugin.getDescription();
+        String name = desc.getName();
+        try {
+            plugin.onDisable();
+            return Result.SUCCESS;
+        } catch (Throwable th) {
+            proxy.getLogger().log(Level.WARNING, "Exception encountered when disabling plugin: " + name, th);
+            return Result.ERROR;
+        }
+    }
+
+    @Override
     public Result reloadPlugin(String pluginName) {
         Plugin plugin = proxy.getPluginManager().getPlugin(pluginName);
         if (plugin == null) return Result.NOT_ENABLED;

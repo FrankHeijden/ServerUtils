@@ -67,4 +67,10 @@ public class BukkitPlugin extends ServerUtilsPlugin {
     public File getDataFolder() {
         return plugin.getDataFolder();
     }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public File fetchUpdaterData() {
+        return pluginManager.getPluginFile("ServerUtils");
+    }
 }

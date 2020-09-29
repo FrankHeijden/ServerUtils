@@ -98,7 +98,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
      * @param pluginName The plugin to disable.
      * @return The result of the disable call.
      */
-    public static Result disablePlugin(String pluginName) {
+    public Result disablePlugin(String pluginName) {
         return disablePlugin(Bukkit.getPluginManager().getPlugin(pluginName));
     }
 
@@ -107,7 +107,8 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
      * @param plugin The plugin to disable.
      * @return The result of the disable call.
      */
-    public static Result disablePlugin(Plugin plugin) {
+    @Override
+    public Result disablePlugin(Plugin plugin) {
         if (plugin == null) return Result.NOT_ENABLED;
         if (!plugin.isEnabled()) return Result.ALREADY_DISABLED;
         try {

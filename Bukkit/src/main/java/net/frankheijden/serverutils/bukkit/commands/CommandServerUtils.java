@@ -177,7 +177,7 @@ public class CommandServerUtils extends BaseCommand {
     public void onUnloadPlugin(CommandSender commandSender, String pluginName) {
         ServerCommandSender sender = BukkitUtils.wrap(commandSender);
 
-        Result disableResult = BukkitPluginManager.disablePlugin(pluginName);
+        Result disableResult = BukkitPluginManager.get().disablePlugin(pluginName);
         if (disableResult != Result.SUCCESS && disableResult != Result.ALREADY_DISABLED) {
             disableResult.sendTo(sender, "disabl", pluginName);
             return;
@@ -234,7 +234,7 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.disableplugin")
     @Description("Disables the specified plugin.")
     public void onDisablePlugin(CommandSender sender, String pluginName) {
-        Result result = BukkitPluginManager.disablePlugin(pluginName);
+        Result result = BukkitPluginManager.get().disablePlugin(pluginName);
         result.sendTo(BukkitUtils.wrap(sender), "disabl", pluginName);
     }
 

@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -21,6 +22,7 @@ import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.managers.AbstractVersionManager;
 import net.frankheijden.serverutils.common.utils.FileUtils;
 import net.frankheijden.serverutils.common.utils.VersionUtils;
+import net.frankheijden.serverutilsupdater.common.Updater;
 
 public class UpdateCheckerTask implements Runnable {
 
@@ -118,7 +120,7 @@ public class UpdateCheckerTask implements Runnable {
                 File target = new File(plugin.getPluginManager().getPluginsFolder(), asset.name);
                 downloadPlugin(githubVersion, asset.downloadUrl, target);
                 plugin.getPluginManager().getPluginFile((Object) ServerUtilsApp.getPlatformPlugin()).delete();
-                tryReloadPlugin();
+                tryReloadPlugin(target);
             } else if (!isStartupCheck()) {
                 Messenger.sendMessage(sender, "serverutils.update.available",
                         "%old%", current,
@@ -175,13 +177,35 @@ public class UpdateCheckerTask implements Runnable {
         versionManager.setDownloaded(githubVersion);
     }
 
-    private void tryReloadPlugin() {
+    private static final String UPDATER_FILE_NAME = "ServerUtilsUpdater.jar";
+
+    private File saveUpdater() {
+        InputStream in = getClass().getClassLoader().getResourceAsStream(UPDATER_FILE_NAME);
+        File file = new File(plugin.getDataFolder().getParent(), UPDATER_FILE_NAME);
+        try {
+            FileUtils.saveResource(in, file);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return file;
+    }
+
+    private void tryReloadPlugin(File pluginFile) {
         plugin.getTaskManager().runTask(() -> {
             String downloadedVersion = versionManager.getDownloadedVersion();
 
             if (isStartupCheck()) {
                 plugin.getLogger().info(String.format(DOWNLOADED_RESTART, downloadedVersion));
-                plugin.getPluginManager().reloadPlugin((Object)ServerUtilsApp.getPlatformPlugin());
+
+                File file = saveUpdater();
+                Updater updater = (Updater) plugin.getPluginManager().loadPlugin(file).get();
+                plugin.getPluginManager().enablePlugin(updater);
+
+                plugin.getPluginManager().disablePlugin(ServerUtilsApp.getPlatformPlugin());
+                plugin.getPluginManager().unloadPlugin((Object)ServerUtilsApp.getPlatformPlugin()).tryClose();
+                updater.update(pluginFile);
+                file.delete();
+
                 plugin.getLogger().info(String.format(UPGRADE_SUCCESS, downloadedVersion));
             } else {
                 broadcastDownloadStatus(downloadedVersion, false);

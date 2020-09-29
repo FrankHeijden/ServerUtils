@@ -8,6 +8,7 @@ import net.frankheijden.serverutils.bungee.managers.BungeePluginManager;
 import net.frankheijden.serverutils.bungee.managers.BungeeTaskManager;
 import net.frankheijden.serverutils.bungee.managers.BungeeVersionManager;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
+import net.md_5.bungee.api.plugin.PluginDescription;
 
 public class BungeePlugin extends ServerUtilsPlugin {
 
@@ -66,5 +67,16 @@ public class BungeePlugin extends ServerUtilsPlugin {
     @Override
     public File getDataFolder() {
         return plugin.getDataFolder();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public PluginDescription fetchUpdaterData() {
+        try {
+            return BungeePluginManager.getPluginDescription(pluginManager.getPluginFile("ServerUtils"));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
     }
 }
