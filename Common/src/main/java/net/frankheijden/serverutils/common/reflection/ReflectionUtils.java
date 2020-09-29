@@ -1,9 +1,12 @@
 package net.frankheijden.serverutils.common.reflection;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class ReflectionUtils {
@@ -120,6 +123,24 @@ public abstract class ReflectionUtils {
             }
         }
         return map;
+    }
+
+    /**
+     * Fetches all constructors by their parameter input.
+     * @param clazz The class to find constructors on.
+     * @param constructorParams The constructor parameters.
+     * @return The list of constructors.
+     */
+    public static List<Constructor<?>> getAllConstructors(Class<?> clazz, ConstructorParam... constructorParams) {
+        List<Constructor<?>> constructors = new ArrayList<>();
+        for (ConstructorParam constructorParam : constructorParams) {
+            try {
+                constructors.add(clazz.getDeclaredConstructor(constructorParam.params));
+            } catch (NoSuchMethodException ignored) {
+                //
+            }
+        }
+        return constructors;
     }
 
     /**

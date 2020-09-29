@@ -4,9 +4,9 @@ import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VE
 
 public class MethodParam {
 
-    public String method;
-    public VersionParam versionParam;
-    public Class<?>[] params;
+    public final String method;
+    public final VersionParam versionParam;
+    public final Class<?>[] params;
 
     private MethodParam(String method, VersionParam versionParam, Class<?>... params) {
         this.method = method;

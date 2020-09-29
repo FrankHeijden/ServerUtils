@@ -1,6 +1,7 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
 import static net.frankheijden.serverutils.bukkit.entities.BukkitReflection.MINOR;
+import static net.frankheijden.serverutils.bukkit.entities.BukkitReflection.PATCH;
 import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
 import static net.frankheijden.serverutils.common.reflection.MethodParam.methodOf;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get;
@@ -9,6 +10,7 @@ import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.invoke;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.set;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.between;
+import static net.frankheijden.serverutils.common.reflection.VersionParam.exact;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.max;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.min;
 
@@ -18,6 +20,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
+import net.frankheijden.serverutils.common.reflection.VersionParam;
 
 public class RDedicatedServer {
 
@@ -50,8 +53,10 @@ public class RDedicatedServer {
                     methodOf("setForceGamemode", boolean.class),
                     methodOf("n", between(13, 15), boolean.class),
                     methodOf("aZ", max(15)),
+                    methodOf("aZ", min(new VersionParam.Version(16, 2))),
                     methodOf("i", min(16), boolean.class),
-                    methodOf("aY", min(16)));
+                    methodOf("aY", exact(new VersionParam.Version(16, 1))),
+                    methodOf("getCustomRegistry", min(new VersionParam.Version(16, 2))));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -70,7 +75,14 @@ public class RDedicatedServer {
         Object options = get(fields, console, "options");
 
         if (MINOR >= 13) {
-            Object propertyManager = RDedicatedServerSettings.newInstance(options);
+            Object propertyManager;
+            if (MINOR >= 16 && PATCH >= 2) {
+                propertyManager = RDedicatedServerSettings.newInstance(invoke(methods, console, "getCustomRegistry"),
+                        options);
+            } else {
+                propertyManager = RDedicatedServerSettings.newInstance(options);
+            }
+
             set(fields, console, "propertyManager", propertyManager);
             Object config = invoke(RDedicatedServerSettings.getMethods(), propertyManager, "getProperties");
             invoke(methods, console, "setPVP", getConfigValue(config, "pvp"));
@@ -78,16 +90,20 @@ public class RDedicatedServer {
             invoke(methods, console, "setMotd", getConfigValue(config, "motd"));
             invoke(methods, console, "setForceGamemode", getConfigValue(config, "forceGamemode"));
 
+            Object resourcePackHash;
+            if (MINOR <= 15 || (MINOR == 16 && PATCH == 1)) {
+                resourcePackHash = invoke(methods, console, "aZ");
+            } else {
+                resourcePackHash = invoke(methods, console, "aY");
+            }
+            invoke(methods, console, "setResourcePack", getConfigValue(config, "resourcePack"), resourcePackHash);
+
             if (MINOR <= 15) {
                 invoke(methods, console, "setSpawnAnimals", getConfigValue(config, "spawnAnimals"));
                 invoke(methods, console, "setSpawnNPCs", getConfigValue(config, "spawnNpcs"));
-                invoke(methods, console, "setResourcePack", getConfigValue(config, "resourcePack"),
-                        invoke(methods, console, "aZ"));
                 invoke(methods, console, "n", getConfigValue(config, "enforceWhitelist"));
                 set(fields, console, "o", getConfigValue(config, "gamemode"));
             } else {
-                invoke(methods, console, "setResourcePack", getConfigValue(config, "resourcePack"),
-                        invoke(methods, console, "aY"));
                 invoke(methods, console, "i", getConfigValue(config, "enforceWhitelist"));
             }
         } else {

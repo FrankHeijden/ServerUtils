@@ -23,6 +23,7 @@ public class BukkitReflection extends ReflectionUtils {
 
     @Override
     public boolean isCompatible(VersionParam versionParam) {
-        return versionParam.min <= MINOR && MINOR <= versionParam.max;
+        return versionParam.min.minor <= MINOR && versionParam.min.patch <= PATCH
+                && MINOR <= versionParam.max.minor && PATCH <= versionParam.max.patch;
     }
 }

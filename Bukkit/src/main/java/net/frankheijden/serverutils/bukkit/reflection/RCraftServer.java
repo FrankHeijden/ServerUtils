@@ -9,9 +9,9 @@ import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getDeclaredMethod;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.invoke;
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.set;
+import static net.frankheijden.serverutils.common.reflection.VersionParam.exact;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.max;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.min;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.versionOf;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -53,7 +53,7 @@ public class RCraftServer {
                     fieldOf("console"),
                     fieldOf("commandsConfiguration"),
                     fieldOf("overrideAllCommandBlockCommands"),
-                    fieldOf("unrestrictedAdvancements", versionOf(12)),
+                    fieldOf("unrestrictedAdvancements", exact(12)),
                     fieldOf("ignoreVanillaPermissions", min(13)),
                     fieldOf("monsterSpawn"),
                     fieldOf("animalSpawn"),

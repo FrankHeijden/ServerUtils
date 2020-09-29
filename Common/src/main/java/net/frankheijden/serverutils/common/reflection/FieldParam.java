@@ -3,8 +3,9 @@ package net.frankheijden.serverutils.common.reflection;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.ALL_VERSIONS;
 
 public class FieldParam {
-    public String field;
-    public VersionParam versionParam;
+
+    public final String field;
+    public final VersionParam versionParam;
 
     private FieldParam(String field, VersionParam versionParam) {
         this.field = field;
