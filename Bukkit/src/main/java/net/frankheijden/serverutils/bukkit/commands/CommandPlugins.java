@@ -13,7 +13,7 @@ import net.frankheijden.serverutils.common.commands.Plugins;
 import net.frankheijden.serverutils.common.config.Messenger;
 import org.bukkit.command.CommandSender;
 
-@CommandAlias("plugins|pl")
+@CommandAlias("pl|plugins")
 public class CommandPlugins extends BaseCommand {
 
     private static final BukkitPluginManager manager = BukkitPluginManager.get();

@@ -4,6 +4,8 @@ import static net.frankheijden.serverutils.bukkit.entities.BukkitReflection.MINO
 import static net.frankheijden.serverutils.common.config.Messenger.sendMessage;
 
 import co.aikar.commands.BaseCommand;
+import co.aikar.commands.RegisteredCommand;
+import co.aikar.commands.RootCommand;
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
@@ -41,17 +43,12 @@ import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
-@CommandAlias("serverutils|su")
+@CommandAlias("su|serverutils")
 public class CommandServerUtils extends BaseCommand {
 
-    private static final Set<String> ALIASES;
     private static final Map<String, ReloadHandler> supportedConfigs;
 
     static {
-        ALIASES = new HashSet<>();
-        ALIASES.add("serverutils");
-        ALIASES.add("plugins");
-
         supportedConfigs = new HashMap<>();
         supportedConfigs.put("bukkit", RCraftServer::reloadBukkitConfiguration);
         supportedConfigs.put("commands.yml", RCraftServer::reloadCommandsConfiguration);
@@ -81,15 +78,21 @@ public class CommandServerUtils extends BaseCommand {
 
         FormatBuilder builder = FormatBuilder.create(Messenger.getMessage("serverutils.help.format"))
                 .orderedKeys("%command%", "%subcommand%", "%help%");
-        plugin.getCommandManager().getRegisteredRootCommands().stream()
-                .filter(c -> !ALIASES.contains(c.getCommandName().toLowerCase()))
-                .forEach(rootCommand -> {
-                    builder.add(rootCommand.getCommandName(), "", rootCommand.getDescription());
-                    rootCommand.getSubCommands().values().forEach(cmd -> {
-                        if (cmd.getPrefSubCommand().isEmpty()) return;
-                        builder.add(rootCommand.getCommandName(), " " + cmd.getPrefSubCommand(), cmd.getHelpText());
-                    });
-                });
+
+        Set<String> rootCommands = new HashSet<>();
+        for (RootCommand root : plugin.getCommandManager().getRegisteredRootCommands()) {
+            String rootName = root.getDefCommand().getName();
+            if (!rootCommands.add(rootName)) continue;
+            builder.add(rootName, "", root.getDescription());
+
+            Set<String> subCommands = new HashSet<>();
+            for (RegisteredCommand<?> sub : root.getSubCommands().values()) {
+                String name = sub.getPrefSubCommand().toLowerCase();
+                if (name.isEmpty()) continue;
+                if (!subCommands.add(name)) continue;
+                builder.add(rootName, " " + name, sub.getHelpText());
+            }
+        }
         builder.sendTo(sender);
         Messenger.sendMessage(sender, "serverutils.help.footer");
     }
