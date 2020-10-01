@@ -182,6 +182,7 @@ public class UpdateCheckerTask implements Runnable {
     private File saveUpdater() {
         InputStream in = getClass().getClassLoader().getResourceAsStream(UPDATER_FILE_NAME);
         File file = new File(plugin.getDataFolder().getParent(), UPDATER_FILE_NAME);
+        if (file.exists()) file.delete();
         try {
             FileUtils.saveResource(in, file);
         } catch (IOException ex) {
