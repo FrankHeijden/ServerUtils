@@ -46,7 +46,7 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         new BukkitReflection();
 
         this.commandManager = new PaperCommandManager(this);
-        commandManager.registerCommand(new CommandServerUtils());
+        commandManager.registerCommand(new CommandServerUtils(), true);
         this.commandPlugins = null;
 
         BukkitPluginManager manager = plugin.getPluginManager();
@@ -113,7 +113,7 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         if (!Config.getInstance().getConfig().getBoolean("settings.disable-plugins-command")) {
             this.removeCommands("pl", "plugins");
             this.commandPlugins = new CommandPlugins();
-            commandManager.registerCommand(commandPlugins);
+            commandManager.registerCommand(commandPlugins, true);
         }
     }
 

@@ -26,7 +26,7 @@ import net.frankheijden.serverutils.common.entities.Result;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.PluginCommand;
+import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
@@ -188,11 +188,15 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
     public Result enablePlugin(Plugin plugin) {
         if (plugin == null) return Result.NOT_EXISTS;
         if (Bukkit.getPluginManager().isPluginEnabled(plugin.getName())) return Result.ALREADY_ENABLED;
+
         Bukkit.getPluginManager().enablePlugin(plugin);
-        if (Bukkit.getPluginManager().isPluginEnabled(plugin.getName())) {
-            return Result.SUCCESS;
+        try {
+            RCraftServer.syncCommands();
+        } catch (ReflectiveOperationException ex) {
+            ex.printStackTrace();
         }
-        return Result.ERROR;
+
+        return Bukkit.getPluginManager().isPluginEnabled(plugin.getName()) ? Result.SUCCESS : Result.ERROR;
     }
 
     /**
@@ -253,16 +257,22 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
         if (knownCommands == null) return;
 
         knownCommands.values().removeIf(c -> {
-            if (c instanceof PluginCommand) {
-                PluginCommand pc = (PluginCommand) c;
-                if (pc.getPlugin() == plugin) {
-                    pc.unregister(RCraftServer.getCommandMap());
+            if (c instanceof PluginIdentifiableCommand) {
+                PluginIdentifiableCommand pc = (PluginIdentifiableCommand) c;
+                if (pc.getPlugin().getName().equals(plugin.getName())) {
+                    c.unregister(RCraftServer.getCommandMap());
                     return true;
                 }
                 return false;
             }
             return false;
         });
+
+        try {
+            RCraftServer.syncCommands();
+        } catch (ReflectiveOperationException ex) {
+            ex.printStackTrace();
+        }
     }
 
     /**

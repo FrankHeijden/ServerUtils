@@ -66,7 +66,8 @@ public class RCraftServer {
                     fieldOf("chunkGCLoadThresh", max(12)),
                     fieldOf("playerList"));
             methods = getAllMethods(craftServerClass,
-                    methodOf("loadIcon"));
+                    methodOf("loadIcon"),
+                    methodOf("syncCommands"));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -99,6 +100,10 @@ public class RCraftServer {
 
     public static SimpleCommandMap getCommandMap() {
         return commandMap;
+    }
+
+    public static void syncCommands() throws InvocationTargetException, IllegalAccessException {
+        invoke(methods, craftServer, "syncCommands");
     }
 
     /**
