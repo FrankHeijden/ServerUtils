@@ -3,12 +3,11 @@ version = rootProject.version
 archivesBaseName = rootProject.name + '-Common'
 
 repositories {
-    mavenCentral()
-    flatDir { dirs 'src/main/resources' }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    compileOnly name: 'ServerUtilsUpdater'
+    compileOnly 'com.github.FrankHeijden:ServerUtilsUpdater:v1.0.0'
     compileOnly 'com.google.code.gson:gson:2.8.0'
 }
 

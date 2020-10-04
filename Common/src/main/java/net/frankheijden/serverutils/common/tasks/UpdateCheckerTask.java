@@ -7,7 +7,6 @@ import com.google.gson.JsonObject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -34,6 +33,8 @@ public class UpdateCheckerTask implements Runnable {
     private final boolean startup;
 
     private static final String GITHUB_LINK = "https://api.github.com/repos/FrankHeijden/ServerUtils/releases/latest";
+    private static final String GITHUB_UPDATER_LINK = "https://api.github.com/repos/FrankHeijden/ServerUtilsUpdater"
+            + "/releases/latest";
 
     private static final String UPDATE_CHECK_START = "Checking for updates...";
     private static final String GENERAL_ERROR = "Error fetching new version of ServerUtils";
@@ -71,33 +72,15 @@ public class UpdateCheckerTask implements Runnable {
             plugin.getLogger().info(UPDATE_CHECK_START);
         }
 
-        JsonElement jsonElement;
-        try {
-            jsonElement = FileUtils.readJsonFromUrl(GITHUB_LINK);
-        } catch (ConnectException | UnknownHostException | SocketTimeoutException ex) {
-            plugin.getLogger().severe(String.format(CONNECTION_ERROR, ex.getClass().getSimpleName(), ex.getMessage()));
-            return;
-        } catch (FileNotFoundException ex) {
-            plugin.getLogger().severe(String.format(UNAVAILABLE, ex.getClass().getSimpleName(), ex.getMessage()));
-            return;
-        } catch (IOException ex) {
-            plugin.getLogger().log(Level.SEVERE, ex, () -> GENERAL_ERROR);
-            return;
-        }
+        JsonObject pluginJson = getJson(GITHUB_LINK);
+        JsonObject updaterJson = getJson(GITHUB_UPDATER_LINK);
+        if (pluginJson == null || updaterJson == null) return;
 
-        if (jsonElement == null) {
-            plugin.getLogger().warning(TRY_LATER);
-            return;
-        }
-        JsonObject jsonObject = jsonElement.getAsJsonObject();
-        if (jsonObject.has("message")) {
-            plugin.getLogger().warning(jsonObject.get("message").getAsString());
-            return;
-        }
+        GitHubAsset pluginAsset = getAsset(pluginJson);
+        GitHubAsset updaterAsset = getAsset(updaterJson);
 
-        String githubVersion = getVersion(jsonObject);
-        String body = jsonObject.getAsJsonPrimitive("body").getAsString();
-        GitHubAsset asset = getAsset(jsonObject);
+        String githubVersion = getVersion(pluginJson);
+        String body = pluginJson.getAsJsonPrimitive("body").getAsString();
 
         String downloaded = versionManager.getDownloadedVersion();
         String current = versionManager.getCurrentVersion();
@@ -106,9 +89,10 @@ public class UpdateCheckerTask implements Runnable {
                 plugin.getLogger().info(String.format(UPDATE_AVAILABLE, githubVersion));
                 plugin.getLogger().info("Release info: " + body);
             }
-            if (canDownloadPlugin() && asset != null) {
+            if (canDownloadPlugin() && pluginAsset != null && updaterAsset != null) {
                 if (isStartupCheck()) {
-                    plugin.getLogger().info(String.format(DOWNLOAD_START, asset.downloadUrl));
+                    plugin.getLogger().info(String.format(DOWNLOAD_START, pluginAsset.downloadUrl));
+                    plugin.getLogger().info(String.format(DOWNLOAD_START, updaterAsset.downloadUrl));
                 } else {
                     Messenger.sendMessage(sender, "serverutils.update.downloading",
                             "%old%", current,
@@ -116,10 +100,14 @@ public class UpdateCheckerTask implements Runnable {
                             "%info%", body);
                 }
 
-                File target = new File(plugin.getPluginManager().getPluginsFolder(), asset.name);
-                downloadPlugin(githubVersion, asset.downloadUrl, target);
+                File updaterTarget = new File(plugin.getPluginManager().getPluginsFolder(), updaterAsset.name);
+                download(githubVersion, updaterAsset.downloadUrl, updaterTarget);
+
+                File pluginTarget = new File(plugin.getPluginManager().getPluginsFolder(), pluginAsset.name);
+                downloadPlugin(githubVersion, pluginAsset.downloadUrl, pluginTarget);
+
                 plugin.getPluginManager().getPluginFile((Object) ServerUtilsApp.getPlatformPlugin()).delete();
-                tryReloadPlugin(target);
+                tryReloadPlugin(pluginTarget, updaterTarget);
             } else if (!isStartupCheck()) {
                 Messenger.sendMessage(sender, "serverutils.update.available",
                         "%old%", current,
@@ -132,6 +120,33 @@ public class UpdateCheckerTask implements Runnable {
         } else if (isStartupCheck()) {
             plugin.getLogger().info(UP_TO_DATE);
         }
+    }
+
+    private JsonObject getJson(String urlString) {
+        JsonElement jsonElement;
+        try {
+            jsonElement = FileUtils.readJsonFromUrl(urlString);
+        } catch (ConnectException | UnknownHostException | SocketTimeoutException ex) {
+            plugin.getLogger().severe(String.format(CONNECTION_ERROR, ex.getClass().getSimpleName(), ex.getMessage()));
+            return null;
+        } catch (FileNotFoundException ex) {
+            plugin.getLogger().severe(String.format(UNAVAILABLE, ex.getClass().getSimpleName(), ex.getMessage()));
+            return null;
+        } catch (IOException ex) {
+            plugin.getLogger().log(Level.SEVERE, ex, () -> GENERAL_ERROR);
+            return null;
+        }
+
+        if (jsonElement == null) {
+            plugin.getLogger().warning(TRY_LATER);
+            return null;
+        }
+        JsonObject jsonObject = jsonElement.getAsJsonObject();
+        if (jsonObject.has("message")) {
+            plugin.getLogger().warning(jsonObject.get("message").getAsString());
+            return null;
+        }
+        return jsonObject;
     }
 
     private String getVersion(JsonObject jsonObject) {
@@ -161,6 +176,11 @@ public class UpdateCheckerTask implements Runnable {
             return;
         }
 
+        download(githubVersion, downloadLink, target);
+        versionManager.setDownloaded(githubVersion);
+    }
+
+    private void download(String githubVersion, String downloadLink, File target) {
         if (downloadLink == null) {
             broadcastDownloadStatus(githubVersion, true);
             return;
@@ -172,39 +192,22 @@ public class UpdateCheckerTask implements Runnable {
             broadcastDownloadStatus(githubVersion, true);
             throw new RuntimeException(DOWNLOAD_ERROR, ex);
         }
-
-        versionManager.setDownloaded(githubVersion);
     }
 
-    private static final String UPDATER_FILE_NAME = "ServerUtilsUpdater.jar";
-
-    private File saveUpdater() {
-        InputStream in = getClass().getClassLoader().getResourceAsStream(UPDATER_FILE_NAME);
-        File file = new File(plugin.getDataFolder().getParent(), UPDATER_FILE_NAME);
-        if (file.exists()) file.delete();
-        try {
-            FileUtils.saveResource(in, file);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return file;
-    }
-
-    private void tryReloadPlugin(File pluginFile) {
+    private void tryReloadPlugin(File pluginFile, File updaterFile) {
         plugin.getTaskManager().runTask(() -> {
             String downloadedVersion = versionManager.getDownloadedVersion();
 
             if (isStartupCheck()) {
                 plugin.getLogger().info(String.format(DOWNLOADED_RESTART, downloadedVersion));
 
-                File file = saveUpdater();
-                Updater updater = (Updater) plugin.getPluginManager().loadPlugin(file).get();
+                Updater updater = (Updater) plugin.getPluginManager().loadPlugin(updaterFile).get();
                 plugin.getPluginManager().enablePlugin(updater);
 
                 plugin.getPluginManager().disablePlugin(ServerUtilsApp.getPlatformPlugin());
                 plugin.getPluginManager().unloadPlugin((Object)ServerUtilsApp.getPlatformPlugin()).tryClose();
                 updater.update(pluginFile);
-                file.delete();
+                updaterFile.delete();
             } else {
                 broadcastDownloadStatus(downloadedVersion, false);
             }
