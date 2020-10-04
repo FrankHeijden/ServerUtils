@@ -43,7 +43,6 @@ public class UpdateCheckerTask implements Runnable {
     private static final String UPDATE_AVAILABLE = "ServerUtils %s is available!";
     private static final String DOWNLOAD_START = "Started downloading from \"%s\"...";
     private static final String DOWNLOAD_ERROR = "Error downloading a new version of ServerUtils";
-    private static final String UPGRADE_SUCCESS = "Successfully upgraded ServerUtils to v%s!";
     private static final String DOWNLOADED_RESTART = "Downloaded ServerUtils version v%s. Restarting plugin now...";
     private static final String UP_TO_DATE = "We are up-to-date!";
 
@@ -206,8 +205,6 @@ public class UpdateCheckerTask implements Runnable {
                 plugin.getPluginManager().unloadPlugin((Object)ServerUtilsApp.getPlatformPlugin()).tryClose();
                 updater.update(pluginFile);
                 file.delete();
-
-                plugin.getLogger().info(String.format(UPGRADE_SUCCESS, downloadedVersion));
             } else {
                 broadcastDownloadStatus(downloadedVersion, false);
             }
