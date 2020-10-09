@@ -67,7 +67,7 @@ public class RCraftServer {
                     fieldOf("playerList"));
             methods = getAllMethods(craftServerClass,
                     methodOf("loadIcon"),
-                    methodOf("syncCommands"));
+                    methodOf("syncCommands", min(13)));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
