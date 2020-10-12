@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.frankheijden.serverutils.common.config.YamlConfig;
@@ -38,6 +39,11 @@ public class BungeeYamlConfig implements YamlConfig {
             return new BungeeYamlConfig((Configuration) obj);
         }
         return obj;
+    }
+
+    @Override
+    public List<String> getStringList(String path) {
+        return config.getStringList(path);
     }
 
     @Override

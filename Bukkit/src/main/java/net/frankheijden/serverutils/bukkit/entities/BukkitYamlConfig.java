@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.frankheijden.serverutils.common.config.YamlConfig;
@@ -37,6 +38,11 @@ public class BukkitYamlConfig implements YamlConfig {
             return new BukkitYamlConfig((MemorySection) obj);
         }
         return obj;
+    }
+
+    @Override
+    public List<String> getStringList(String path) {
+        return config.getStringList(path);
     }
 
     @Override

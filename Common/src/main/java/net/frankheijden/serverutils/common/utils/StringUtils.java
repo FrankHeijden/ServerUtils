@@ -17,4 +17,31 @@ public class StringUtils {
         }
         return message;
     }
+
+    /**
+     * Joins strings from an array starting from begin index (including).
+     * @param delimiter The delimiter to join the strings on.
+     * @param strings The string array.
+     * @param begin Begin index (including)
+     * @return The joined string.
+     */
+    public static String join(String delimiter, String[] strings, int begin) {
+        return join(delimiter, strings, begin, strings.length);
+    }
+
+    /**
+     * Joins strings from an array from begin index (including) until end index (excluding).
+     * @param delimiter The delimiter to join the strings on.
+     * @param strings The string array.
+     * @param begin Begin index (including)
+     * @param end End index (excluding)
+     * @return The joined string.
+     */
+    public static String join(String delimiter, String[] strings, int begin, int end) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = begin; i < end; i++) {
+            sb.append(delimiter).append(strings[i]);
+        }
+        return sb.substring(1);
+    }
 }

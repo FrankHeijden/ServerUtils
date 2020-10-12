@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +28,7 @@ import net.frankheijden.serverutils.common.entities.Result;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
@@ -273,6 +276,29 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
         } catch (ReflectiveOperationException ex) {
             ex.printStackTrace();
         }
+    }
+
+    /**
+     * Unregisters all the specified PluginCommand's.
+     * @param pluginCommands The commands to unregister.
+     */
+    public static void unregisterCommands(Collection<? extends PluginCommand> pluginCommands) {
+        Map<String, Command> knownCommands = getKnownCommands();
+        if (knownCommands == null) return;
+
+        Set<String> commands = new HashSet<>();
+        for (PluginCommand pc : pluginCommands) {
+            commands.add(pc.getName().toLowerCase());
+            pc.setExecutor(null);
+            pc.setTabCompleter(null);
+
+            for (String alias : pc.getAliases()) {
+                if (!pc.equals(Bukkit.getPluginCommand(alias))) continue;
+                commands.add(alias);
+            }
+        }
+
+        knownCommands.values().removeIf(c -> commands.contains(c.getName().toLowerCase()));
     }
 
     /**

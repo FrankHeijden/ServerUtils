@@ -2,6 +2,7 @@ package net.frankheijden.serverutils.common.config;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,6 +16,13 @@ public interface YamlConfig {
      * @return The object.
      */
     Object get(String path);
+
+    /**
+     * Retrieves a list of strings at a given path.
+     * @param path The path.
+     * @return The string list.
+     */
+    List<String> getStringList(String path);
 
     /**
      * Retrieves a map with key/values for the path specified.

@@ -4,6 +4,8 @@ import co.aikar.commands.BukkitCommandCompletionContext;
 import co.aikar.commands.CommandCompletions;
 import co.aikar.commands.PaperCommandManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import net.frankheijden.serverutils.bukkit.commands.CommandPlugins;
@@ -17,11 +19,14 @@ import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.config.Config;
 import net.frankheijden.serverutils.common.config.Messenger;
+import net.frankheijden.serverutils.common.utils.StringUtils;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.command.defaults.PluginsCommand;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ServerUtils extends JavaPlugin implements CommandExecutor {
@@ -115,6 +120,28 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
             this.commandPlugins = new CommandPlugins();
             commandManager.registerCommand(commandPlugins, true);
         }
+
+        getPlugin().getTaskManager().runTask(() -> BukkitPluginManager.unregisterCommands(getDisabledCommands()));
+    }
+
+    private List<PluginCommand> getDisabledCommands() {
+        List<PluginCommand> commands = new ArrayList<>();
+        for (String cmd : Config.getInstance().getConfig().getStringList("disabled-commands")) {
+            String[] split = cmd.split(":");
+
+            PluginCommand command;
+            if (split.length > 1) {
+                command = Bukkit.getPluginCommand(StringUtils.join(":", split, 1));
+
+                Plugin plugin = getPlugin().getPluginManager().getPlugin(split[0]);
+                if (plugin == null || command == null) continue;
+                if (!plugin.getName().equalsIgnoreCase(command.getPlugin().getName())) continue;
+            } else {
+                command = Bukkit.getPluginCommand(split[0]);
+            }
+            commands.add(command);
+        }
+        return commands;
     }
 
     public PaperCommandManager getCommandManager() {
