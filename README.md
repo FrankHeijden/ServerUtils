@@ -29,6 +29,7 @@ For the full description of this plugin, please refer to the ServerUtils [Spigot
 
 [![](https://jitpack.io/v/FrankHeijden/ServerUtils.svg)](https://jitpack.io/#FrankHeijden/ServerUtils)
 [![releaseImg]][release]
+[![GitHub Actions](https://github.com/FrankHeijden/ServerUtils/workflows/Java%20CI%20with%20Gradle/badge.svg)](https://github.com/FrankHeijden/ServerUtils/actions)
 [![licenseImg]][license]
 [![featureRequestsImg]][featureRequests]
 [![bugReportsImg]][bugReports]
