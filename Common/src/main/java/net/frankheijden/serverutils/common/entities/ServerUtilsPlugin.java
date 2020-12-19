@@ -3,7 +3,6 @@ package net.frankheijden.serverutils.common.entities;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
-
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.managers.AbstractTaskManager;
 import net.frankheijden.serverutils.common.managers.AbstractVersionManager;

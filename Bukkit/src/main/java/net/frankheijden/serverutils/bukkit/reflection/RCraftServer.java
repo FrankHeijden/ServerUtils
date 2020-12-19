@@ -18,7 +18,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
-
 import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 import org.bukkit.Bukkit;
 import org.bukkit.Warning;
@@ -67,7 +66,8 @@ public class RCraftServer {
                     fieldOf("playerList"));
             methods = getAllMethods(craftServerClass,
                     methodOf("loadIcon"),
-                    methodOf("syncCommands", min(13)));
+                    methodOf("syncCommands", min(13)),
+                    methodOf("getHandle"));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -89,7 +89,7 @@ public class RCraftServer {
      * @throws IllegalAccessException When prohibited access to the method.
      */
     public static File getOptionsFile(String option) throws IllegalAccessException, InvocationTargetException {
-        Object console = get(fields, craftServer, "console");
+        Object console = getConsole();
         Object options = get(RDedicatedServer.getFields(), console, "options");
         return (File) invoke(ROptionSet.getMethods(), options, "valueOf", option);
     }
@@ -106,6 +106,10 @@ public class RCraftServer {
         invoke(methods, craftServer, "syncCommands");
     }
 
+    public static Object getConsole() throws IllegalAccessException {
+        return get(fields, craftServer, "console");
+    }
+
     /**
      * Reloads the bukkit configuration.
      * @throws ReflectiveOperationException Iff exception thrown regarding reflection.
@@ -114,7 +118,7 @@ public class RCraftServer {
         YamlConfiguration bukkit = YamlConfiguration.loadConfiguration(getConfigFile());
         set(fields, craftServer, "configuration", bukkit);
 
-        Object console = get(fields, craftServer, "console");
+        Object console = getConsole();
         RDedicatedServer.reload(console);
 
         set(fields, craftServer, "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));

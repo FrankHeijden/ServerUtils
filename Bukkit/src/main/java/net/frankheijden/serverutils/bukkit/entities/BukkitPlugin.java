@@ -2,7 +2,6 @@ package net.frankheijden.serverutils.bukkit.entities;
 
 import java.io.File;
 import java.util.logging.Logger;
-
 import net.frankheijden.serverutils.bukkit.ServerUtils;
 import net.frankheijden.serverutils.bukkit.managers.BukkitPluginManager;
 import net.frankheijden.serverutils.bukkit.managers.BukkitTaskManager;

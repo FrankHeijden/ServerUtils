@@ -54,6 +54,6 @@ public class RPluginClassLoader {
 
     @SuppressWarnings("unchecked")
     public static Map<String, Class<?>> getClasses(Object pluginLoader) throws IllegalAccessException {
-        return (Map<String,Class<?>>) get(fields, pluginLoader, "classes");
+        return (Map<String, Class<?>>) get(fields, pluginLoader, "classes");
     }
 }

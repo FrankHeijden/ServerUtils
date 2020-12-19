@@ -13,7 +13,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
-
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class RJavaPlugin {

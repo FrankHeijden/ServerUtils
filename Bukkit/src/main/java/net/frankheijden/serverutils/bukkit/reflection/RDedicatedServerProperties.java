@@ -5,7 +5,6 @@ import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get
 
 import java.lang.reflect.Field;
 import java.util.Map;
-
 import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 
 public class RDedicatedServerProperties {

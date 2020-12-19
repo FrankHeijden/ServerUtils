@@ -14,11 +14,15 @@ import static net.frankheijden.serverutils.common.reflection.VersionParam.exact;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.max;
 import static net.frankheijden.serverutils.common.reflection.VersionParam.min;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.Map;
-
+import java.util.Properties;
 import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 import net.frankheijden.serverutils.common.reflection.VersionParam;
 
@@ -60,6 +64,14 @@ public class RDedicatedServer {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    public static Class<?> getClazz() {
+        return dedicatedServerClass;
+    }
+
+    public static Object getCustomRegistry(Object dedicatedServer) throws ReflectiveOperationException {
+        return invoke(methods, dedicatedServer, "getCustomRegistry");
     }
 
     public static Map<String, Field> getFields() {
@@ -113,6 +125,30 @@ public class RDedicatedServer {
             setConfigValue(config, console, "getAllowFlight", "setAllowFlight", "getBoolean", "allow-flight");
             setConfigValue(config, console, "getMotd", "setMotd", "getString", "motd");
         }
+    }
+
+    /**
+     * Reloads server.properties.
+     * @throws ReflectiveOperationException Iff exception thrown regarding reflection.
+     */
+    public static void reloadServerProperties() throws ReflectiveOperationException {
+        Object console = RCraftServer.getConsole();
+        Object playerList = get(RMinecraftServer.getFields(), console, "playerList");
+        Object propertyManager = get(fields, console, "propertyManager");
+        Path path = RDedicatedServerSettings.getServerPropertiesPath(propertyManager);
+
+        Properties properties = new Properties();
+        try (InputStream in = new FileInputStream(path.toFile())) {
+            properties.load(in);
+        } catch (IOException ex) {
+            throw new ReflectiveOperationException("Unable to load server.properties", ex);
+        }
+
+        int maxPlayers = Integer.parseInt(properties.getProperty("max-players"));
+        set(RPlayerList.getFields(), playerList, "maxPlayers", maxPlayers);
+
+        int viewDistance = Integer.parseInt(properties.getProperty("view-distance"));
+        RPlayerList.setViewDistance(playerList, viewDistance);
     }
 
     public static Object getConfigValue(Object config, String key) throws IllegalAccessException {

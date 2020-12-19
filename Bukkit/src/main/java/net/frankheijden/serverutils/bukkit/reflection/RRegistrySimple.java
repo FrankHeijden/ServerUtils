@@ -7,7 +7,6 @@ import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 import net.frankheijden.serverutils.common.utils.MapUtils;
 import org.bukkit.plugin.Plugin;

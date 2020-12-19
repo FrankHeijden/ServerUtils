@@ -7,7 +7,6 @@ import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
-
 import org.bukkit.plugin.java.JavaPluginLoader;
 
 public class RJavaPluginLoader {

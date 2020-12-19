@@ -1,7 +1,6 @@
 package net.frankheijden.serverutils.bungee.managers;
 
 import com.google.common.base.Preconditions;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.InputStream;
@@ -17,7 +16,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-
 import net.frankheijden.serverutils.bungee.ServerUtils;
 import net.frankheijden.serverutils.bungee.entities.BungeeLoadResult;
 import net.frankheijden.serverutils.bungee.reflection.RPluginClassLoader;

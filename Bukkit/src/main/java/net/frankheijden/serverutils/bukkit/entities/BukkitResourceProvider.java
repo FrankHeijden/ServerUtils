@@ -2,7 +2,6 @@ package net.frankheijden.serverutils.bukkit.entities;
 
 import java.io.File;
 import java.io.InputStream;
-
 import net.frankheijden.serverutils.bukkit.ServerUtils;
 import net.frankheijden.serverutils.common.config.YamlConfig;
 import net.frankheijden.serverutils.common.providers.ResourceProvider;

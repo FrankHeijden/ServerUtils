@@ -1,9 +1,7 @@
 package net.frankheijden.serverutils.common.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
 import net.frankheijden.serverutils.common.config.Messenger;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 

@@ -2,7 +2,6 @@ package net.frankheijden.serverutils.common.config;
 
 import java.io.File;
 import java.io.InputStream;
-
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.providers.ResourceProvider;

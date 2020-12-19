@@ -2,7 +2,6 @@ package net.frankheijden.serverutils.common.utils;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 
 public class ForwardFilter extends PredicateFilter {

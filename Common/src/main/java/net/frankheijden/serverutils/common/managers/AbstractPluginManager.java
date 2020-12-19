@@ -1,7 +1,6 @@
 package net.frankheijden.serverutils.common.managers;
 
 import java.io.File;
-
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.entities.AbstractResult;
 import net.frankheijden.serverutils.common.entities.CloseableResult;

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-
 import net.frankheijden.serverutils.common.entities.AbstractTask;
 
 public abstract class AbstractTaskManager<T> {

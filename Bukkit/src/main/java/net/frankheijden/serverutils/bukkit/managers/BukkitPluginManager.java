@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import net.frankheijden.serverutils.bukkit.ServerUtils;
 import net.frankheijden.serverutils.bukkit.entities.BukkitLoadResult;
 import net.frankheijden.serverutils.bukkit.reflection.RCommandMap;

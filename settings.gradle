@@ -1,2 +1,4 @@
 rootProject.name = 'ServerUtils'
-include 'Common', 'Bukkit', 'Bungee'
+include 'Common'
+include 'Bukkit'
+include 'Bungee'

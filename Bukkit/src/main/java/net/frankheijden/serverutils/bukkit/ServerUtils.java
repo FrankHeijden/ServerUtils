@@ -3,11 +3,9 @@ package net.frankheijden.serverutils.bukkit;
 import co.aikar.commands.BukkitCommandCompletionContext;
 import co.aikar.commands.CommandCompletions;
 import co.aikar.commands.PaperCommandManager;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import net.frankheijden.serverutils.bukkit.commands.CommandPlugins;
 import net.frankheijden.serverutils.bukkit.commands.CommandServerUtils;
 import net.frankheijden.serverutils.bukkit.entities.BukkitPlugin;

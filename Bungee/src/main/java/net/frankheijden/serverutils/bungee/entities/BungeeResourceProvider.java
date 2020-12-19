@@ -3,7 +3,6 @@ package net.frankheijden.serverutils.bungee.entities;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
 import net.frankheijden.serverutils.bungee.ServerUtils;
 import net.frankheijden.serverutils.common.config.YamlConfig;
 import net.frankheijden.serverutils.common.providers.ResourceProvider;

@@ -5,10 +5,8 @@ import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get
 import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
 
 import com.google.common.collect.Multimap;
-
 import java.lang.reflect.Field;
 import java.util.Map;
-
 import net.frankheijden.serverutils.common.utils.MapUtils;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Plugin;

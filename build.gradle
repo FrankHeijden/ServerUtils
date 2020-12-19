@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 group = 'net.frankheijden.serverutils'
@@ -22,10 +22,10 @@ subprojects {
     }
 
     dependencies {
-        testCompile 'org.assertj:assertj-core:3.15.0'
-        testCompile 'org.junit.jupiter:junit-jupiter-api:5.6.2'
-        testCompile 'org.junit.jupiter:junit-jupiter-params:5.6.2'
-        testCompile 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
+        testCompile 'org.assertj:assertj-core:3.18.1'
+        testCompile 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+        testCompile 'org.junit.jupiter:junit-jupiter-params:5.7.0'
+        testCompile 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     }
 
     compileJava {
@@ -39,8 +39,8 @@ subprojects {
     }
 
     checkstyle {
-        toolVersion "8.25"
-        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+        toolVersion "8.38"
+        configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 
         ignoreFailures = false
         maxErrors = 0

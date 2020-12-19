@@ -12,7 +12,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
-
 import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 import org.bukkit.plugin.Plugin;
 

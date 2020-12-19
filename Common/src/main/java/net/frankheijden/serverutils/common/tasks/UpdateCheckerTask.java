@@ -3,7 +3,6 @@ package net.frankheijden.serverutils.common.tasks;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,7 +10,6 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
-
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.config.Config;
 import net.frankheijden.serverutils.common.config.Messenger;
@@ -205,7 +203,7 @@ public class UpdateCheckerTask implements Runnable {
                 plugin.getPluginManager().enablePlugin(updater);
 
                 plugin.getPluginManager().disablePlugin(ServerUtilsApp.getPlatformPlugin());
-                plugin.getPluginManager().unloadPlugin((Object)ServerUtilsApp.getPlatformPlugin()).tryClose();
+                plugin.getPluginManager().unloadPlugin((Object) ServerUtilsApp.getPlatformPlugin()).tryClose();
                 updater.update(pluginFile);
                 updaterFile.delete();
             } else {
@@ -216,7 +214,7 @@ public class UpdateCheckerTask implements Runnable {
 
     private void broadcastDownloadStatus(String githubVersion, boolean isError) {
         final String path = "serverutils.update." + (isError ? "failed" : "success");
-        String message = Messenger.getMessage(path,"%new%", githubVersion);
+        String message = Messenger.getMessage(path, "%new%", githubVersion);
         plugin.getChatProvider().broadcast("serverutils.notification.update", message);
     }
 

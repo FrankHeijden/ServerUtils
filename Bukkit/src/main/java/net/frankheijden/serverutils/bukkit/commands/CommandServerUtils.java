@@ -13,16 +13,15 @@ import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import net.frankheijden.serverutils.bukkit.ServerUtils;
 import net.frankheijden.serverutils.bukkit.entities.BukkitLoadResult;
 import net.frankheijden.serverutils.bukkit.managers.BukkitPluginManager;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
+import net.frankheijden.serverutils.bukkit.reflection.RDedicatedServer;
 import net.frankheijden.serverutils.bukkit.utils.BukkitUtils;
 import net.frankheijden.serverutils.bukkit.utils.ReloadHandler;
 import net.frankheijden.serverutils.common.config.Messenger;
@@ -55,6 +54,7 @@ public class CommandServerUtils extends BaseCommand {
         supportedConfigs.put("server-icon.png", RCraftServer::loadIcon);
         supportedConfigs.put("banned-ips.json", RCraftServer::reloadIpBans);
         supportedConfigs.put("banned-players.json", RCraftServer::reloadProfileBans);
+        supportedConfigs.put("server.properties", RDedicatedServer::reloadServerProperties);
     }
 
     @Dependency

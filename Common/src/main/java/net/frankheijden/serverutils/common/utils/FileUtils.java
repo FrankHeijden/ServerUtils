@@ -2,7 +2,6 @@ package net.frankheijden.serverutils.common.utils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;

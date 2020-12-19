@@ -7,7 +7,6 @@ import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.inv
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
-
 import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 
 public class RJsonList {

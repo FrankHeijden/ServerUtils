@@ -1,7 +1,6 @@
 package net.frankheijden.serverutils.common.tasks;
 
 import com.sun.nio.file.SensitivityWatchEventModifier;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.ClosedWatchServiceException;
@@ -11,7 +10,6 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.entities.AbstractTask;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
