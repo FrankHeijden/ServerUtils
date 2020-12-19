@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'net.frankheijden.serverutils'
-version = '2.2.3'
+version = '2.2.4-DEV'
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
