@@ -6,7 +6,6 @@ import co.aikar.commands.CommandCompletions;
 import net.frankheijden.serverutils.bungee.commands.CommandPlugins;
 import net.frankheijden.serverutils.bungee.commands.CommandServerUtils;
 import net.frankheijden.serverutils.bungee.entities.BungeePlugin;
-import net.frankheijden.serverutils.bungee.entities.BungeeReflection;
 import net.frankheijden.serverutils.bungee.listeners.BungeeListener;
 import net.frankheijden.serverutils.bungee.managers.BungeePluginManager;
 import net.frankheijden.serverutils.bungee.reflection.RPluginClassLoader;
@@ -38,7 +37,6 @@ public class ServerUtils extends Plugin {
         ServerUtilsApp.init(this, plugin);
 
         new Metrics(this, ServerUtilsApp.BSTATS_METRICS_ID);
-        new BungeeReflection();
 
         this.commandManager = new BungeeCommandManager(this);
         commandManager.registerCommand(new CommandPlugins());

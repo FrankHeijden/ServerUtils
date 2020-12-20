@@ -255,13 +255,7 @@ public class CommandServerUtils extends BaseCommand {
             return;
         }
 
-        Plugin plugin;
-        try {
-            plugin = RPluginManager.getPlugin(proxy.getPluginManager(), cmd);
-        } catch (IllegalAccessException ex) {
-            ex.printStackTrace();
-            return;
-        }
+        Plugin plugin = RPluginManager.getPlugin(proxy.getPluginManager(), cmd);
         if (plugin == null) {
             return;
         }

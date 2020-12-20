@@ -2,7 +2,6 @@ package net.frankheijden.serverutils.bukkit.managers;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -150,12 +149,8 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
             ClassLoader loader = RJavaPlugin.getClassLoader(plugin);
             RPluginClassLoader.clearClassLoader(loader);
             addIfInstance(closeables, (Closeable) () -> {
-                try {
-                    Map<String, Class<?>> classes = RPluginClassLoader.getClasses(loader);
-                    RJavaPluginLoader.removeClasses(getPluginLoader(getPluginFile(plugin)), classes.keySet());
-                } catch (IllegalAccessException ex) {
-                    throw new IOException(ex);
-                }
+                Map<String, Class<?>> classes = RPluginClassLoader.getClasses(loader);
+                RJavaPluginLoader.removeClasses(getPluginLoader(getPluginFile(plugin)), classes.keySet());
             });
             addIfInstance(closeables, loader);
             addIfInstance(closeables, RJavaPlugin.clearJavaPlugin(plugin));
@@ -192,11 +187,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
         if (Bukkit.getPluginManager().isPluginEnabled(plugin.getName())) return Result.ALREADY_ENABLED;
 
         Bukkit.getPluginManager().enablePlugin(plugin);
-        try {
-            RCraftServer.syncCommands();
-        } catch (ReflectiveOperationException ex) {
-            ex.printStackTrace();
-        }
+        RCraftServer.syncCommands();
 
         return Bukkit.getPluginManager().isPluginEnabled(plugin.getName()) ? Result.SUCCESS : Result.ERROR;
     }
@@ -270,11 +261,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
             return false;
         });
 
-        try {
-            RCraftServer.syncCommands();
-        } catch (ReflectiveOperationException ex) {
-            ex.printStackTrace();
-        }
+        RCraftServer.syncCommands();
     }
 
     /**
@@ -372,11 +359,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
 
     @Override
     public File getPluginFile(Plugin plugin) {
-        try {
-            return RJavaPlugin.getFile(plugin);
-        } catch (ReflectiveOperationException ex) {
-            throw new RuntimeException("Error retrieving current plugin file", ex);
-        }
+        return RJavaPlugin.getFile(plugin);
     }
 
     /**

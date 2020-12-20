@@ -1,38 +1,25 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
-
-import java.lang.reflect.Field;
+import dev.frankheijden.minecraftreflection.MinecraftReflection;
 import java.util.Collection;
 import java.util.Map;
 import org.bukkit.plugin.java.JavaPluginLoader;
 
 public class RJavaPluginLoader {
 
-    private static Class<?> javaPluginLoaderClass;
-    private static Map<String, Field> fields;
+    private static final MinecraftReflection reflection = MinecraftReflection.of(JavaPluginLoader.class);
 
-    static {
-        try {
-            javaPluginLoaderClass = JavaPluginLoader.class;
-            fields = getAllFields(javaPluginLoaderClass,
-                    fieldOf("classes"));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    public static MinecraftReflection getReflection() {
+        return reflection;
     }
 
     /**
      * Removes the given classes from the JavaPluginLoader instance.
      * @param instance The instance.
      * @param list The list of classpaths.
-     * @throws IllegalAccessException When prohibited access to the method.
      */
-    @SuppressWarnings("unchecked")
-    public static void removeClasses(Object instance, Collection<? extends String> list) throws IllegalAccessException {
-        Map<String, Class<?>> classes = (Map<String, Class<?>>) get(fields, instance, "classes");
+    public static void removeClasses(Object instance, Collection<? extends String> list) {
+        Map<String, Class<?>> classes = reflection.get(instance, "classes");
         if (classes == null) return;
 
         for (String key : list) {

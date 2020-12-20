@@ -1,48 +1,19 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
-import static net.frankheijden.serverutils.common.reflection.MethodParam.methodOf;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllMethods;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.invoke;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.set;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Map;
-import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
+import dev.frankheijden.minecraftreflection.ClassObject;
+import dev.frankheijden.minecraftreflection.MinecraftReflection;
 
 public class RPlayerList {
 
-    private static Class<?> playerListClass;
-    private static Map<String, Method> methods;
-    private static Map<String, Field> fields;
+    private static final MinecraftReflection reflection = MinecraftReflection
+            .of("net.minecraft.server.%s.PlayerList");
 
-    static {
-        try {
-            playerListClass = Class.forName(String.format("net.minecraft.server.%s.PlayerList", BukkitReflection.NMS));
-            methods = getAllMethods(playerListClass,
-                    methodOf("getIPBans"),
-                    methodOf("getProfileBans"),
-                    methodOf("a", int.class));
-            fields = getAllFields(playerListClass,
-                    fieldOf("maxPlayers"),
-                    fieldOf("viewDistance"));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    public static MinecraftReflection getReflection() {
+        return reflection;
     }
 
-    public static Map<String, Method> getMethods() {
-        return methods;
-    }
-
-    public static Map<String, Field> getFields() {
-        return fields;
-    }
-
-    public static void setViewDistance(Object instance, int viewDistance) throws ReflectiveOperationException {
-        set(fields, instance, "viewDistance", viewDistance);
-        invoke(methods, instance, "a", viewDistance);
+    public static void setViewDistance(Object instance, int viewDistance) {
+        reflection.set(instance, "viewDistance", viewDistance);
+        reflection.invoke(instance, "a", ClassObject.of(int.class, viewDistance));
     }
 }

@@ -9,7 +9,6 @@ import java.util.Map;
 import net.frankheijden.serverutils.bukkit.commands.CommandPlugins;
 import net.frankheijden.serverutils.bukkit.commands.CommandServerUtils;
 import net.frankheijden.serverutils.bukkit.entities.BukkitPlugin;
-import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 import net.frankheijden.serverutils.bukkit.listeners.BukkitListener;
 import net.frankheijden.serverutils.bukkit.managers.BukkitPluginManager;
 import net.frankheijden.serverutils.bukkit.reflection.RCommandMap;
@@ -46,7 +45,6 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
         ServerUtilsApp.init(this, plugin);
 
         new Metrics(this, ServerUtilsApp.BSTATS_METRICS_ID);
-        new BukkitReflection();
 
         this.commandManager = new PaperCommandManager(this);
         commandManager.registerCommand(new CommandServerUtils(), true);

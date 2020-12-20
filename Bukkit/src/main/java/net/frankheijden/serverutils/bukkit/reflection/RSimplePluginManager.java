@@ -1,10 +1,6 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
-
-import java.lang.reflect.Field;
+import dev.frankheijden.minecraftreflection.MinecraftReflection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -15,29 +11,18 @@ import org.bukkit.plugin.SimplePluginManager;
 
 public class RSimplePluginManager {
 
-    private static Class<?> simplePluginManagerClass;
-    private static Map<String, Field> fields;
+    private static final MinecraftReflection reflection = MinecraftReflection.of(SimplePluginManager.class);
 
-    static {
-        try {
-            simplePluginManagerClass = SimplePluginManager.class;
-            fields = getAllFields(simplePluginManagerClass,
-                    fieldOf("plugins"),
-                    fieldOf("lookupNames"),
-                    fieldOf("fileAssociations"));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    public static MinecraftReflection getReflection() {
+        return reflection;
     }
 
-    @SuppressWarnings("unchecked")
     public static Map<Pattern, PluginLoader> getFileAssociations(Object manager) throws IllegalAccessException {
-        return (Map<Pattern, PluginLoader>) get(fields, manager, "fileAssociations");
+        return reflection.get(manager, "fileAssociations");
     }
 
-    @SuppressWarnings("unchecked")
-    public static List<Plugin> getPlugins(Object manager) throws IllegalAccessException {
-        return (List<Plugin>) get(fields, manager, "plugins");
+    public static List<Plugin> getPlugins(Object manager) {
+        return reflection.get(manager, "plugins");
     }
 
     /**
@@ -45,11 +30,9 @@ public class RSimplePluginManager {
      * This ensures the plugin cannot be found anymore in Bukkit#getPlugin(String name).
      * @param manager The SimplePluginManager instance to remove the lookup name from.
      * @param name The name of the plugin to remove.
-     * @throws IllegalAccessException When prohibited access to the field.
      */
-    @SuppressWarnings("unchecked")
-    public static void removeLookupName(Object manager, String name) throws IllegalAccessException {
-        Map<String, Plugin> lookupNames = (Map<String, Plugin>) get(fields, manager, "lookupNames");
+    public static void removeLookupName(Object manager, String name) {
+        Map<String, Plugin> lookupNames = reflection.get(manager, "lookupNames");
         if (lookupNames == null) return;
         lookupNames.remove(name.replace(' ', '_'));
         lookupNames.remove(name.replace(' ', '_').toLowerCase(Locale.ENGLISH)); // Paper

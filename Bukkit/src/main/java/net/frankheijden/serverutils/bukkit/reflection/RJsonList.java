@@ -1,30 +1,16 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import static net.frankheijden.serverutils.common.reflection.MethodParam.methodOf;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllMethods;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.invoke;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
+import dev.frankheijden.minecraftreflection.MinecraftReflection;
 
 public class RJsonList {
 
-    private static Class<?> jsonListClass;
-    private static Map<String, Method> methods;
+    private static final MinecraftReflection reflection = MinecraftReflection.of("net.minecraft.server.%s.JsonList");
 
-    static {
-        try {
-            jsonListClass = Class.forName(String.format("net.minecraft.server.%s.JsonList", BukkitReflection.NMS));
-            methods = getAllMethods(jsonListClass,
-                    methodOf("load"));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    public static MinecraftReflection getReflection() {
+        return reflection;
     }
 
-    public static void load(Object jsonList) throws InvocationTargetException, IllegalAccessException {
-        invoke(methods, jsonList, "load");
+    public static void load(Object jsonList) {
+        reflection.invoke(jsonList, "load");
     }
 }

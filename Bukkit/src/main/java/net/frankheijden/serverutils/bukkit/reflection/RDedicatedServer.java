@@ -1,122 +1,73 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import static net.frankheijden.serverutils.bukkit.entities.BukkitReflection.MINOR;
-import static net.frankheijden.serverutils.bukkit.entities.BukkitReflection.PATCH;
-import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
-import static net.frankheijden.serverutils.common.reflection.MethodParam.methodOf;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllMethods;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.invoke;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.set;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.between;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.exact;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.max;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.min;
-
+import dev.frankheijden.minecraftreflection.ClassObject;
+import dev.frankheijden.minecraftreflection.MinecraftReflection;
+import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.Properties;
-import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
-import net.frankheijden.serverutils.common.reflection.VersionParam;
 
 public class RDedicatedServer {
 
-    private static Class<?> dedicatedServerClass;
-    private static Map<String, Field> fields;
-    private static Map<String, Method> methods;
+    private static final MinecraftReflection reflection = MinecraftReflection
+            .of("net.minecraft.server.%s.DedicatedServer");
 
-    static {
-        try {
-            dedicatedServerClass = Class.forName(String.format("net.minecraft.server.%s.DedicatedServer",
-                    BukkitReflection.NMS));
-
-            fields = getAllFields(dedicatedServerClass,
-                    fieldOf("propertyManager"),
-                    fieldOf("options"),
-                    fieldOf("autosavePeriod"),
-                    fieldOf("o", between(13, 15)));
-            methods = getAllMethods(dedicatedServerClass,
-                    methodOf("setSpawnAnimals", max(15), boolean.class),
-                    methodOf("getSpawnAnimals"),
-                    methodOf("setPVP", boolean.class),
-                    methodOf("getPVP"),
-                    methodOf("setAllowFlight", boolean.class),
-                    methodOf("getAllowFlight"),
-                    methodOf("setMotd", String.class),
-                    methodOf("getMotd"),
-                    methodOf("setSpawnNPCs", max(15), boolean.class),
-                    methodOf("setAllowFlight", boolean.class),
-                    methodOf("setResourcePack", String.class, String.class),
-                    methodOf("setForceGamemode", boolean.class),
-                    methodOf("n", between(13, 15), boolean.class),
-                    methodOf("aZ", max(15)),
-                    methodOf("aZ", min(new VersionParam.Version(16, 2))),
-                    methodOf("i", min(16), boolean.class),
-                    methodOf("aY", exact(new VersionParam.Version(16, 1))),
-                    methodOf("getCustomRegistry", min(new VersionParam.Version(16, 2))));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    public static MinecraftReflection getReflection() {
+        return reflection;
     }
 
-    public static Class<?> getClazz() {
-        return dedicatedServerClass;
-    }
-
-    public static Object getCustomRegistry(Object dedicatedServer) throws ReflectiveOperationException {
-        return invoke(methods, dedicatedServer, "getCustomRegistry");
-    }
-
-    public static Map<String, Field> getFields() {
-        return fields;
+    public static Object getCustomRegistry(Object dedicatedServer) {
+        return reflection.invoke(dedicatedServer, "getCustomRegistry");
     }
 
     /**
      * Reloads the specified console (= DedicatedServer) instance's bukkit config.
      * @param console The console to reload.
-     * @throws ReflectiveOperationException Iff exception thrown regarding reflection.
      */
-    public static void reload(Object console) throws ReflectiveOperationException {
-        Object options = get(fields, console, "options");
+    public static void reload(Object console) {
+        Object options = reflection.get(console, "options");
 
-        if (MINOR >= 13) {
+        if (MinecraftReflectionVersion.MINOR >= 13) {
             Object propertyManager;
-            if (MINOR >= 16 && PATCH >= 2) {
-                propertyManager = RDedicatedServerSettings.newInstance(invoke(methods, console, "getCustomRegistry"),
+            if (MinecraftReflectionVersion.MINOR >= 16 && MinecraftReflectionVersion.PATCH >= 2) {
+                propertyManager = RDedicatedServerSettings.newInstance(reflection.invoke(console, "getCustomRegistry"),
                         options);
             } else {
                 propertyManager = RDedicatedServerSettings.newInstance(options);
             }
 
-            set(fields, console, "propertyManager", propertyManager);
-            Object config = invoke(RDedicatedServerSettings.getMethods(), propertyManager, "getProperties");
-            invoke(methods, console, "setPVP", getConfigValue(config, "pvp"));
-            invoke(methods, console, "setAllowFlight", getConfigValue(config, "allowFlight"));
-            invoke(methods, console, "setMotd", getConfigValue(config, "motd"));
-            invoke(methods, console, "setForceGamemode", getConfigValue(config, "forceGamemode"));
+            reflection.set(console, "propertyManager", propertyManager);
+            Object config = RDedicatedServerSettings.getReflection().invoke(propertyManager, "getProperties");
+            reflection.invoke(console, "setPVP", ClassObject.of(boolean.class, getConfigValue(config, "pvp")));
+            reflection.invoke(console, "setAllowFlight",
+                    ClassObject.of(boolean.class, getConfigValue(config, "allowFlight")));
+            reflection.invoke(console, "setMotd", getConfigValue(config, "motd"));
+            reflection.invoke(console, "setForceGamemode",
+                    ClassObject.of(boolean.class, getConfigValue(config, "forceGamemode")));
 
             Object resourcePackHash;
-            if (MINOR <= 15 || (MINOR == 16 && PATCH == 1)) {
-                resourcePackHash = invoke(methods, console, "aZ");
+            if (MinecraftReflectionVersion.MINOR <= 15 || MinecraftReflectionVersion.is(16, 1)) {
+                resourcePackHash = reflection.invoke(console, "aZ");
+            } else if (MinecraftReflectionVersion.is(16, 3)) {
+                resourcePackHash = reflection.invoke(console, "ba");
             } else {
-                resourcePackHash = invoke(methods, console, "aY");
+                resourcePackHash = reflection.invoke(console, "aY");
             }
-            invoke(methods, console, "setResourcePack", getConfigValue(config, "resourcePack"), resourcePackHash);
+            reflection.invoke(console, "setResourcePack", getConfigValue(config, "resourcePack"), resourcePackHash);
 
-            if (MINOR <= 15) {
-                invoke(methods, console, "setSpawnAnimals", getConfigValue(config, "spawnAnimals"));
-                invoke(methods, console, "setSpawnNPCs", getConfigValue(config, "spawnNpcs"));
-                invoke(methods, console, "n", getConfigValue(config, "enforceWhitelist"));
-                set(fields, console, "o", getConfigValue(config, "gamemode"));
+            if (MinecraftReflectionVersion.MINOR <= 15) {
+                reflection.invoke(console, "setSpawnAnimals",
+                        ClassObject.of(boolean.class, getConfigValue(config, "spawnAnimals")));
+                reflection.invoke(console, "setSpawnNPCs",
+                        ClassObject.of(boolean.class, getConfigValue(config, "spawnNpcs")));
+                reflection.invoke(console, "n",
+                        ClassObject.of(boolean.class, getConfigValue(config, "enforceWhitelist")));
+                reflection.set(console, "o", getConfigValue(config, "gamemode"));
             } else {
-                invoke(methods, console, "i", getConfigValue(config, "enforceWhitelist"));
+                reflection.invoke(console, "i",
+                        ClassObject.of(boolean.class, getConfigValue(config, "enforceWhitelist")));
             }
         } else {
             Object config = RPropertyManager.newInstance(options);
@@ -131,28 +82,28 @@ public class RDedicatedServer {
      * Reloads server.properties.
      * @throws ReflectiveOperationException Iff exception thrown regarding reflection.
      */
-    public static void reloadServerProperties() throws ReflectiveOperationException {
+    public static void reloadServerProperties() {
         Object console = RCraftServer.getConsole();
-        Object playerList = get(RMinecraftServer.getFields(), console, "playerList");
-        Object propertyManager = get(fields, console, "propertyManager");
+        Object playerList = RMinecraftServer.getReflection().get(console, "playerList");
+        Object propertyManager = reflection.get(console, "propertyManager");
         Path path = RDedicatedServerSettings.getServerPropertiesPath(propertyManager);
 
         Properties properties = new Properties();
         try (InputStream in = new FileInputStream(path.toFile())) {
             properties.load(in);
         } catch (IOException ex) {
-            throw new ReflectiveOperationException("Unable to load server.properties", ex);
+            throw new RuntimeException("Unable to load server.properties", ex);
         }
 
         int maxPlayers = Integer.parseInt(properties.getProperty("max-players"));
-        set(RPlayerList.getFields(), playerList, "maxPlayers", maxPlayers);
+        RPlayerList.getReflection().set(playerList, "maxPlayers", maxPlayers);
 
         int viewDistance = Integer.parseInt(properties.getProperty("view-distance"));
         RPlayerList.setViewDistance(playerList, viewDistance);
     }
 
-    public static Object getConfigValue(Object config, String key) throws IllegalAccessException {
-        return get(RDedicatedServerProperties.getFields(), config, key);
+    public static Object getConfigValue(Object config, String key) {
+        return RDedicatedServerProperties.getReflection().get(config, key);
     }
 
     /**
@@ -163,14 +114,11 @@ public class RDedicatedServer {
      * @param setMethod The setter method for the config value.
      * @param configMethod The method which we call the config value upon.
      * @param key The config key.
-     * @throws InvocationTargetException If the method call produced an exception.
-     * @throws IllegalAccessException When prohibited access to the method.
      */
     public static void setConfigValue(Object config, Object console, String getMethod, String setMethod,
-                                            String configMethod, String key)
-            throws InvocationTargetException, IllegalAccessException {
-        Object defaultValue = invoke(methods, console, getMethod);
-        Object configValue = invoke(RPropertyManager.getMethods(), config, configMethod, key, defaultValue);
-        invoke(methods, console, setMethod, configValue);
+                                            String configMethod, String key) {
+        Object defaultValue = reflection.invoke(console, getMethod);
+        Object configValue = RPropertyManager.getReflection().invoke(config, configMethod, key, defaultValue);
+        reflection.invoke(console, setMethod, configValue);
     }
 }

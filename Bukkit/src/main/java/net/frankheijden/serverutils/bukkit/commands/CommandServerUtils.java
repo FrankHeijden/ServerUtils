@@ -1,6 +1,5 @@
 package net.frankheijden.serverutils.bukkit.commands;
 
-import static net.frankheijden.serverutils.bukkit.entities.BukkitReflection.MINOR;
 import static net.frankheijden.serverutils.common.config.Messenger.sendMessage;
 
 import co.aikar.commands.BaseCommand;
@@ -13,6 +12,7 @@ import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
+import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -303,7 +303,7 @@ public class CommandServerUtils extends BaseCommand {
                 .add("Name", plugin.getName())
                 .add("Full Name", description.getFullName())
                 .add("Version", description.getVersion());
-        if (MINOR >= 13) builder.add("API Version", description.getAPIVersion());
+        if (MinecraftReflectionVersion.MINOR >= 13) builder.add("API Version", description.getAPIVersion());
         builder.add("Website", description.getWebsite())
                 .add("Authors", ListBuilder.create(description.getAuthors())
                         .format(listFormat)
@@ -329,11 +329,13 @@ public class CommandServerUtils extends BaseCommand {
                         .seperator(seperator)
                         .lastSeperator(lastSeperator)
                         .toString());
-        if (MINOR >= 15) builder.add("Provides", ListBuilder.create(description.getProvides())
-                .format(listFormat)
-                .seperator(seperator)
-                .lastSeperator(lastSeperator)
-                .toString());
+        if (MinecraftReflectionVersion.MINOR >= 15) {
+            builder.add("Provides", ListBuilder.create(description.getProvides())
+                    .format(listFormat)
+                    .seperator(seperator)
+                    .lastSeperator(lastSeperator)
+                    .toString());
+        }
 
         builder.sendTo(sender);
         Messenger.sendMessage(sender, "serverutils.plugininfo.footer");

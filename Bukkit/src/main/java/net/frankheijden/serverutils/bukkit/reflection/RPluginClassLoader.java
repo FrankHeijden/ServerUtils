@@ -1,42 +1,24 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.set;
-
-import java.lang.reflect.Field;
+import dev.frankheijden.minecraftreflection.MinecraftReflection;
 import java.util.Map;
 
 public class RPluginClassLoader {
 
-    private static Class<?> pluginClassLoaderClass;
-    private static Map<String, Field> fields;
+    private static final MinecraftReflection reflection = MinecraftReflection
+            .of("org.bukkit.plugin.java.PluginClassLoader");
 
-    static {
-        try {
-            pluginClassLoaderClass = Class.forName("org.bukkit.plugin.java.PluginClassLoader");
-            fields = getAllFields(pluginClassLoaderClass,
-                    fieldOf("plugin"),
-                    fieldOf("pluginInit"),
-                    fieldOf("classes"));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public static boolean isInstance(Object obj) {
-        return pluginClassLoaderClass.isInstance(obj);
+    public static MinecraftReflection getReflection() {
+        return reflection;
     }
 
     /**
      * Clears and closes the provided classloader.
      * @param loader The classloader instance.
-     * @throws IllegalAccessException When prohibited access to the field.
      */
-    public static void clearClassLoader(ClassLoader loader) throws IllegalAccessException {
+    public static void clearClassLoader(ClassLoader loader) {
         if (loader == null) return;
-        if (isInstance(loader)) {
+        if (reflection.getClazz().isInstance(loader)) {
             clearPluginClassLoader(loader);
         }
     }
@@ -44,16 +26,14 @@ public class RPluginClassLoader {
     /**
      * Clears the plugin fields from the specified PluginClassLoader.
      * @param pluginLoader The plugin loader instance.
-     * @throws IllegalAccessException When prohibited access to the field.
      */
-    public static void clearPluginClassLoader(Object pluginLoader) throws IllegalAccessException {
+    public static void clearPluginClassLoader(Object pluginLoader) {
         if (pluginLoader == null) return;
-        set(fields, pluginLoader, "plugin", null);
-        set(fields, pluginLoader, "pluginInit", null);
+        reflection.set(pluginLoader, "plugin", null);
+        reflection.set(pluginLoader, "pluginInit", null);
     }
 
-    @SuppressWarnings("unchecked")
-    public static Map<String, Class<?>> getClasses(Object pluginLoader) throws IllegalAccessException {
-        return (Map<String, Class<?>>) get(fields, pluginLoader, "classes");
+    public static Map<String, Class<?>> getClasses(Object pluginLoader) {
+        return reflection.get(pluginLoader, "classes");
     }
 }

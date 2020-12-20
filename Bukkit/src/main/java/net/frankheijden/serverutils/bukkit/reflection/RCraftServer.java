@@ -1,24 +1,9 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
-import static net.frankheijden.serverutils.common.reflection.MethodParam.methodOf;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllMethods;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getDeclaredField;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getDeclaredMethod;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.invoke;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.set;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.exact;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.max;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.min;
-
+import dev.frankheijden.minecraftreflection.MinecraftReflection;
+import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
 import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Map;
-import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 import org.bukkit.Bukkit;
 import org.bukkit.Warning;
 import org.bukkit.command.Command;
@@ -27,159 +12,117 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class RCraftServer {
 
-    private static Class<?> craftServerClass;
-    private static Object craftServer;
-    private static File configFile;
-    private static File commandsConfigFile;
-    private static SimpleCommandMap commandMap;
+    private static final MinecraftReflection reflection = MinecraftReflection
+            .of("org.bukkit.craftbukkit.%s.CraftServer");
 
-    private static Map<String, Field> fields;
-    private static Map<String, Method> methods;
-
-    static {
-        try {
-            craftServerClass = Class.forName(String.format("org.bukkit.craftbukkit.%s.CraftServer",
-                    BukkitReflection.NMS));
-            craftServer = craftServerClass.cast(Bukkit.getServer());
-
-            commandsConfigFile = (File) getDeclaredMethod(craftServerClass,
-                    "getCommandsConfigFile").invoke(craftServer);
-            configFile = (File) getDeclaredMethod(craftServerClass, "getConfigFile").invoke(craftServer);
-            commandMap = (SimpleCommandMap) getDeclaredField(craftServerClass, "commandMap").get(Bukkit.getServer());
-
-            fields = getAllFields(craftServerClass,
-                    fieldOf("configuration"),
-                    fieldOf("console"),
-                    fieldOf("commandsConfiguration"),
-                    fieldOf("overrideAllCommandBlockCommands"),
-                    fieldOf("unrestrictedAdvancements", exact(12)),
-                    fieldOf("ignoreVanillaPermissions", min(13)),
-                    fieldOf("monsterSpawn"),
-                    fieldOf("animalSpawn"),
-                    fieldOf("waterAnimalSpawn"),
-                    fieldOf("ambientSpawn"),
-                    fieldOf("warningState"),
-                    fieldOf("minimumAPI", min(14)),
-                    fieldOf("printSaveWarning"),
-                    fieldOf("chunkGCPeriod", max(12)),
-                    fieldOf("chunkGCLoadThresh", max(12)),
-                    fieldOf("playerList"));
-            methods = getAllMethods(craftServerClass,
-                    methodOf("loadIcon"),
-                    methodOf("syncCommands", min(13)),
-                    methodOf("getHandle"));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public static Object getCraftServer() {
-        return craftServer;
+    public static MinecraftReflection getReflection() {
+        return reflection;
     }
 
     public static File getConfigFile() {
-        return configFile;
+        return reflection.invoke(Bukkit.getServer(), "getConfigFile");
     }
 
     /**
      * Retrieves the options file from a key.
      * @param option The option key.
      * @return The associated file.
-     * @throws InvocationTargetException If the method call produced an exception.
-     * @throws IllegalAccessException When prohibited access to the method.
      */
-    public static File getOptionsFile(String option) throws IllegalAccessException, InvocationTargetException {
-        Object console = getConsole();
-        Object options = get(RDedicatedServer.getFields(), console, "options");
-        return (File) invoke(ROptionSet.getMethods(), options, "valueOf", option);
+    public static File getOptionsFile(String option) {
+        Object options = reflection.get(getConsole(), "options");
+        return reflection.invoke(options, "valueOf", option);
     }
 
     public static File getCommandsConfigFile() {
-        return commandsConfigFile;
+        return reflection.invoke(Bukkit.getServer(), "getCommandsConfigFile");
     }
 
     public static SimpleCommandMap getCommandMap() {
-        return commandMap;
+        return reflection.get(Bukkit.getServer(), "commandMap");
     }
 
-    public static void syncCommands() throws InvocationTargetException, IllegalAccessException {
-        invoke(methods, craftServer, "syncCommands");
+    public static void syncCommands() {
+        if (MinecraftReflectionVersion.MINOR >= 13) reflection.invoke(Bukkit.getServer(), "syncCommands");
     }
 
-    public static Object getConsole() throws IllegalAccessException {
-        return get(fields, craftServer, "console");
+    public static Object getConsole() {
+        return reflection.get(Bukkit.getServer(), "console");
     }
 
     /**
      * Reloads the bukkit configuration.
-     * @throws ReflectiveOperationException Iff exception thrown regarding reflection.
      */
-    public static void reloadBukkitConfiguration() throws ReflectiveOperationException {
+    public static void reloadBukkitConfiguration() {
         YamlConfiguration bukkit = YamlConfiguration.loadConfiguration(getConfigFile());
-        set(fields, craftServer, "configuration", bukkit);
+        reflection.set(Bukkit.getServer(), "configuration", bukkit);
 
-        Object console = getConsole();
-        RDedicatedServer.reload(console);
+        RDedicatedServer.reload(getConsole());
 
-        set(fields, craftServer, "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
-        set(fields, craftServer, "animalSpawn", bukkit.getInt("spawn-limits.animals"));
-        set(fields, craftServer, "waterAnimalSpawn", bukkit.getInt("spawn-limits.water-animals"));
-        set(fields, craftServer, "ambientSpawn", bukkit.getInt("spawn-limits.ambient"));
-        set(fields, craftServer, "warningState",
+        reflection.set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
+        reflection.set(Bukkit.getServer(), "animalSpawn", bukkit.getInt("spawn-limits.animals"));
+        reflection.set(Bukkit.getServer(), "waterAnimalSpawn", bukkit.getInt("spawn-limits.water-animals"));
+        reflection.set(Bukkit.getServer(), "ambientSpawn", bukkit.getInt("spawn-limits.ambient"));
+        reflection.set(Bukkit.getServer(), "warningState",
                 Warning.WarningState.value(bukkit.getString("settings.deprecated-verbose")));
-        set(fields, craftServer, "minimumAPI", bukkit.getString("settings.minimum-api"));
-        set(fields, craftServer, "printSaveWarning", false);
+        if (MinecraftReflectionVersion.isMin(14))
+            reflection.set(Bukkit.getServer(), "minimumAPI", bukkit.getString("settings.minimum-api"));
+        reflection.set(Bukkit.getServer(), "printSaveWarning", false);
+        reflection.set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
+        reflection.set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
+        reflection.set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
+        if (MinecraftReflectionVersion.isMax(12)) {
+            reflection.set(Bukkit.getServer(), "chunkGCPeriod", bukkit.getInt("chunk-gc.period-in-ticks"));
+            reflection.set(Bukkit.getServer(), "chunkGCLoadThresh", bukkit.getInt("chunk-gc.load-threshold"));
+        }
 
-        set(RDedicatedServer.getFields(), console, "autosavePeriod", bukkit.getInt("ticks-per.autosave"));
-
-        set(fields, craftServer, "chunkGCPeriod", bukkit.getInt("chunk-gc.period-in-ticks"));
-        set(fields, craftServer, "chunkGCLoadThresh", bukkit.getInt("chunk-gc.load-threshold"));
+        RDedicatedServer.getReflection().set(getConsole(), "autosavePeriod", bukkit.getInt("ticks-per.autosave"));
     }
 
-    public static void loadIcon() throws InvocationTargetException, IllegalAccessException {
-        invoke(methods, craftServer, "loadIcon");
+    public static void loadIcon() {
+        reflection.invoke(Bukkit.getServer(), "loadIcon");
     }
 
     /**
      * Reloads the commands.yml file.
-     * @throws InvocationTargetException If the method call produced an exception.
-     * @throws IllegalAccessException When prohibited access to the method.
      */
-    public static void reloadCommandsConfiguration() throws IllegalAccessException, InvocationTargetException {
+    public static void reloadCommandsConfiguration() {
+        SimpleCommandMap commandMap = getCommandMap();
         Map<String, Command> map = RCommandMap.getKnownCommands(commandMap);
         Bukkit.getCommandAliases().keySet().forEach(map::remove);
 
         YamlConfiguration commands = YamlConfiguration.loadConfiguration(getCommandsConfigFile());
-        set(fields, craftServer, "commandsConfiguration", commands);
-        set(fields, craftServer, "overrideAllCommandBlockCommands",
+        reflection.set(Bukkit.getServer(), "commandsConfiguration", commands);
+        reflection.set(Bukkit.getServer(), "overrideAllCommandBlockCommands",
                 commands.getStringList("command-block-overrides").contains("*"));
-        set(fields, craftServer, "ignoreVanillaPermissions",
-                commands.getBoolean("ignore-vanilla-permissions"));
-        set(fields, craftServer, "unrestrictedAdvancements",
-                commands.getBoolean("unrestricted-advancements"));
+        if (MinecraftReflectionVersion.isMin(13)) reflection.set(
+                Bukkit.getServer(),
+                "ignoreVanillaPermissions",
+                commands.getBoolean("ignore-vanilla-permissions")
+        );
+        if (MinecraftReflectionVersion.is(12)) reflection.set(
+                Bukkit.getServer(),
+                "unrestrictedAdvancements",
+                commands.getBoolean("unrestricted-advancements")
+        );
 
         commandMap.registerServerAliases();
     }
 
     /**
      * Reloads the ip-bans file.
-     * @throws InvocationTargetException If the method call produced an exception.
-     * @throws IllegalAccessException When prohibited access to the method.
      */
-    public static void reloadIpBans() throws IllegalAccessException, InvocationTargetException {
-        Object playerList = get(fields, craftServer, "playerList");
-        Object jsonList = invoke(RPlayerList.getMethods(), playerList, "getIPBans");
+    public static void reloadIpBans() {
+        Object playerList = reflection.get(Bukkit.getServer(), "playerList");
+        Object jsonList = RPlayerList.getReflection().invoke(playerList, "getIPBans");
         RJsonList.load(jsonList);
     }
 
     /**
      * Reloads the profile bans file.
-     * @throws InvocationTargetException If the method call produced an exception.
-     * @throws IllegalAccessException When prohibited access to the method.
      */
-    public static void reloadProfileBans() throws IllegalAccessException, InvocationTargetException {
-        Object playerList = get(fields, craftServer, "playerList");
-        Object jsonList = invoke(RPlayerList.getMethods(), playerList, "getProfileBans");
+    public static void reloadProfileBans() {
+        Object playerList = reflection.get(Bukkit.getServer(), "playerList");
+        Object jsonList = RPlayerList.getReflection().invoke(playerList, "getProfileBans");
         RJsonList.load(jsonList);
     }
 }

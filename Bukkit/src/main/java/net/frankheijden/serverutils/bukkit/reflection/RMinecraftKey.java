@@ -1,48 +1,31 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import static net.frankheijden.serverutils.bukkit.entities.BukkitReflection.MINOR;
-import static net.frankheijden.serverutils.common.reflection.FieldParam.fieldOf;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.get;
-import static net.frankheijden.serverutils.common.reflection.ReflectionUtils.getAllFields;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.max;
-import static net.frankheijden.serverutils.common.reflection.VersionParam.min;
-
-import java.lang.reflect.Field;
+import dev.frankheijden.minecraftreflection.MinecraftReflection;
+import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
-import net.frankheijden.serverutils.bukkit.entities.BukkitReflection;
 import org.bukkit.plugin.Plugin;
 
 public class RMinecraftKey {
 
-    private static Class<?> minecraftKeyClass;
-    private static Map<String, Field> fields;
+    private static final MinecraftReflection reflection = MinecraftReflection
+            .of("net.minecraft.server.%s.MinecraftKey");
 
-    static {
-        try {
-            minecraftKeyClass = Class.forName(String.format("net.minecraft.server.%s.MinecraftKey",
-                    BukkitReflection.NMS));
-            fields = getAllFields(minecraftKeyClass,
-                    fieldOf("a", max(13)),
-                    fieldOf("namespace", min(14)));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    public static MinecraftReflection getReflection() {
+        return reflection;
     }
 
     /**
      * Retrieves the namespace of the specified MinecraftKey instance.
      * @param instance The MinecraftKey instance.
      * @return The namespace.
-     * @throws IllegalAccessException When prohibited access to the field.
      */
-    public static String getNameSpace(Object instance) throws IllegalAccessException {
-        if (MINOR <= 13) {
-            return (String) get(fields, instance, "a");
+    public static String getNameSpace(Object instance) {
+        if (MinecraftReflectionVersion.MINOR <= 13) {
+            return reflection.get(instance, "a");
         }
-        return (String) get(fields, instance, "namespace");
+        return reflection.get(instance, "namespace");
     }
 
     public static boolean isFrom(Object instance, Plugin plugin) throws IllegalAccessException {
