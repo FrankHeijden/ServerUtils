@@ -18,10 +18,6 @@ public class RDedicatedServer {
         return reflection;
     }
 
-    public static Object getCustomRegistry(Object dedicatedServer) {
-        return reflection.invoke(dedicatedServer, "getCustomRegistry");
-    }
-
     /**
      * Reloads the specified console (= DedicatedServer) instance's bukkit config.
      * @param console The console to reload.
