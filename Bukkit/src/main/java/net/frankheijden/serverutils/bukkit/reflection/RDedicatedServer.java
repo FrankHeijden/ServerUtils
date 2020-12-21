@@ -31,7 +31,7 @@ public class RDedicatedServer {
 
         if (MinecraftReflectionVersion.MINOR >= 13) {
             Object propertyManager;
-            if (MinecraftReflectionVersion.MINOR >= 16 && MinecraftReflectionVersion.PATCH >= 2) {
+            if (MinecraftReflectionVersion.isMin(16, 2)) {
                 propertyManager = RDedicatedServerSettings.newInstance(reflection.invoke(console, "getCustomRegistry"),
                         options);
             } else {
