@@ -284,7 +284,13 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
             }
         }
 
-        knownCommands.values().removeIf(c -> commands.contains(c.getName().toLowerCase()));
+        knownCommands.values().removeIf(c -> {
+            if (commands.contains(c.getName().toLowerCase())) {
+                c.unregister(RCraftServer.getCommandMap());
+                return true;
+            }
+            return false;
+        });
     }
 
     /**
