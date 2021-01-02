@@ -88,7 +88,13 @@ public class RCraftServer {
     public static void reloadCommandsConfiguration() {
         SimpleCommandMap commandMap = getCommandMap();
         Map<String, Command> map = RCommandMap.getKnownCommands(commandMap);
-        Bukkit.getCommandAliases().keySet().forEach(map::remove);
+
+        for (String alias : Bukkit.getCommandAliases().keySet()) {
+            Command aliasCommand = map.remove(alias);
+            if (aliasCommand == null) continue;
+
+            aliasCommand.unregister(commandMap);
+        }
 
         YamlConfiguration commands = YamlConfiguration.loadConfiguration(getCommandsConfigFile());
         reflection.set(Bukkit.getServer(), "commandsConfiguration", commands);
@@ -106,6 +112,7 @@ public class RCraftServer {
         );
 
         commandMap.registerServerAliases();
+        RCraftServer.syncCommands();
     }
 
     /**
