@@ -42,11 +42,8 @@ For the full description of this plugin, please refer to the ServerUtils [Spigot
 
 ## How to run the project?
 1. Make sure you have [gradle][gradleInstall] installed.
-2. Run the project with `gradle build` to compile all submodules with dependencies.
-3. The platform specific plugins are located at
-   `<platform>/build/libs/ServerUtils-<platform>-<version>-all.jar`.
-   The global platform independent plugin which will run on all platforms can be found at
-   `build/libs/ServerUtils-<version>-all.jar`.
+2. Run the project with `gradle clean build` to compile all submodules with dependencies.
+3. Afterwards, the platform specific plugins and platform independent compiled jars can be found in the `jars/` directory.
    
 ## Commands and Permissions
 Please refer to the [SpigotMC][spigot] page for an updated overview of the commands and permissions.
