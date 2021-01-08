@@ -66,6 +66,23 @@ dependencies {
 
 shadowJar {
     relocate 'dev.frankheijden.minecraftreflection', dependencyDir + '.minecraftreflection'
+    archiveFileName = "${archiveBaseName.orNull}-${archiveVersion.orNull}.${archiveExtension.orNull}"
 }
 
+def outputTasks() {
+    ["shadowJar", ":Bukkit:shadowJar", ":Bungee:shadowJar"].stream().map({ tasks.findByPath(it) })
+}
+
+task copyJars(type: Copy) {
+    outputTasks().forEach({ from(it) })
+    rename '(.*)-all.jar', '$1.jar'
+    into file('jars')
+}
+
+task cleanJars() {
+    delete file('jars')
+}
+
+clean.dependsOn cleanJars
 build.dependsOn shadowJar
+build.dependsOn copyJars

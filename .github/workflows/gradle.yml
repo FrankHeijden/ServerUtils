@@ -28,4 +28,4 @@ jobs:
       uses: actions/upload-artifact@v2.2.1
       with:
         name: ServerUtils
-        path: build/libs/*-all.jar
+        path: jars/*.jar
