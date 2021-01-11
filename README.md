@@ -44,6 +44,33 @@ For the full description of this plugin, please refer to the ServerUtils [Spigot
 1. Make sure you have [gradle][gradleInstall] installed.
 2. Run the project with `gradle clean build` to compile all submodules with dependencies.
 3. Afterwards, the platform specific plugins and platform independent compiled jars can be found in the `jars/` directory.
-   
+
+## API Repository / Dependency
+Please use the following maven repository:
+#### Gradle:
+```groovy
+maven { url 'https://jitpack.io' }
+```
+and as dependency:
+```groovy
+compileOnly 'com.github.FrankHeijden:ServerUtils:TAG'
+```
+#### Maven:
+```xml
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
+```
+and as dependency:
+```xml
+<dependency>
+    <groupId>com.github.FrankHeijden</groupId>
+    <artifactId>ServerUtils</artifactId>
+    <version>TAG</version>
+    <scope>provided</scope>
+</dependency>
+```
+
 ## Commands and Permissions
 Please refer to the [SpigotMC][spigot] page for an updated overview of the commands and permissions.
