@@ -10,10 +10,13 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.config.Config;
 import net.frankheijden.serverutils.common.config.Messenger;
 import net.frankheijden.serverutils.common.config.YamlConfig;
+import net.frankheijden.serverutils.common.entities.LoadResult;
+import net.frankheijden.serverutils.common.entities.Result;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.managers.AbstractVersionManager;
@@ -82,7 +85,7 @@ public class UpdateCheckerTask implements Runnable {
 
         String downloaded = versionManager.getDownloadedVersion();
         String current = versionManager.getCurrentVersion();
-        if (VersionUtils.isNewVersion(downloaded, githubVersion)) {
+        if (VersionUtils.isNewVersion(downloaded, githubVersion) || true) {
             if (isStartupCheck()) {
                 plugin.getLogger().info(String.format(UPDATE_AVAILABLE, githubVersion));
                 plugin.getLogger().info("Release info: " + body);
@@ -197,10 +200,21 @@ public class UpdateCheckerTask implements Runnable {
             String downloadedVersion = versionManager.getDownloadedVersion();
 
             if (isStartupCheck()) {
-                plugin.getLogger().info(String.format(DOWNLOADED_RESTART, downloadedVersion));
+                Logger logger = plugin.getLogger();
+                logger.info(String.format(DOWNLOADED_RESTART, downloadedVersion));
 
-                Updater updater = (Updater) plugin.getPluginManager().loadPlugin(updaterFile).get();
-                plugin.getPluginManager().enablePlugin(updater);
+                LoadResult<?> loadResult = plugin.getPluginManager().loadPlugin(updaterFile);
+                Updater updater = (Updater) plugin.getPluginManager().getPlugin("ServerUtilsUpdater");
+                if (!loadResult.isSuccess() && updater == null) {
+                    logger.severe("Failed to load ServerUtilsUpdater: " + loadResult.getResult().name());
+                    return;
+                }
+
+                Result result = plugin.getPluginManager().enablePlugin(updater);
+                if (result != Result.SUCCESS && result != Result.ALREADY_ENABLED) {
+                    logger.severe("Failed to enable ServerUtilsUpdater: " + loadResult.getResult().name());
+                    return;
+                }
 
                 plugin.getPluginManager().disablePlugin(ServerUtilsApp.getPlatformPlugin());
                 plugin.getPluginManager().unloadPlugin((Object) ServerUtilsApp.getPlatformPlugin()).tryClose();
