@@ -16,7 +16,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-import net.frankheijden.serverutils.bungee.ServerUtils;
 import net.frankheijden.serverutils.bungee.entities.BungeeLoadResult;
 import net.frankheijden.serverutils.bungee.reflection.RPluginClassLoader;
 import net.frankheijden.serverutils.bungee.reflection.RPluginManager;
@@ -31,7 +30,6 @@ import org.yaml.snakeyaml.Yaml;
 public class BungeePluginManager extends AbstractPluginManager<Plugin> {
 
     private static final ProxyServer proxy = ProxyServer.getInstance();
-    private static final ServerUtils plugin = ServerUtils.getInstance();
 
     private static BungeePluginManager instance;
 
@@ -255,7 +253,7 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
 
     @Override
     public File getPluginsFolder() {
-        return plugin.getProxy().getPluginsFolder();
+        return proxy.getPluginsFolder();
     }
 
     @Override
@@ -269,7 +267,7 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
      * @return The list of plugins.
      */
     public List<Plugin> getPlugins(boolean modules) {
-        Collection<Plugin> plugins = plugin.getProxy().getPluginManager().getPlugins();
+        Collection<Plugin> plugins = proxy.getPluginManager().getPlugins();
         if (modules) return new ArrayList<>(plugins);
         return plugins.stream()
                 .filter(BungeePluginManager::isPlugin)

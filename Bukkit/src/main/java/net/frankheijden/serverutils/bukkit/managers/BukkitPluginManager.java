@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.frankheijden.serverutils.bukkit.ServerUtils;
 import net.frankheijden.serverutils.bukkit.entities.BukkitLoadResult;
 import net.frankheijden.serverutils.bukkit.reflection.RCommandMap;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
@@ -37,11 +36,9 @@ import org.bukkit.plugin.UnknownDependencyException;
 
 public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
 
-    private final ServerUtils plugin;
     private static BukkitPluginManager instance;
 
-    public BukkitPluginManager(ServerUtils plugin) {
-        this.plugin = plugin;
+    public BukkitPluginManager() {
         instance = this;
     }
 
@@ -56,7 +53,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
      */
     @Override
     public BukkitLoadResult loadPlugin(String jarFile) {
-        return loadPlugin(new File(ServerUtils.getInstance().getDataFolder().getParent(), jarFile));
+        return loadPlugin(new File(getPluginsFolder(), jarFile));
     }
 
     /**
@@ -398,11 +395,6 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
         Map<String, Command> knownCommands = getKnownCommands();
         if (knownCommands == null) return Collections.emptySet();
         return knownCommands.keySet();
-    }
-
-    @Override
-    public File getPluginsFolder() {
-        return plugin.getDataFolder().getParentFile();
     }
 
     @Override

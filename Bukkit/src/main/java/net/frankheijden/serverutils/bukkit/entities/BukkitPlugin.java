@@ -23,7 +23,7 @@ public class BukkitPlugin extends ServerUtilsPlugin {
      */
     public BukkitPlugin(ServerUtils plugin) {
         this.plugin = plugin;
-        this.pluginManager = new BukkitPluginManager(plugin);
+        this.pluginManager = new BukkitPluginManager();
         this.taskManager = new BukkitTaskManager();
         this.resourceProvider = new BukkitResourceProvider(plugin);
         this.chatProvider = new BukkitChatProvider();
