@@ -85,7 +85,7 @@ public class UpdateCheckerTask implements Runnable {
 
         String downloaded = versionManager.getDownloadedVersion();
         String current = versionManager.getCurrentVersion();
-        if (VersionUtils.isNewVersion(downloaded, githubVersion) || true) {
+        if (VersionUtils.isNewVersion(downloaded, githubVersion)) {
             if (isStartupCheck()) {
                 plugin.getLogger().info(String.format(UPDATE_AVAILABLE, githubVersion));
                 plugin.getLogger().info("Release info: " + body);
