@@ -288,6 +288,8 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
             }
             return false;
         });
+
+        RCraftServer.syncCommands();
     }
 
     /**
