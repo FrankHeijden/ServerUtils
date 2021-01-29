@@ -48,7 +48,7 @@ public class FormatBuilder {
             String message = format;
             for (int i = 0; i < length; i++) {
                 String value = values[i];
-                if (value == null && !alwaysSend) return;
+                if ((value == null || value.isEmpty()) && !alwaysSend) return;
                 message = message.replace(orderedKeys[i], String.valueOf(value));
             }
             Messenger.sendRawMessage(sender, message);
