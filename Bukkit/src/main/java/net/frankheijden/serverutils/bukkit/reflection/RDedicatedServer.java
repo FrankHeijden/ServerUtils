@@ -3,10 +3,10 @@ package net.frankheijden.serverutils.bukkit.reflection;
 import dev.frankheijden.minecraftreflection.ClassObject;
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
 import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.Properties;
 
 public class RDedicatedServer {
@@ -80,12 +80,19 @@ public class RDedicatedServer {
      */
     public static void reloadServerProperties() {
         Object console = RCraftServer.getConsole();
-        Object playerList = RMinecraftServer.getReflection().get(console, "playerList");
+        Object playerList = RMinecraftServer.getReflection().get(console, MinecraftReflectionVersion.MINOR >= 13
+                ? "playerList"
+                : "v");
         Object propertyManager = reflection.get(console, "propertyManager");
-        Path path = RDedicatedServerSettings.getServerPropertiesPath(propertyManager);
+        File file;
+        if (MinecraftReflectionVersion.MINOR >= 14) {
+            file = RDedicatedServerSettings.getServerPropertiesPath(propertyManager).toFile();
+        } else {
+            file = RPropertyManager.getReflection().get(propertyManager, "file");
+        }
 
         Properties properties = new Properties();
-        try (InputStream in = new FileInputStream(path.toFile())) {
+        try (InputStream in = new FileInputStream(file)) {
             properties.load(in);
         } catch (IOException ex) {
             throw new RuntimeException("Unable to load server.properties", ex);
@@ -95,7 +102,10 @@ public class RDedicatedServer {
         RPlayerList.getReflection().set(playerList, "maxPlayers", maxPlayers);
 
         int viewDistance = Integer.parseInt(properties.getProperty("view-distance"));
-        RPlayerList.setViewDistance(playerList, viewDistance);
+        if (MinecraftReflectionVersion.MINOR >= 14) {
+            RPlayerList.getReflection().set(playerList, "viewDistance", viewDistance);
+        }
+        RPlayerList.getReflection().invoke(playerList, "a", ClassObject.of(int.class, viewDistance));
     }
 
     public static Object getConfigValue(Object config, String key) {

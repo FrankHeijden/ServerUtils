@@ -1,6 +1,5 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import dev.frankheijden.minecraftreflection.ClassObject;
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
 
 public class RPlayerList {
@@ -10,10 +9,5 @@ public class RPlayerList {
 
     public static MinecraftReflection getReflection() {
         return reflection;
-    }
-
-    public static void setViewDistance(Object instance, int viewDistance) {
-        reflection.set(instance, "viewDistance", viewDistance);
-        reflection.invoke(instance, "a", ClassObject.of(int.class, viewDistance));
     }
 }
