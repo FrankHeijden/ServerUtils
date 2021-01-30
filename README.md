@@ -53,7 +53,8 @@ maven { url 'https://jitpack.io' }
 ```
 and as dependency:
 ```groovy
-compileOnly 'com.github.FrankHeijden:ServerUtils:TAG'
+// Replace VERSION with for example 2.5.0
+compileOnly 'com.github.FrankHeijden:ServerUtils:VERSION'
 ```
 #### Maven:
 ```xml
@@ -67,7 +68,8 @@ and as dependency:
 <dependency>
     <groupId>com.github.FrankHeijden</groupId>
     <artifactId>ServerUtils</artifactId>
-    <version>TAG</version>
+    <!-- Replace VERSION with for example 2.5.0 -->
+    <version>VERSION</version>
     <scope>provided</scope>
 </dependency>
 ```
