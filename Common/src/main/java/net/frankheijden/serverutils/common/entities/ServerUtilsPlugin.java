@@ -2,15 +2,18 @@ package net.frankheijden.serverutils.common.entities;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.managers.AbstractTaskManager;
-import net.frankheijden.serverutils.common.managers.AbstractVersionManager;
+import net.frankheijden.serverutils.common.managers.UpdateManager;
 import net.frankheijden.serverutils.common.providers.ChatProvider;
 import net.frankheijden.serverutils.common.providers.ResourceProvider;
 import net.frankheijden.serverutils.common.utils.FileUtils;
 
 public abstract class ServerUtilsPlugin {
+
+    private final UpdateManager updateManager = new UpdateManager();
 
     public abstract <T> AbstractPluginManager<T> getPluginManager();
 
@@ -20,7 +23,9 @@ public abstract class ServerUtilsPlugin {
 
     public abstract ChatProvider getChatProvider();
 
-    public abstract AbstractVersionManager getVersionManager();
+    public UpdateManager getUpdateManager() {
+        return updateManager;
+    }
 
     public abstract Logger getLogger();
 
@@ -44,7 +49,7 @@ public abstract class ServerUtilsPlugin {
 
         File file = new File(getDataFolder(), targetName);
         if (!file.exists()) {
-            getLogger().info(String.format("'%s' not found, creating!", targetName));
+            getLogger().log(Level.INFO, "'{}' not found, creating!", targetName);
             try {
                 FileUtils.saveResource(getResourceProvider().getResource(resource), file);
             } catch (IOException ex) {

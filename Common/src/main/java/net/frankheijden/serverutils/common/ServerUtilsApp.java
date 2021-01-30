@@ -1,12 +1,12 @@
 package net.frankheijden.serverutils.common;
 
-import net.frankheijden.serverutils.common.config.Config;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.tasks.UpdateCheckerTask;
 
 public class ServerUtilsApp<T> {
 
     public static final int BSTATS_METRICS_ID = 7790;
+    public static final String VERSION = "{version}";
 
     private final T platformPlugin;
     private final ServerUtilsPlugin plugin;
@@ -28,9 +28,7 @@ public class ServerUtilsApp<T> {
      * Tries checking for updates if enabled by the config.
      */
     public static void tryCheckForUpdates() {
-        if (Config.getInstance().getConfig().getBoolean("settings.check-updates")) {
-            UpdateCheckerTask.start(getPlugin().getChatProvider().getConsoleSender(), true);
-        }
+        UpdateCheckerTask.tryStart(getPlugin().getChatProvider().getConsoleSender(), "boot");
     }
 
     public static ServerUtilsPlugin getPlugin() {

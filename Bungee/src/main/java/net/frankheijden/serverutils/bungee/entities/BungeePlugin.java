@@ -5,7 +5,6 @@ import java.util.logging.Logger;
 import net.frankheijden.serverutils.bungee.ServerUtils;
 import net.frankheijden.serverutils.bungee.managers.BungeePluginManager;
 import net.frankheijden.serverutils.bungee.managers.BungeeTaskManager;
-import net.frankheijden.serverutils.bungee.managers.BungeeVersionManager;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.md_5.bungee.api.plugin.PluginDescription;
 
@@ -16,7 +15,6 @@ public class BungeePlugin extends ServerUtilsPlugin {
     private final BungeeTaskManager taskManager;
     private final BungeeResourceProvider resourceProvider;
     private final BungeeChatProvider chatProvider;
-    private final BungeeVersionManager versionManager;
 
     /**
      * Creates a new BungeePlugin instance of ServerUtils.
@@ -28,7 +26,6 @@ public class BungeePlugin extends ServerUtilsPlugin {
         this.taskManager = new BungeeTaskManager();
         this.resourceProvider = new BungeeResourceProvider(plugin);
         this.chatProvider = new BungeeChatProvider();
-        this.versionManager = new BungeeVersionManager(plugin);
     }
 
     @Override
@@ -51,11 +48,6 @@ public class BungeePlugin extends ServerUtilsPlugin {
     @Override
     public BungeeChatProvider getChatProvider() {
         return chatProvider;
-    }
-
-    @Override
-    public BungeeVersionManager getVersionManager() {
-        return versionManager;
     }
 
     @Override
