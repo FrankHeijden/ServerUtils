@@ -93,6 +93,29 @@ public interface YamlConfig {
     }
 
     /**
+     * Removes unused keys from the configuration.
+     */
+    static void removeOldKeys(YamlConfig def, YamlConfig conf) {
+        removeOldKeys(def, conf, "");
+    }
+
+    /**
+     * Removes unused keys from the configuration, starting from the root node.
+     */
+    static void removeOldKeys(YamlConfig def, YamlConfig conf, String root) {
+        if (def == null) return;
+        for (String key : conf.getKeys()) {
+            String defKey = (root.isEmpty() ? "" : root + ".") + key;
+            Object value = conf.get(key);
+            if (def.get(defKey) == null) {
+                conf.set(key, null);
+            } else if (value instanceof YamlConfig) {
+                removeOldKeys(def, (YamlConfig) value, defKey);
+            }
+        }
+    }
+
+    /**
      * Initiates a Configuration from a file with associated defaults.
      * @param def The default Configuration to be applied.
      * @param conf The Configuration where the defaults will be applied to.
@@ -100,6 +123,7 @@ public interface YamlConfig {
      */
     static YamlConfig init(YamlConfig def, YamlConfig conf) {
         YamlConfig.addDefaults(def, conf);
+        YamlConfig.removeOldKeys(def, conf);
 
         try {
             conf.save();
