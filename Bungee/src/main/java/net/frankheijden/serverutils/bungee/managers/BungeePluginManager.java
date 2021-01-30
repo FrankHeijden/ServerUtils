@@ -17,10 +17,15 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import net.frankheijden.serverutils.bungee.entities.BungeeLoadResult;
+import net.frankheijden.serverutils.bungee.events.BungeePluginDisableEvent;
+import net.frankheijden.serverutils.bungee.events.BungeePluginEnableEvent;
+import net.frankheijden.serverutils.bungee.events.BungeePluginLoadEvent;
+import net.frankheijden.serverutils.bungee.events.BungeePluginUnloadEvent;
 import net.frankheijden.serverutils.bungee.reflection.RPluginClassLoader;
 import net.frankheijden.serverutils.bungee.reflection.RPluginManager;
 import net.frankheijden.serverutils.common.entities.CloseableResult;
 import net.frankheijden.serverutils.common.entities.Result;
+import net.frankheijden.serverutils.common.events.PluginEvent;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -84,10 +89,12 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
             Plugin plugin = (Plugin) main.getDeclaredConstructor().newInstance();
 
             RPluginManager.getPlugins(proxy.getPluginManager()).put(desc.getName(), plugin);
+            proxy.getPluginManager().callEvent(new BungeePluginLoadEvent(plugin, PluginEvent.Stage.PRE));
             plugin.onLoad();
             proxy.getLogger().log(Level.INFO, "Loaded plugin {0} version {1} by {2}", new Object[] {
                     desc.getName(), desc.getVersion(), desc.getAuthor()
             });
+            proxy.getPluginManager().callEvent(new BungeePluginLoadEvent(plugin, PluginEvent.Stage.POST));
             return new BungeeLoadResult(plugin);
         } catch (Throwable th) {
             proxy.getLogger().log(Level.WARNING, "Error loading plugin " + desc.getName(), th);
@@ -99,10 +106,12 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
     public Result enablePlugin(Plugin plugin) {
         PluginDescription desc = plugin.getDescription();
         String name = desc.getName();
+        proxy.getPluginManager().callEvent(new BungeePluginEnableEvent(plugin, PluginEvent.Stage.PRE));
         try {
             plugin.onEnable();
             Object[] args = new Object[] { name, desc.getVersion(), desc.getAuthor() };
             proxy.getLogger().log(Level.INFO, "Enabled plugin {0} version {1} by {2}", args);
+            proxy.getPluginManager().callEvent(new BungeePluginEnableEvent(plugin, PluginEvent.Stage.POST));
             return Result.SUCCESS;
         } catch (Throwable th) {
             proxy.getLogger().log(Level.WARNING, "Exception encountered when loading plugin: " + name, th);
@@ -114,8 +123,10 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
     public Result disablePlugin(Plugin plugin) {
         PluginDescription desc = plugin.getDescription();
         String name = desc.getName();
+        proxy.getPluginManager().callEvent(new BungeePluginDisableEvent(plugin, PluginEvent.Stage.PRE));
         try {
             plugin.onDisable();
+            proxy.getPluginManager().callEvent(new BungeePluginDisableEvent(plugin, PluginEvent.Stage.POST));
             return Result.SUCCESS;
         } catch (Throwable th) {
             proxy.getLogger().log(Level.WARNING, "Exception encountered when disabling plugin: " + name, th);
@@ -154,6 +165,7 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
 
     @Override
     public CloseableResult unloadPlugin(Plugin plugin) {
+        proxy.getPluginManager().callEvent(new BungeePluginUnloadEvent(plugin, PluginEvent.Stage.PRE));
         plugin.onDisable();
         proxy.getPluginManager().unregisterCommands(plugin);
         proxy.getPluginManager().unregisterListeners(plugin);
@@ -167,6 +179,7 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
             ex.printStackTrace();
             return new CloseableResult(Result.ERROR);
         }
+        proxy.getPluginManager().callEvent(new BungeePluginUnloadEvent(plugin, PluginEvent.Stage.POST));
         return new CloseableResult(closeables);
     }
 

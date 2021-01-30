@@ -13,6 +13,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.frankheijden.serverutils.bukkit.entities.BukkitLoadResult;
+import net.frankheijden.serverutils.bukkit.events.BukkitPluginDisableEvent;
+import net.frankheijden.serverutils.bukkit.events.BukkitPluginEnableEvent;
+import net.frankheijden.serverutils.bukkit.events.BukkitPluginLoadEvent;
+import net.frankheijden.serverutils.bukkit.events.BukkitPluginUnloadEvent;
 import net.frankheijden.serverutils.bukkit.reflection.RCommandMap;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftingManager;
@@ -22,6 +26,7 @@ import net.frankheijden.serverutils.bukkit.reflection.RPluginClassLoader;
 import net.frankheijden.serverutils.bukkit.reflection.RSimplePluginManager;
 import net.frankheijden.serverutils.common.entities.CloseableResult;
 import net.frankheijden.serverutils.common.entities.Result;
+import net.frankheijden.serverutils.common.events.PluginEvent;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -87,7 +92,9 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
         }
 
         if (plugin == null) return new BukkitLoadResult(Result.INVALID_PLUGIN);
+        Bukkit.getPluginManager().callEvent(new BukkitPluginLoadEvent(plugin, PluginEvent.Stage.PRE));
         plugin.onLoad();
+        Bukkit.getPluginManager().callEvent(new BukkitPluginLoadEvent(plugin, PluginEvent.Stage.POST));
         return new BukkitLoadResult(plugin);
     }
 
@@ -109,6 +116,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
     public Result disablePlugin(Plugin plugin) {
         if (plugin == null) return Result.NOT_ENABLED;
         if (!plugin.isEnabled()) return Result.ALREADY_DISABLED;
+        Bukkit.getPluginManager().callEvent(new BukkitPluginDisableEvent(plugin, PluginEvent.Stage.PRE));
         try {
             Bukkit.getPluginManager().disablePlugin(plugin);
             RCraftingManager.removeRecipesFor(plugin);
@@ -117,6 +125,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
             return Result.ERROR;
         }
         unregisterCommands(plugin);
+        Bukkit.getPluginManager().callEvent(new BukkitPluginDisableEvent(plugin, PluginEvent.Stage.POST));
         return Result.SUCCESS;
     }
 
@@ -138,6 +147,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
     @Override
     public CloseableResult unloadPlugin(Plugin plugin) {
         if (plugin == null) return new CloseableResult(Result.NOT_EXISTS);
+        Bukkit.getPluginManager().callEvent(new BukkitPluginUnloadEvent(plugin, PluginEvent.Stage.PRE));
         List<Closeable> closeables = new ArrayList<>();
         try {
             RSimplePluginManager.getPlugins(Bukkit.getPluginManager()).remove(plugin);
@@ -155,6 +165,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
             ex.printStackTrace();
             return new CloseableResult(Result.ERROR);
         }
+        Bukkit.getPluginManager().callEvent(new BukkitPluginUnloadEvent(plugin, PluginEvent.Stage.POST));
         return new CloseableResult(closeables);
     }
 
@@ -183,10 +194,13 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
         if (plugin == null) return Result.NOT_EXISTS;
         if (Bukkit.getPluginManager().isPluginEnabled(plugin.getName())) return Result.ALREADY_ENABLED;
 
+        Bukkit.getPluginManager().callEvent(new BukkitPluginEnableEvent(plugin, PluginEvent.Stage.PRE));
         Bukkit.getPluginManager().enablePlugin(plugin);
         RCraftServer.syncCommands();
 
-        return Bukkit.getPluginManager().isPluginEnabled(plugin.getName()) ? Result.SUCCESS : Result.ERROR;
+        if (!Bukkit.getPluginManager().isPluginEnabled(plugin.getName())) return Result.ERROR;
+        Bukkit.getPluginManager().callEvent(new BukkitPluginEnableEvent(plugin, PluginEvent.Stage.POST));
+        return Result.SUCCESS;
     }
 
     /**
