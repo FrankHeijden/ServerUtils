@@ -1,25 +1,13 @@
 package net.frankheijden.serverutils.common.managers;
 
-import com.google.gson.JsonElement;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 
 public class UpdateManager {
 
-    private JsonElement lastResponse;
-    private String downloadedVersion;
+    private String downloadedVersion = ServerUtilsApp.VERSION;
+    private long lastUpdateCheck = 0;
 
-    public UpdateManager() {
-        this.lastResponse = null;
-        this.downloadedVersion = ServerUtilsApp.VERSION;
-    }
-
-    public JsonElement getLastResponse() {
-        return lastResponse;
-    }
-
-    public void setLastResponse(JsonElement lastResponse) {
-        this.lastResponse = lastResponse;
-    }
+    public UpdateManager() {}
 
     public String getDownloadedVersion() {
         return downloadedVersion;
@@ -31,5 +19,13 @@ public class UpdateManager {
 
     public boolean hasDownloaded() {
         return !downloadedVersion.equals(ServerUtilsApp.VERSION);
+    }
+
+    public boolean canRunUpdateCheck() {
+        return lastUpdateCheck + 1000 * 60 * 30 <= System.currentTimeMillis();
+    }
+
+    public void updateLastUpdateCheck() {
+        this.lastUpdateCheck = System.currentTimeMillis();
     }
 }

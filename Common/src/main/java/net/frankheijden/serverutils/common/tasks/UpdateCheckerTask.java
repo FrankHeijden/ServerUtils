@@ -83,9 +83,11 @@ public class UpdateCheckerTask implements Runnable {
 
     @Override
     public void run() {
-        plugin.getLogger().info(UPDATE_CHECK_START);
-
         UpdateManager updateManager = plugin.getUpdateManager();
+        if (!updateManager.canRunUpdateCheck()) return;
+        updateManager.updateLastUpdateCheck();
+
+        plugin.getLogger().info(UPDATE_CHECK_START);
 
         GitHubResponse pluginResponse = getResponse(GITHUB_LINK);
         if (pluginResponse == null) return;
