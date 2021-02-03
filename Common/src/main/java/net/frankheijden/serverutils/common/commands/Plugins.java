@@ -22,6 +22,7 @@ public class Plugins {
         Messenger.sendMessage(sender, "serverutils.plugins.header");
         String prefix = Messenger.getMessage("serverutils.plugins.prefix",
                 "%count%", String.valueOf(plugins.size()));
+        if (prefix == null) prefix = "";
         sender.sendMessage(Messenger.color(prefix + ListBuilder.create(plugins)
                 .seperator(Messenger.getMessage("serverutils.plugins.seperator"))
                 .lastSeperator(Messenger.getMessage("serverutils.plugins.last_seperator"))
