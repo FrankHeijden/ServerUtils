@@ -5,7 +5,7 @@ plugins {
 
 group = 'net.frankheijden.serverutils'
 String dependencyDir = group + '.dependencies'
-version = '2.5.0'
+version = '2.5.1'
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
