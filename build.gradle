@@ -66,6 +66,7 @@ dependencies {
 }
 
 shadowJar {
+    relocate 'org.apache.commons.codec', dependencyDir + '.codec'
     relocate 'dev.frankheijden.minecraftreflection', dependencyDir + '.minecraftreflection'
     archiveFileName = "${archiveBaseName.orNull}-${archiveVersion.orNull}.${archiveExtension.orNull}"
 }
