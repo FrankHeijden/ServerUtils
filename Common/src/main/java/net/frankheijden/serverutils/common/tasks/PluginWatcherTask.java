@@ -1,15 +1,6 @@
 package net.frankheijden.serverutils.common.tasks;
 
 import com.sun.nio.file.SensitivityWatchEventModifier;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.ClosedWatchServiceException;
-import java.nio.file.FileSystems;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
-import java.util.concurrent.atomic.AtomicBoolean;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.entities.AbstractTask;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
@@ -19,10 +10,19 @@ import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.managers.AbstractTaskManager;
 import net.frankheijden.serverutils.common.providers.ChatProvider;
 import net.frankheijden.serverutils.common.utils.FileUtils;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.ClosedWatchServiceException;
+import java.nio.file.FileSystems;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PluginWatcherTask extends AbstractTask {
 
-    private static final WatchEvent.Kind<?>[] EVENTS = new WatchEvent.Kind[] {
+    private static final WatchEvent.Kind<?>[] EVENTS = new WatchEvent.Kind[]{
         StandardWatchEventKinds.ENTRY_CREATE,
         StandardWatchEventKinds.ENTRY_MODIFY,
         StandardWatchEventKinds.ENTRY_DELETE
@@ -38,8 +38,8 @@ public class PluginWatcherTask extends AbstractTask {
 
     private final ServerCommandSender sender;
     private final String pluginName;
-    private File file;
     private final AtomicBoolean run;
+    private File file;
     private String hash;
 
     private WatchService watchService;
@@ -47,6 +47,7 @@ public class PluginWatcherTask extends AbstractTask {
 
     /**
      * Constructs a new PluginWatcherTask for the specified plugin.
+     *
      * @param pluginName The name of the plugin.
      */
     public PluginWatcherTask(ServerCommandSender sender, String pluginName) {
@@ -78,10 +79,8 @@ public class PluginWatcherTask extends AbstractTask {
                             if (hash.equals(previousHash)) {
                                 send(WatchResult.CHANGE);
 
-                                taskManager.runTask(() -> {
-                                    pluginManager.reloadPlugin(pluginName);
-                                    file = pluginManager.getPluginFile(pluginName);
-                                });
+                                pluginManager.reloadPlugin(pluginName);
+                                file = pluginManager.getPluginFile(pluginName);
                             }
                         }, 10L);
                     }
