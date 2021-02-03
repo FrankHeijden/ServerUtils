@@ -18,6 +18,7 @@ import net.frankheijden.serverutils.common.entities.WatchResult;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.managers.AbstractTaskManager;
 import net.frankheijden.serverutils.common.providers.ChatProvider;
+import net.frankheijden.serverutils.common.utils.FileUtils;
 
 public class PluginWatcherTask extends AbstractTask {
 
@@ -39,8 +40,10 @@ public class PluginWatcherTask extends AbstractTask {
     private final String pluginName;
     private File file;
     private final AtomicBoolean run;
+    private String hash;
 
     private WatchService watchService;
+    private Object task = null;
 
     /**
      * Constructs a new PluginWatcherTask for the specified plugin.
@@ -65,12 +68,22 @@ public class PluginWatcherTask extends AbstractTask {
                 WatchKey key = watchService.take();
                 for (WatchEvent<?> event : key.pollEvents()) {
                     if (file.getName().equals(event.context().toString())) {
-                        send(WatchResult.CHANGE);
+                        String previousHash = hash;
+                        hash = FileUtils.getHash(file);
+                        if (task != null) {
+                            //noinspection unchecked
+                            taskManager.cancelTask(task);
+                        }
+                        task = ServerUtilsApp.getPlugin().getTaskManager().runTaskLater(() -> {
+                            if (hash.equals(previousHash)) {
+                                send(WatchResult.CHANGE);
 
-                        taskManager.runTask(() -> {
-                            pluginManager.reloadPlugin(pluginName);
-                            file = pluginManager.getPluginFile(pluginName);
-                        });
+                                taskManager.runTask(() -> {
+                                    pluginManager.reloadPlugin(pluginName);
+                                    file = pluginManager.getPluginFile(pluginName);
+                                });
+                            }
+                        }, 10L);
                     }
                 }
 
