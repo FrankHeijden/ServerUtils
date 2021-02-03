@@ -2,8 +2,10 @@ package net.frankheijden.serverutils.common.utils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import org.apache.commons.codec.digest.DigestUtils;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,5 +33,20 @@ public class FileUtils {
         if (target.exists()) return false;
         Files.copy(in, target.toPath());
         return true;
+    }
+
+    /**
+     * Get the Hash of a file.
+     *
+     * @param file The file
+     * @return The file's hash
+     */
+    public static String getHash(File file) {
+        try {
+            return DigestUtils.md5Hex(new FileInputStream(file));
+        } catch (IOException e) {
+            // Shouldn't happen
+            return null;
+        }
     }
 }

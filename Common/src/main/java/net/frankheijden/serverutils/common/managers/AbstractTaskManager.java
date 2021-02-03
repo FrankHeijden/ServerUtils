@@ -1,11 +1,11 @@
 package net.frankheijden.serverutils.common.managers;
 
+import net.frankheijden.serverutils.common.entities.AbstractTask;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import net.frankheijden.serverutils.common.entities.AbstractTask;
 
 public abstract class AbstractTaskManager<T> {
 
@@ -15,6 +15,7 @@ public abstract class AbstractTaskManager<T> {
 
     /**
      * Constructs a new TaskManager with a consumer which closes a task.
+     *
      * @param taskCloser The consumer which will close tasks.
      */
     public AbstractTaskManager(Consumer<T> taskCloser) {
@@ -25,13 +26,23 @@ public abstract class AbstractTaskManager<T> {
 
     protected abstract T runTaskImpl(Runnable runnable);
 
+    /**
+     * Run a task later after a certain delay (synchronously).
+     *
+     * @param runnable The Runnable
+     * @param delay The delay in ticks (for BungeeCord, this is automatically converted to milliseconds).
+     * @return The scheduled task
+     */
+    public abstract T runTaskLater(Runnable runnable, long delay);
+
     public T runTask(Runnable runnable) {
         return addTask(runTaskImpl(runnable));
     }
 
     /**
      * Associates a synchronous task with a key which can be cancelled later by that key.
-     * @param key The key of the task.
+     *
+     * @param key          The key of the task.
      * @param abstractTask The AbstractTask.
      * @return The implementation-specific scheduled task.
      */
@@ -49,7 +60,8 @@ public abstract class AbstractTaskManager<T> {
 
     /**
      * Associates an asynchronous task with a key which can be cancelled later by that key.
-     * @param key The key of the task.
+     *
+     * @param key          The key of the task.
      * @param abstractTask The AbstractTask.
      * @return The implementation-specific scheduled task.
      */
@@ -68,6 +80,7 @@ public abstract class AbstractTaskManager<T> {
 
     /**
      * Cancels a single task by key.
+     *
      * @param key The key of the task.
      * @return Whether or not the task existed.
      */

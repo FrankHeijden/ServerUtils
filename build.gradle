@@ -5,7 +5,7 @@ plugins {
 
 group = 'net.frankheijden.serverutils'
 String dependencyDir = group + '.dependencies'
-version = '2.5.0'
+version = '2.5.1'
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
@@ -24,6 +24,7 @@ subprojects {
     }
 
     dependencies {
+        implementation 'commons-codec:commons-codec:1.15'
         implementation 'com.github.FrankHeijden:MinecraftReflection:1.0.0'
 
         testCompile 'org.assertj:assertj-core:3.18.1'
@@ -65,6 +66,7 @@ dependencies {
 }
 
 shadowJar {
+    relocate 'org.apache.commons.codec', dependencyDir + '.codec'
     relocate 'dev.frankheijden.minecraftreflection', dependencyDir + '.minecraftreflection'
     archiveFileName = "${archiveBaseName.orNull}-${archiveVersion.orNull}.${archiveExtension.orNull}"
 }

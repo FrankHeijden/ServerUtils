@@ -4,6 +4,7 @@ import net.frankheijden.serverutils.bungee.ServerUtils;
 import net.frankheijden.serverutils.common.managers.AbstractTaskManager;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
+import java.util.concurrent.TimeUnit;
 
 public class BungeeTaskManager extends AbstractTaskManager<ScheduledTask> {
 
@@ -14,6 +15,12 @@ public class BungeeTaskManager extends AbstractTaskManager<ScheduledTask> {
     @Override
     protected ScheduledTask runTaskImpl(Runnable runnable) {
         return runTaskAsynchronously(runnable);
+    }
+
+    @Override
+    public ScheduledTask runTaskLater(Runnable runnable, long delay) {
+        return ProxyServer.getInstance().getScheduler()
+                .schedule(ServerUtils.getInstance(), runnable, delay * 50, TimeUnit.MILLISECONDS);
     }
 
     @Override

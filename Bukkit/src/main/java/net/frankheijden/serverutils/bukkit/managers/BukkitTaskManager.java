@@ -17,6 +17,11 @@ public class BukkitTaskManager extends AbstractTaskManager<BukkitTask> {
     }
 
     @Override
+    public BukkitTask runTaskLater(Runnable runnable, long delay) {
+        return Bukkit.getScheduler().runTaskLater(ServerUtils.getInstance(), runnable, delay);
+    }
+
+    @Override
     protected BukkitTask runTaskAsynchronouslyImpl(Runnable runnable) {
         return Bukkit.getScheduler().runTaskAsynchronously(ServerUtils.getInstance(), runnable);
     }
