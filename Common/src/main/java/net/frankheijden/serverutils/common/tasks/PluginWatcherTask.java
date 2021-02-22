@@ -70,7 +70,7 @@ public class PluginWatcherTask extends AbstractTask {
                 for (WatchEvent<?> event : key.pollEvents()) {
                     if (file.getName().equals(event.context().toString())) {
                         String previousHash = hash;
-                        hash = FileUtils.getHash(file);
+                        hash = FileUtils.getHash(file.toPath());
                         if (task != null) {
                             //noinspection unchecked
                             taskManager.cancelTask(task);
