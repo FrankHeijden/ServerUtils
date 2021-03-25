@@ -78,7 +78,7 @@ public class PluginWatcherTask extends AbstractTask {
                         String previousHash = hash;
                         long previousHashTimestamp = hashTimestamp;
 
-                        hash = FileUtils.getHash(file);
+                        hash = FileUtils.getHash(file.toPath());
                         hashTimestamp = System.currentTimeMillis();
                         task = ServerUtilsApp.getPlugin().getTaskManager().runTaskLater(() -> {
                             if (hash.equals(previousHash) || previousHashTimestamp < hashTimestamp - 1000L) {
