@@ -117,23 +117,37 @@ public class ServerUtils extends JavaPlugin implements CommandExecutor {
             commandManager.registerCommand(commandPlugins, true);
         }
 
-        getPlugin().getTaskManager().runTask(() -> BukkitPluginManager.unregisterCommands(getDisabledCommands()));
+        getPlugin().getTaskManager().runTask(() -> BukkitPluginManager.unregisterExactCommands(getDisabledCommands()));
     }
 
-    private List<PluginCommand> getDisabledCommands() {
-        List<PluginCommand> commands = new ArrayList<>();
+    private List<Command> getDisabledCommands() {
+        List<Command> commands = new ArrayList<>();
         for (String cmd : Config.getInstance().getConfig().getStringList("disabled-commands")) {
             String[] split = cmd.split(":");
 
-            PluginCommand command;
+            Command command;
             if (split.length > 1) {
-                command = Bukkit.getPluginCommand(StringUtils.join(":", split, 1));
+                String commandString = StringUtils.join(":", split, 1);
+                PluginCommand pluginCommand = Bukkit.getPluginCommand(commandString);
 
                 Plugin plugin = getPlugin().getPluginManager().getPlugin(split[0]);
-                if (plugin == null || command == null) continue;
-                if (!plugin.getName().equalsIgnoreCase(command.getPlugin().getName())) continue;
+                if (plugin == null) {
+                    getLogger().warning("Unknown plugin '" + split[0] + "' in disabled-commands!");
+                    continue;
+                } else if (pluginCommand == null) {
+                    getLogger().warning("Unknown command '" + commandString + "' in disabled-commands!");
+                    continue;
+                } else if (!plugin.getName().equalsIgnoreCase(pluginCommand.getPlugin().getName())) {
+                    // No output here, plugin didn't match!
+                    continue;
+                }
+                command = pluginCommand;
             } else {
-                command = Bukkit.getPluginCommand(split[0]);
+                command = BukkitPluginManager.getCommand(split[0]);
+                if (command == null) {
+                    getLogger().warning("Unknown command '" + split[0] + "' in disabled-commands!");
+                    continue;
+                }
             }
             commands.add(command);
         }

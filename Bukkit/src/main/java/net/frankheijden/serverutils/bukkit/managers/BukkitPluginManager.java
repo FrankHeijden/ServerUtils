@@ -307,6 +307,16 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
     }
 
     /**
+     * Unregisters all specified commands exactly.
+     * @param commands The commands to unregister.
+     */
+    public static void unregisterExactCommands(Collection<? extends Command> commands) {
+        Map<String, Command> knownCommands = getKnownCommands();
+        if (knownCommands == null) return;
+        knownCommands.values().removeAll(commands);
+    }
+
+    /**
      * Retrieves a command from the command map.
      * @param command The command string.
      * @return The command.
