@@ -2,15 +2,16 @@ package net.frankheijden.serverutils.common.utils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import org.apache.commons.codec.digest.DigestUtils;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class FileUtils {
 
@@ -36,17 +37,18 @@ public class FileUtils {
     }
 
     /**
-     * Get the Hash of a file.
+     * Get the Hash of a file at given path.
      *
-     * @param file The file
+     * @param path The path
      * @return The file's hash
      */
-    public static String getHash(File file) {
+    public static String getHash(Path path) {
+        byte[] digest;
         try {
-            return DigestUtils.md5Hex(new FileInputStream(file));
-        } catch (IOException e) {
-            // Shouldn't happen
+            digest = MessageDigest.getInstance("MD5").digest(Files.readAllBytes(path));
+        } catch (IOException | NoSuchAlgorithmException ex) {
             return null;
         }
+        return StringUtils.bytesToHex(digest);
     }
 }
