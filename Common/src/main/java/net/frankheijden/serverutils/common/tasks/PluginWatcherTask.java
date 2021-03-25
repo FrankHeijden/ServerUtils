@@ -41,6 +41,7 @@ public class PluginWatcherTask extends AbstractTask {
     private final AtomicBoolean run;
     private File file;
     private String hash;
+    private long hashTimestamp = 0;
 
     private WatchService watchService;
     private Object task = null;
@@ -69,14 +70,18 @@ public class PluginWatcherTask extends AbstractTask {
                 WatchKey key = watchService.take();
                 for (WatchEvent<?> event : key.pollEvents()) {
                     if (file.getName().equals(event.context().toString())) {
-                        String previousHash = hash;
-                        hash = FileUtils.getHash(file.toPath());
                         if (task != null) {
                             //noinspection unchecked
                             taskManager.cancelTask(task);
                         }
+
+                        String previousHash = hash;
+                        long previousHashTimestamp = hashTimestamp;
+
+                        hash = FileUtils.getHash(file.toPath());
+                        hashTimestamp = System.currentTimeMillis();
                         task = ServerUtilsApp.getPlugin().getTaskManager().runTaskLater(() -> {
-                            if (hash.equals(previousHash)) {
+                            if (hash.equals(previousHash) || previousHashTimestamp < hashTimestamp - 1000L) {
                                 send(WatchResult.CHANGE);
 
                                 pluginManager.reloadPlugin(pluginName);
