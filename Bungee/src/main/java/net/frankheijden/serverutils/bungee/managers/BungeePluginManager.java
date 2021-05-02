@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import java.io.Closeable;
 import java.io.File;
 import java.io.InputStream;
-import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +20,7 @@ import net.frankheijden.serverutils.bungee.events.BungeePluginDisableEvent;
 import net.frankheijden.serverutils.bungee.events.BungeePluginEnableEvent;
 import net.frankheijden.serverutils.bungee.events.BungeePluginLoadEvent;
 import net.frankheijden.serverutils.bungee.events.BungeePluginUnloadEvent;
+import net.frankheijden.serverutils.bungee.reflection.RLibraryLoader;
 import net.frankheijden.serverutils.bungee.reflection.RPluginClassLoader;
 import net.frankheijden.serverutils.bungee.reflection.RPluginManager;
 import net.frankheijden.serverutils.common.entities.CloseableResult;
@@ -82,8 +82,14 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin> {
         }
 
         try {
-            URL url = desc.getFile().toURI().toURL();
-            URLClassLoader loader = (URLClassLoader) RPluginClassLoader.newInstance(proxy, desc, url);
+            Object libraryLoader = RPluginManager.getLibraryLoader(proxy.getPluginManager());
+            ClassLoader classLoader = RLibraryLoader.createLoader(libraryLoader, desc);
+            URLClassLoader loader = (URLClassLoader) RPluginClassLoader.newInstance(
+                    proxy,
+                    desc,
+                    desc.getFile(),
+                    classLoader
+            );
 
             Class<?> main = loader.loadClass(desc.getMain());
             Plugin plugin = (Plugin) main.getDeclaredConstructor().newInstance();

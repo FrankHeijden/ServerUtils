@@ -13,6 +13,8 @@ public class RPluginManager {
     private static final MinecraftReflection reflection = MinecraftReflection
             .of("net.md_5.bungee.api.plugin.PluginManager");
 
+    private RPluginManager() {}
+
     /**
      * Clears the plugin from the PluginManager.
      * @param instance The instance of the PluginManager.
@@ -50,5 +52,9 @@ public class RPluginManager {
             if (entry.getValue().equals(cmd)) return entry.getKey();
         }
         return null;
+    }
+
+    public static Object getLibraryLoader(Object instance) {
+        return reflection.get(instance, "libraryLoader");
     }
 }
