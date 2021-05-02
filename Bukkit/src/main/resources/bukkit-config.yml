@@ -7,5 +7,4 @@ settings:
   install-updates-boot: false
   install-updates-login: false
 
-disabled-commands:
-  - "plugin:command"
+disabled-commands: []
