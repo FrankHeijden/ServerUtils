@@ -1,6 +1,6 @@
 package net.frankheijden.serverutils.bungee.reflection;
 
-import java.net.URL;
+import java.io.File;
 import java.util.Set;
 import dev.frankheijden.minecraftreflection.ClassObject;
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
@@ -13,14 +13,17 @@ public class RPluginClassLoader {
     private static final MinecraftReflection reflection = MinecraftReflection
             .of("net.md_5.bungee.api.plugin.PluginClassloader");
 
+    private RPluginClassLoader() {}
+
     /**
      * Creates a new instance of a PluginClassLoader from given parameters.
      */
-    public static Object newInstance(ProxyServer proxy, PluginDescription desc, URL... urls) {
+    public static Object newInstance(ProxyServer proxy, PluginDescription desc, File file, ClassLoader classLoader) {
         return reflection.newInstance(
                 ClassObject.of(ProxyServer.class, proxy),
                 ClassObject.of(PluginDescription.class, desc),
-                ClassObject.of(URL[].class, urls)
+                ClassObject.of(File.class, file),
+                ClassObject.of(ClassLoader.class, classLoader)
         );
     }
 
