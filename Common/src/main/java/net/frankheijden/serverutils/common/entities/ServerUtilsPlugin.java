@@ -2,7 +2,6 @@ package net.frankheijden.serverutils.common.entities;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.managers.AbstractTaskManager;
@@ -49,7 +48,7 @@ public abstract class ServerUtilsPlugin {
 
         File file = new File(getDataFolder(), targetName);
         if (!file.exists()) {
-            getLogger().log(Level.INFO, "'{}' not found, creating!", targetName);
+            getLogger().info("'" + targetName + "' not found, creating!");
             try {
                 FileUtils.saveResource(getResourceProvider().getResource(resource), file);
             } catch (IOException ex) {
