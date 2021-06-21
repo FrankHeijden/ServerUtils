@@ -1,6 +1,7 @@
 package net.frankheijden.serverutils.bukkit.commands;
 
 import static net.frankheijden.serverutils.common.config.Messenger.sendMessage;
+import static net.frankheijden.serverutils.common.config.Messenger.sendRawMessage;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.RegisteredCommand;
@@ -121,12 +122,17 @@ public class CommandServerUtils extends BaseCommand {
     @CommandPermission("serverutils.reloadconfig")
     @Description("Reloads individual Server configurations.")
     public void onReloadCommands(CommandSender commandSender, String config) {
+        ServerCommandSender sender = BukkitUtils.wrap(commandSender);
+        if (MinecraftReflectionVersion.MINOR >= 17) {
+            sendRawMessage(sender, "&cThis command is not supported on your Minecraft version.");
+            return;
+        }
+
         ReloadHandler handler = supportedConfigs.get(config);
         if (handler == null) {
             this.doHelp(commandSender);
             return;
         }
-        ServerCommandSender sender = BukkitUtils.wrap(commandSender);
 
         String[] replacements = new String[]{ "%action%", "reload", "%what%", config };
 
@@ -382,7 +388,6 @@ public class CommandServerUtils extends BaseCommand {
                         .lastSeperator(lastSeperator)
                         .toString())
                 .add("Label", cmd.getLabel())
-                .add("Timings Name", cmd.getTimingName())
                 .add("Permission", cmd.getPermission())
                 .add("Permission Message", cmd.getPermissionMessage());
 
