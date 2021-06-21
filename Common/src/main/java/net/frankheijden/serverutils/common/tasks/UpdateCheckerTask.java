@@ -247,8 +247,6 @@ public class UpdateCheckerTask implements Runnable {
                 return;
             }
 
-            plugin.getPluginManager().disablePlugin(ServerUtilsApp.getPlatformPlugin());
-            plugin.getPluginManager().unloadPlugin((Object) ServerUtilsApp.getPlatformPlugin()).tryClose();
             updater.update(pluginFile);
             updaterFile.delete();
         });
