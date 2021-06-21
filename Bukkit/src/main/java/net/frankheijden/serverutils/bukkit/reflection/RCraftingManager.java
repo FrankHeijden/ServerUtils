@@ -11,8 +11,17 @@ import org.bukkit.plugin.Plugin;
 
 public class RCraftingManager {
 
-    private static final MinecraftReflection reflection = MinecraftReflection
-            .of("net.minecraft.server.%s.CraftingManager");
+    private static final MinecraftReflection reflection;
+
+    static {
+        if (MinecraftReflectionVersion.MINOR >= 17) {
+            reflection = MinecraftReflection.of("net.minecraft.world.item.crafting.CraftingManager");
+        } else {
+            reflection = MinecraftReflection.of("net.minecraft.server.%s.CraftingManager");
+        }
+    }
+
+    private RCraftingManager() {}
 
     /**
      * Removes all associated recipes of a plugin.
@@ -27,7 +36,13 @@ public class RCraftingManager {
         } else if (MinecraftReflectionVersion.MINOR > 12) {
             Object server = RMinecraftServer.getReflection().invoke(null, "getServer");
             Object craftingManager = RMinecraftServer.getReflection().invoke(server, "getCraftingManager");
-            Map recipes = reflection.get(craftingManager, "recipes");
+
+            Map recipes;
+            if (MinecraftReflectionVersion.MINOR >= 17) {
+                recipes = reflection.get(craftingManager, "c");
+            } else {
+                recipes = reflection.get(craftingManager, "recipes");
+            }
 
             Predicate<Object> predicate = RMinecraftKey.matchingPluginPredicate(new AtomicBoolean(false), plugin);
             if (MinecraftReflectionVersion.MINOR == 13) {

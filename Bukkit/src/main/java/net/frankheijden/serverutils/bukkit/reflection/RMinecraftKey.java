@@ -9,8 +9,17 @@ import org.bukkit.plugin.Plugin;
 
 public class RMinecraftKey {
 
-    private static final MinecraftReflection reflection = MinecraftReflection
-            .of("net.minecraft.server.%s.MinecraftKey");
+    private static final MinecraftReflection reflection;
+
+    static {
+        if (MinecraftReflectionVersion.MINOR >= 17) {
+            reflection = MinecraftReflection.of("net.minecraft.resources.MinecraftKey");
+        } else {
+            reflection = MinecraftReflection.of("net.minecraft.server.%s.MinecraftKey");
+        }
+    }
+
+    private RMinecraftKey() {}
 
     public static MinecraftReflection getReflection() {
         return reflection;
@@ -24,6 +33,8 @@ public class RMinecraftKey {
     public static String getNameSpace(Object instance) {
         if (MinecraftReflectionVersion.MINOR <= 13) {
             return reflection.get(instance, "a");
+        } else if (MinecraftReflectionVersion.MINOR >= 17) {
+            return reflection.invoke(instance, "getNamespace");
         }
         return reflection.get(instance, "namespace");
     }
