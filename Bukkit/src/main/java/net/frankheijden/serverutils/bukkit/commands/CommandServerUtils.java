@@ -25,6 +25,7 @@ import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
 import net.frankheijden.serverutils.bukkit.reflection.RDedicatedServer;
 import net.frankheijden.serverutils.bukkit.utils.BukkitUtils;
 import net.frankheijden.serverutils.bukkit.utils.ReloadHandler;
+import net.frankheijden.serverutils.bukkit.utils.VersionReloadHandler;
 import net.frankheijden.serverutils.common.config.Messenger;
 import net.frankheijden.serverutils.common.entities.AbstractResult;
 import net.frankheijden.serverutils.common.entities.CloseableResult;
@@ -50,12 +51,15 @@ public class CommandServerUtils extends BaseCommand {
 
     static {
         supportedConfigs = new HashMap<>();
-        supportedConfigs.put("bukkit", RCraftServer::reloadBukkitConfiguration);
+        supportedConfigs.put("bukkit", new VersionReloadHandler(16, RCraftServer::reloadBukkitConfiguration));
         supportedConfigs.put("commands.yml", RCraftServer::reloadCommandsConfiguration);
-        supportedConfigs.put("server-icon.png", RCraftServer::loadIcon);
-        supportedConfigs.put("banned-ips.json", RCraftServer::reloadIpBans);
-        supportedConfigs.put("banned-players.json", RCraftServer::reloadProfileBans);
-        supportedConfigs.put("server.properties", RDedicatedServer::reloadServerProperties);
+        supportedConfigs.put("server-icon.png", new VersionReloadHandler(16, RCraftServer::loadIcon));
+        supportedConfigs.put("banned-ips.json", new VersionReloadHandler(16, RCraftServer::reloadIpBans));
+        supportedConfigs.put("banned-players.json", new VersionReloadHandler(16, RCraftServer::reloadProfileBans));
+        supportedConfigs.put("server.properties", new VersionReloadHandler(
+                16,
+                RDedicatedServer::reloadServerProperties
+        ));
     }
 
     @Dependency
@@ -123,10 +127,6 @@ public class CommandServerUtils extends BaseCommand {
     @Description("Reloads individual Server configurations.")
     public void onReloadCommands(CommandSender commandSender, String config) {
         ServerCommandSender sender = BukkitUtils.wrap(commandSender);
-        if (MinecraftReflectionVersion.MINOR >= 17) {
-            sendRawMessage(sender, "&cThis command is not supported on your Minecraft version.");
-            return;
-        }
 
         ReloadHandler handler = supportedConfigs.get(config);
         if (handler == null) {
@@ -134,9 +134,20 @@ public class CommandServerUtils extends BaseCommand {
             return;
         }
 
+        if (handler instanceof VersionReloadHandler) {
+            VersionReloadHandler versionReloadHandler = (VersionReloadHandler) handler;
+            int max = versionReloadHandler.getMinecraftVersionMaximum();
+
+            if (MinecraftReflectionVersion.MINOR > max) {
+                sendRawMessage(sender, "&cThis command is not supported on your Minecraft version."
+                        + " This command only support Minecraft versions up to MC1." + max);
+                return;
+            }
+        }
+
         String[] replacements = new String[]{ "%action%", "reload", "%what%", config };
 
-        ForwardFilter filter = new ForwardFilter(sender);
+        ForwardFilter filter = new ForwardFilter(plugin.getPlugin().getChatProvider(), sender);
         filter.start(Bukkit.getLogger());
         try {
             handler.handle();

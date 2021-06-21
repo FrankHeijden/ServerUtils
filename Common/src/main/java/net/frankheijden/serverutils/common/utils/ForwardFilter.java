@@ -3,6 +3,7 @@ package net.frankheijden.serverutils.common.utils;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.providers.ChatProvider;
 
 public class ForwardFilter extends PredicateFilter {
 
@@ -16,13 +17,13 @@ public class ForwardFilter extends PredicateFilter {
      * Creates a filter which forwards all output to the sender.
      * @param sender The sender to forward logs to.
      */
-    public ForwardFilter(ServerCommandSender sender) {
+    public ForwardFilter(ChatProvider chatProvider, ServerCommandSender sender) {
         this.warnings = false;
 
         setPredicate(rec -> {
             char color = getColor(rec.getLevel());
             if (color != INFO_COLOR) warnings = true;
-            sender.sendMessage('&' + color + format(rec));
+            sender.sendMessage(chatProvider.color("&" + color + format(rec)));
             return true;
         });
     }
