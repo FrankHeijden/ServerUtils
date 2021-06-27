@@ -314,6 +314,8 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
         Map<String, Command> knownCommands = getKnownCommands();
         if (knownCommands == null) return;
         knownCommands.values().removeAll(commands);
+
+        RCraftServer.syncCommands();
     }
 
     /**
