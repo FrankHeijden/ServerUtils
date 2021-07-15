@@ -2,13 +2,13 @@ package net.frankheijden.serverutils.common.providers;
 
 import java.io.File;
 import java.io.InputStream;
-import net.frankheijden.serverutils.common.config.YamlConfig;
+import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 
 public interface ResourceProvider {
 
     InputStream getResource(String resource);
 
-    YamlConfig load(InputStream is);
+    ServerUtilsConfig load(InputStream is);
 
-    YamlConfig load(File file);
+    ServerUtilsConfig load(File file);
 }

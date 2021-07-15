@@ -8,7 +8,7 @@ import net.frankheijden.serverutils.common.utils.StringUtils;
 /**
  * The general common messenger class.
  */
-public class Messenger extends YamlResource {
+public class Messenger extends ServerUtilsResource {
 
     private static Messenger instance;
     private static final ServerUtilsPlugin plugin = ServerUtilsApp.getPlugin();

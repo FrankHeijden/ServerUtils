@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.config.Config;
 import net.frankheijden.serverutils.common.config.Messenger;
-import net.frankheijden.serverutils.common.config.YamlConfig;
+import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.frankheijden.serverutils.common.entities.LoadResult;
 import net.frankheijden.serverutils.common.entities.Result;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
@@ -27,7 +27,7 @@ import net.frankheijden.serverutilsupdater.common.Updater;
 public class UpdateCheckerTask implements Runnable {
 
     private static final ServerUtilsPlugin plugin = ServerUtilsApp.getPlugin();
-    private static final YamlConfig config = Config.getInstance().getConfig();
+    private static final ServerUtilsConfig config = Config.getInstance().getConfig();
 
     private final ServerCommandSender sender;
     private final boolean download;
