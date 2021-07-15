@@ -10,11 +10,10 @@ archivesBaseName = rootProject.name + '-Velocity'
 repositories {
     maven { url 'https://nexus.velocitypowered.com/repository/maven-public/' }
     maven { url 'https://libraries.minecraft.net' }
-    flatDir { dirs '../libs' }
 }
 
 dependencies {
-    implementation name: 'acf-velocity'
+    implementation 'com.github.AlexProgrammerDE.commands:acf-velocity:b0792607db'
     implementation 'org.bstats:bstats-velocity:2.2.1'
     implementation project(":Common")
     compileOnly 'com.velocitypowered:velocity-api:3.0.0'
