@@ -217,7 +217,8 @@ public class VelocityPluginManager extends AbstractPluginManager<PluginContainer
         }
 
         String pluginId = plugin.getDescription().getId();
-        for (String alias : ServerUtils.getInstance().getPluginCommands().removeAll(pluginId)) {
+        VelocityPluginCommandManager pluginCommandManager = ServerUtils.getInstance().getPluginCommandManager();
+        for (String alias : pluginCommandManager.getPluginCommands().removeAll(pluginId)) {
             proxy.getCommandManager().unregister(alias);
         }
 
