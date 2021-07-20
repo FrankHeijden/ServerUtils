@@ -260,7 +260,7 @@ public class CommandServerUtils extends BaseCommand {
         FormatBuilder builder = FormatBuilder.create(format)
                 .orderedKeys("%key%", "%value%")
                 .add("Name", node.getName())
-                .add("Plugin", "<UNKNOWN>"); // TODO: fix plugin command
+                .add("Plugin", plugin.getPluginCommandManager().findPluginId(command).orElse("<UNKNOWN>"));
 
         builder.sendTo(sender);
         Messenger.sendMessage(sender, "serverutils.commandinfo.footer");

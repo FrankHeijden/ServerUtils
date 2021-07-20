@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 public class VelocityPluginCommandManager {
 
@@ -39,6 +40,18 @@ public class VelocityPluginCommandManager {
         }
 
         return manager;
+    }
+
+    /**
+     * Attempts to find the plugin id for a given command alias.
+     */
+    public Optional<String> findPluginId(String alias) {
+        for (Map.Entry<String, String> entry : pluginCommands.entries()) {
+            if (alias.equals(entry.getValue())) {
+                return Optional.of(entry.getKey());
+            }
+        }
+        return Optional.empty();
     }
 
     public Multimap<String, String> getPluginCommands() {
