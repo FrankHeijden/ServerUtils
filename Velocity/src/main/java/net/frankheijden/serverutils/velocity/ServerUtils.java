@@ -3,6 +3,9 @@ package net.frankheijden.serverutils.velocity;
 import co.aikar.commands.CommandCompletions;
 import co.aikar.commands.VelocityCommandCompletionContext;
 import co.aikar.commands.VelocityCommandManager;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.velocitypowered.api.event.Subscribe;
@@ -19,6 +22,7 @@ import net.frankheijden.serverutils.velocity.commands.CommandPlugins;
 import net.frankheijden.serverutils.velocity.commands.CommandServerUtils;
 import net.frankheijden.serverutils.velocity.entities.VelocityPlugin;
 import net.frankheijden.serverutils.velocity.managers.VelocityPluginManager;
+import net.frankheijden.serverutils.velocity.reflection.RVelocityCommandManager;
 import org.bstats.velocity.Metrics;
 import org.slf4j.Logger;
 
@@ -55,6 +59,20 @@ public class ServerUtils {
     @Inject
     @Named("serverutils")
     private PluginContainer pluginContainer;
+
+    private final Multimap<String, String> pluginCommands = Multimaps.synchronizedSetMultimap(HashMultimap.create());
+
+    /**
+     * Initialises ServerUtils.
+     */
+    @Inject
+    public ServerUtils(ProxyServer proxy) {
+        RVelocityCommandManager.proxyRegistrars(
+                proxy,
+                getClass().getClassLoader(),
+                (container, meta) -> pluginCommands.putAll(container.getDescription().getId(), meta.getAliases())
+        );
+    }
 
     /**
      * Initialises and enables ServerUtils.
@@ -106,6 +124,10 @@ public class ServerUtils {
 
     public VelocityPlugin getPlugin() {
         return plugin;
+    }
+
+    public Multimap<String, String> getPluginCommands() {
+        return pluginCommands;
     }
 
     public void reload() {

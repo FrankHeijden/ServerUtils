@@ -216,9 +216,12 @@ public class VelocityPluginManager extends AbstractPluginManager<PluginContainer
             task.cancel();
         }
 
-        // TODO: unload commands of plugin
+        String pluginId = plugin.getDescription().getId();
+        for (String alias : ServerUtils.getInstance().getPluginCommands().removeAll(pluginId)) {
+            proxy.getCommandManager().unregister(alias);
+        }
 
-        RVelocityPluginManager.getPlugins(proxy.getPluginManager()).remove(plugin.getDescription().getId());
+        RVelocityPluginManager.getPlugins(proxy.getPluginManager()).remove(pluginId);
         RVelocityPluginManager.getPluginInstances(proxy.getPluginManager()).remove(pluginInstance);
 
         List<Closeable> closeables = new ArrayList<>();
