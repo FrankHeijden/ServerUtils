@@ -6,6 +6,7 @@ import com.google.common.collect.Multimaps;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -28,7 +29,7 @@ public class VelocityPluginCommandManager {
      * Loads and constructs a new {@link VelocityPluginCommandManager} from the given {@link Path}.
      */
     public static VelocityPluginCommandManager load(Path path) throws IOException {
-        var manager = new VelocityPluginCommandManager(path);
+        VelocityPluginCommandManager manager = new VelocityPluginCommandManager(path);
         if (Files.exists(path)) {
             Map<String, Collection<String>> rawMap = gson.fromJson(
                     Files.newBufferedReader(path),
@@ -48,9 +49,9 @@ public class VelocityPluginCommandManager {
      * Saves the map to the {@link Path} it was loaded from.
      */
     public void save() throws IOException {
-        Files.writeString(
+        Files.write(
                 path,
-                gson.toJson(pluginCommands.asMap()),
+                gson.toJson(pluginCommands.asMap()).getBytes(StandardCharsets.UTF_8),
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING
         );

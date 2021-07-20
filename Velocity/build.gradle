@@ -7,8 +7,6 @@ String dependencyDir = group + '.dependencies'
 version = rootProject.version
 archivesBaseName = rootProject.name + '-Velocity'
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_11
-
 repositories {
     maven { url 'https://nexus.velocitypowered.com/repository/maven-public/' }
     maven { url 'https://libraries.minecraft.net' }
