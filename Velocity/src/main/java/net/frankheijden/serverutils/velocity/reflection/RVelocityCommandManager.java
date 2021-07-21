@@ -1,7 +1,6 @@
 package net.frankheijden.serverutils.velocity.reflection;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.velocitypowered.api.command.Command;
 import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.command.CommandSource;
@@ -16,6 +15,7 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import net.frankheijden.serverutils.velocity.ServerUtils;
 import net.frankheijden.serverutils.velocity.utils.ReflectionUtils;
 
 public class RVelocityCommandManager {
@@ -90,20 +90,36 @@ public class RVelocityCommandManager {
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             Object obj = method.invoke(commandRegistrar, args);
             if (method.getName().equals("register")) {
-                handleRegisterMethod((CommandMeta) args[0], (Command) args[1]);
+                handleRegisterMethod((CommandMeta) args[0]);
             }
             return obj;
         }
 
-        private void handleRegisterMethod(CommandMeta commandMeta, Command command) {
-            ClassLoader classLoader = command.getClass().getClassLoader();
+        private void handleRegisterMethod(CommandMeta commandMeta) {
+            StackTraceElement[] elements = Thread.currentThread().getStackTrace();
 
-            for (PluginContainer container : proxy.getPluginManager().getPlugins()) {
-                if (container.getInstance().filter(i -> i.getClass().getClassLoader() == classLoader).isPresent()) {
-                    registrationConsumer.accept(container, commandMeta);
-                    break;
+            // Skip the first four elements, which is our overhead here
+            for (int i = 4; i < elements.length; i++) {
+                Class<?> clazz;
+                try {
+                    clazz = Class.forName(elements[i].getClassName());
+                } catch (ClassNotFoundException ex) {
+                    continue;
+                }
+
+                ClassLoader classLoader = clazz.getClassLoader();
+                for (PluginContainer container : proxy.getPluginManager().getPlugins()) {
+                    if (container.getInstance().filter(o -> o.getClass().getClassLoader() == classLoader).isPresent()) {
+                        registrationConsumer.accept(container, commandMeta);
+                        return;
+                    }
                 }
             }
+
+            ServerUtils.getInstance().getLogger().warn(
+                    "Couldn't find the registering plugin for the following aliases: {}",
+                    commandMeta.getAliases()
+            );
         }
     }
 }
