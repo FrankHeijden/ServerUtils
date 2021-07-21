@@ -1,0 +1,34 @@
+plugins {
+    id 'net.kyori.blossom' version '1.3.0'
+}
+
+group = rootProject.group + '.velocity'
+String dependencyDir = group + '.dependencies'
+version = rootProject.version
+archivesBaseName = rootProject.name + '-Velocity'
+
+repositories {
+    maven { url 'https://nexus.velocitypowered.com/repository/maven-public/' }
+    maven { url 'https://libraries.minecraft.net' }
+}
+
+dependencies {
+    implementation 'com.github.AlexProgrammerDE.commands:acf-velocity:b0792607db'
+    implementation 'org.bstats:bstats-velocity:2.2.1'
+    implementation project(":Common")
+    compileOnly 'com.velocitypowered:velocity-api:3.0.0'
+    compileOnly 'com.velocitypowered:velocity-brigadier:1.0.0-SNAPSHOT'
+    compileOnly 'com.electronwill.night-config:toml:3.6.3'
+    annotationProcessor 'com.velocitypowered:velocity-api:3.0.0'
+}
+
+shadowJar {
+    relocate 'org.bstats', dependencyDir + '.bstats'
+    relocate 'co.aikar.commands', dependencyDir + '.acf'
+    relocate 'co.aikar.locales', dependencyDir + '.locales'
+}
+
+blossom {
+    replaceTokenIn('src/main/java/net/frankheijden/serverutils/velocity/ServerUtils.java')
+    replaceToken '${version}', version
+}

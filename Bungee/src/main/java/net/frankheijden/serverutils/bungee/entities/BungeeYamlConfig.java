@@ -7,12 +7,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.frankheijden.serverutils.common.config.YamlConfig;
+import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
 
-public class BungeeYamlConfig implements YamlConfig {
+public class BungeeYamlConfig implements ServerUtilsConfig {
 
     private static final ConfigurationProvider provider = ConfigurationProvider.getProvider(YamlConfiguration.class);
     private final Configuration config;

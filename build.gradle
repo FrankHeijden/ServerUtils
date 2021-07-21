@@ -62,6 +62,7 @@ dependencies {
     implementation project(path: ':Common', configuration: 'shadow')
     implementation project(path: ':Bukkit', configuration: 'shadow')
     implementation project(path: ':Bungee', configuration: 'shadow')
+    implementation project(path: ':Velocity', configuration: 'shadow')
 }
 
 shadowJar {
@@ -71,7 +72,12 @@ shadowJar {
 }
 
 def outputTasks() {
-    ["shadowJar", ":Bukkit:shadowJar", ":Bungee:shadowJar"].stream().map({ tasks.findByPath(it) })
+    [
+            "shadowJar",
+            ":Bukkit:shadowJar",
+            ":Bungee:shadowJar",
+            ":Velocity:shadowJar",
+    ].stream().map({ tasks.findByPath(it) })
 }
 
 task copyJars(type: Copy) {

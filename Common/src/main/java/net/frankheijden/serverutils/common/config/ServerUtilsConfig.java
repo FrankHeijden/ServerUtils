@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A wrap for a Yaml Configuration file.
+ * A wrap for a Configuration file.
  */
-public interface YamlConfig {
+public interface ServerUtilsConfig {
 
     /**
      * Retrieves the value at a given path.
@@ -69,7 +69,7 @@ public interface YamlConfig {
      * @param def The defaults to copy values over from.
      * @param conf The configuration to copy the defaults to.
      */
-    static void addDefaults(YamlConfig def, YamlConfig conf) {
+    static void addDefaults(ServerUtilsConfig def, ServerUtilsConfig conf) {
         addDefaults(def, conf, "");
     }
 
@@ -79,13 +79,13 @@ public interface YamlConfig {
      * @param conf The configuration to copy the defaults to.
      * @param root The current root path of the iteration.
      */
-    static void addDefaults(YamlConfig def, YamlConfig conf, String root) {
+    static void addDefaults(ServerUtilsConfig def, ServerUtilsConfig conf, String root) {
         if (def == null) return;
         for (String key : def.getKeys()) {
             String newKey = (root.isEmpty() ? "" : root + ".") + key;
             Object value = def.get(key);
-            if (value instanceof YamlConfig) {
-                addDefaults((YamlConfig) value, conf, newKey);
+            if (value instanceof ServerUtilsConfig) {
+                addDefaults((ServerUtilsConfig) value, conf, newKey);
             } else if (conf.get(newKey) == null) {
                 conf.set(newKey, value);
             }
@@ -95,22 +95,22 @@ public interface YamlConfig {
     /**
      * Removes unused keys from the configuration.
      */
-    static void removeOldKeys(YamlConfig def, YamlConfig conf) {
+    static void removeOldKeys(ServerUtilsConfig def, ServerUtilsConfig conf) {
         removeOldKeys(def, conf, "");
     }
 
     /**
      * Removes unused keys from the configuration, starting from the root node.
      */
-    static void removeOldKeys(YamlConfig def, YamlConfig conf, String root) {
+    static void removeOldKeys(ServerUtilsConfig def, ServerUtilsConfig conf, String root) {
         if (def == null) return;
         for (String key : conf.getKeys()) {
             String defKey = (root.isEmpty() ? "" : root + ".") + key;
             Object value = conf.get(key);
             if (def.get(defKey) == null) {
                 conf.set(key, null);
-            } else if (value instanceof YamlConfig) {
-                removeOldKeys(def, (YamlConfig) value, defKey);
+            } else if (value instanceof ServerUtilsConfig) {
+                removeOldKeys(def, (ServerUtilsConfig) value, defKey);
             }
         }
     }
@@ -121,9 +121,9 @@ public interface YamlConfig {
      * @param conf The Configuration where the defaults will be applied to.
      * @return The loaded Configuration of the file with defaults.
      */
-    static YamlConfig init(YamlConfig def, YamlConfig conf) {
-        YamlConfig.addDefaults(def, conf);
-        YamlConfig.removeOldKeys(def, conf);
+    static ServerUtilsConfig init(ServerUtilsConfig def, ServerUtilsConfig conf) {
+        ServerUtilsConfig.addDefaults(def, conf);
+        ServerUtilsConfig.removeOldKeys(def, conf);
 
         try {
             conf.save();

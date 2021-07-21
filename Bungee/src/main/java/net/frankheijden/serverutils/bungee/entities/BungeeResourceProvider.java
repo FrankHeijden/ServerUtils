@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import net.frankheijden.serverutils.bungee.ServerUtils;
-import net.frankheijden.serverutils.common.config.YamlConfig;
+import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.frankheijden.serverutils.common.providers.ResourceProvider;
 
 public class BungeeResourceProvider implements ResourceProvider {
@@ -21,12 +21,12 @@ public class BungeeResourceProvider implements ResourceProvider {
     }
 
     @Override
-    public YamlConfig load(InputStream is) {
+    public ServerUtilsConfig load(InputStream is) {
         return new BungeeYamlConfig(is);
     }
 
     @Override
-    public YamlConfig load(File file) {
+    public ServerUtilsConfig load(File file) {
         try {
             return new BungeeYamlConfig(file);
         } catch (IOException ex) {

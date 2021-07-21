@@ -8,11 +8,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.frankheijden.serverutils.common.config.YamlConfig;
+import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-public class BukkitYamlConfig implements YamlConfig {
+public class BukkitYamlConfig implements ServerUtilsConfig {
 
     private final MemorySection config;
     private File file = null;
