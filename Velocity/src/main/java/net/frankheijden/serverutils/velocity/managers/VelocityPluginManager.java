@@ -60,7 +60,7 @@ public class VelocityPluginManager extends AbstractPluginManager<PluginContainer
 
     @Override
     public VelocityLoadResult loadPlugin(File file) {
-        if (!file.exists()) return new VelocityLoadResult(Result.NOT_EXISTS);
+        if (!file.exists() || file.isDirectory()) return new VelocityLoadResult(Result.NOT_EXISTS);
 
         Object javaPluginLoader = RJavaPluginLoader.newInstance(proxy, file.toPath().getParent());
         PluginDescription candidate = RJavaPluginLoader.loadPluginDescription(javaPluginLoader, file.toPath());
