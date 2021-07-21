@@ -64,6 +64,7 @@ public class VelocityPluginManager extends AbstractPluginManager<PluginContainer
 
         Object javaPluginLoader = RJavaPluginLoader.newInstance(proxy, file.toPath().getParent());
         PluginDescription candidate = RJavaPluginLoader.loadPluginDescription(javaPluginLoader, file.toPath());
+        if (proxy.getPluginManager().isLoaded(candidate.getId())) return new VelocityLoadResult(Result.ALREADY_LOADED);
 
         for (PluginDependency dependency : candidate.getDependencies()) {
             if (!dependency.isOptional() && !proxy.getPluginManager().isLoaded(dependency.getId())) {
@@ -84,6 +85,8 @@ public class VelocityPluginManager extends AbstractPluginManager<PluginContainer
 
     @Override
     public Result enablePlugin(PluginContainer container) {
+        if (proxy.getPluginManager().isLoaded(container.getDescription().getId())) return Result.ALREADY_ENABLED;
+
         Object javaPluginLoader = RJavaPluginLoader.newInstance(
                 proxy,
                 container.getDescription().getSource().map(Path::getParent).orElse(null)
