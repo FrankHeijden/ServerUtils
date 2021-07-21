@@ -7,13 +7,13 @@ import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.providers.ResourceProvider;
 
 /**
- * A class which provides functionality for loading and setting defaults of Yaml Configurations.
+ * A class which provides functionality for loading and setting defaults of Configurations.
  */
-public class YamlResource {
+public class ServerUtilsResource {
 
     private static final ServerUtilsPlugin plugin = ServerUtilsApp.getPlugin();
 
-    private final YamlConfig config;
+    private final ServerUtilsConfig config;
 
     /**
      * Creates a new YamlResource instance.
@@ -21,18 +21,18 @@ public class YamlResource {
      * @param fileName The destination file.
      * @param resource The resource from the jar file.
      */
-    public YamlResource(String fileName, String resource) {
+    public ServerUtilsResource(String fileName, String resource) {
         ResourceProvider provider = plugin.getResourceProvider();
         InputStream is = provider.getResource(resource);
         File file = plugin.copyResourceIfNotExists(fileName, resource);
-        config = YamlConfig.init(provider.load(is), provider.load(file));
+        config = ServerUtilsConfig.init(provider.load(is), provider.load(file));
     }
 
     /**
      * Retrieves the YamlConfig of this resource.
      * @return The YamlConfig.
      */
-    public YamlConfig getConfig() {
+    public ServerUtilsConfig getConfig() {
         return config;
     }
 }

@@ -3,7 +3,7 @@ package net.frankheijden.serverutils.bukkit.entities;
 import java.io.File;
 import java.io.InputStream;
 import net.frankheijden.serverutils.bukkit.ServerUtils;
-import net.frankheijden.serverutils.common.config.YamlConfig;
+import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.frankheijden.serverutils.common.providers.ResourceProvider;
 
 public class BukkitResourceProvider implements ResourceProvider {
@@ -20,12 +20,12 @@ public class BukkitResourceProvider implements ResourceProvider {
     }
 
     @Override
-    public YamlConfig load(InputStream is) {
+    public ServerUtilsConfig load(InputStream is) {
         return new BukkitYamlConfig(is);
     }
 
     @Override
-    public YamlConfig load(File file) {
+    public ServerUtilsConfig load(File file) {
         return new BukkitYamlConfig(file);
     }
 }

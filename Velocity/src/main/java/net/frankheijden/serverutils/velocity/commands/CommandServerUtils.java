@@ -1,6 +1,4 @@
-package net.frankheijden.serverutils.bungee.commands;
-
-import static net.frankheijden.serverutils.common.config.Messenger.sendMessage;
+package net.frankheijden.serverutils.velocity.commands;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.RegisteredCommand;
@@ -11,14 +9,16 @@ import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.CommandNode;
+import com.velocitypowered.api.command.CommandSource;
+import com.velocitypowered.api.plugin.PluginContainer;
+import com.velocitypowered.api.plugin.PluginDescription;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import net.frankheijden.serverutils.bungee.ServerUtils;
-import net.frankheijden.serverutils.bungee.entities.BungeeLoadResult;
-import net.frankheijden.serverutils.bungee.managers.BungeePluginManager;
-import net.frankheijden.serverutils.bungee.reflection.RPluginManager;
-import net.frankheijden.serverutils.bungee.utils.BungeeUtils;
 import net.frankheijden.serverutils.common.config.Messenger;
 import net.frankheijden.serverutils.common.entities.AbstractResult;
 import net.frankheijden.serverutils.common.entities.CloseableResult;
@@ -28,37 +28,40 @@ import net.frankheijden.serverutils.common.utils.FormatBuilder;
 import net.frankheijden.serverutils.common.utils.HexUtils;
 import net.frankheijden.serverutils.common.utils.ListBuilder;
 import net.frankheijden.serverutils.common.utils.ListFormat;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.api.plugin.PluginDescription;
+import net.frankheijden.serverutils.velocity.ServerUtils;
+import net.frankheijden.serverutils.velocity.entities.VelocityLoadResult;
+import net.frankheijden.serverutils.velocity.reflection.RVelocityCommandManager;
+import net.frankheijden.serverutils.velocity.utils.VelocityUtils;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
-@CommandAlias("bsu|bserverutils")
+@CommandAlias("vsu|vserverutils")
 public class CommandServerUtils extends BaseCommand {
 
-    private static final ProxyServer proxy = ProxyServer.getInstance();
-    private static final ServerUtils plugin = ServerUtils.getInstance();
     private static final Set<String> ALIASES;
 
     static {
         ALIASES = new HashSet<>();
-        ALIASES.add("bserverutils");
-        ALIASES.add("bplugins");
-        ALIASES.add("bungeepl");
+        ALIASES.add("vserverutils");
+        ALIASES.add("vplugins");
+        ALIASES.add("velocitypl");
+    }
+
+    private final ServerUtils plugin;
+
+    public CommandServerUtils(ServerUtils plugin) {
+        this.plugin = plugin;
     }
 
     /**
      * Shows the help page to the sender.
-     * @param commandSender The sender of the command.
+     * @param source The sender of the command.
      */
     @Default
     @Subcommand("help")
     @CommandPermission("serverutils.help")
     @Description("Shows a help page with a few commands.")
-    public void onHelp(CommandSender commandSender) {
-        ServerCommandSender sender = BungeeUtils.wrap(commandSender);
+    public void onHelp(CommandSource source) {
+        ServerCommandSender sender = VelocityUtils.wrap(source);
         Messenger.sendMessage(sender, "serverutils.help.header");
 
         FormatBuilder builder = FormatBuilder.create(Messenger.getMessage("serverutils.help.format"))
@@ -89,48 +92,48 @@ public class CommandServerUtils extends BaseCommand {
     @Subcommand("reload")
     @CommandPermission("serverutils.reload")
     @Description("Reloads the ServerUtils plugin.")
-    public void onReload(CommandSender sender) {
+    public void onReload(CommandSource sender) {
         plugin.reload();
-        sendMessage(BungeeUtils.wrap(sender), "serverutils.success",
+        Messenger.sendMessage(VelocityUtils.wrap(sender), "serverutils.success",
                 "%action%", "reload",
                 "%what%", "ServerUtils Bungee configurations");
     }
 
     /**
      * Loads the specified plugin on the proxy.
-     * @param commandSender The sender of the command.
+     * @param source The sender of the command.
      * @param jarFile The filename of the plugin in the plugins/ directory.
      */
     @Subcommand("loadplugin|lp")
     @CommandCompletion("@pluginJars")
     @CommandPermission("serverutils.loadplugin")
     @Description("Loads the specified jar file as a plugin.")
-    public void onLoadPlugin(CommandSender commandSender, String jarFile) {
-        ServerCommandSender sender = BungeeUtils.wrap(commandSender);
+    public void onLoadPlugin(CommandSource source, String jarFile) {
+        ServerCommandSender sender = VelocityUtils.wrap(source);
 
-        BungeeLoadResult loadResult = BungeePluginManager.get().loadPlugin(jarFile);
+        VelocityLoadResult loadResult = plugin.getPlugin().getPluginManager().loadPlugin(jarFile);
         if (!loadResult.isSuccess()) {
             loadResult.getResult().sendTo(sender, "load", jarFile);
             return;
         }
 
-        Plugin plugin = loadResult.get();
-        Result result = BungeePluginManager.get().enablePlugin(plugin);
-        result.sendTo(sender, "load", plugin.getDescription().getName());
+        PluginContainer container = loadResult.get();
+        Result result = plugin.getPlugin().getPluginManager().enablePlugin(container);
+        result.sendTo(sender, "load", container.getDescription().getId());
     }
 
     /**
      * Unloads the specified plugin from the proxy.
-     * @param commandSender The sender of the command.
+     * @param source The sender of the command.
      * @param pluginName The plugin name.
      */
     @Subcommand("unloadplugin|up")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.unloadplugin")
     @Description("Disables and unloads the specified plugin.")
-    public void onUnloadPlugin(CommandSender commandSender, String pluginName) {
-        CloseableResult result = BungeePluginManager.get().unloadPlugin(pluginName);
-        result.getResult().sendTo(BungeeUtils.wrap(commandSender), "unload", pluginName);
+    public void onUnloadPlugin(CommandSource source, String pluginName) {
+        CloseableResult result = plugin.getPlugin().getPluginManager().unloadPlugin(pluginName);
+        result.getResult().sendTo(VelocityUtils.wrap(source), "unload", pluginName);
         result.tryClose();
     }
 
@@ -143,67 +146,67 @@ public class CommandServerUtils extends BaseCommand {
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.reloadplugin")
     @Description("Reloads a specified plugin.")
-    public void onReloadPlugin(CommandSender sender, String pluginName) {
+    public void onReloadPlugin(CommandSource sender, String pluginName) {
         // Wacky method to have the resources needed for the reload in memory, in case of a self reload.
         HexUtils utils = new HexUtils();
         Map<String, Object> section = Messenger.getInstance().getConfig().getMap("serverutils");
-        String result = BungeePluginManager.get().reloadPlugin(pluginName).toString();
+        String result = plugin.getPlugin().getPluginManager().reloadPlugin(pluginName).toString();
 
         String msg = (String) section.get(result.toLowerCase());
         if (msg != null && !msg.isEmpty()) {
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', utils.convertHexString(
+            sender.sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(utils.convertHexString(
                     msg.replace("%action%", "reload").replace("%what%", pluginName))));
         }
     }
 
     /**
      * Watches the given plugin and reloads it when a change is detected to the file.
-     * @param sender The sender of the command.
+     * @param source The sender of the command.
      * @param pluginName The plugin name.
      */
     @Subcommand("watchplugin|wp")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.watchplugin")
     @Description("Watches the specified plugin for changes.")
-    public void onWatchPlugin(CommandSender sender, String pluginName) {
-        ServerCommandSender commandSender = BungeeUtils.wrap(sender);
-        AbstractResult result = BungeePluginManager.get().watchPlugin(commandSender, pluginName);
-        result.sendTo(commandSender, "watch", pluginName);
+    public void onWatchPlugin(CommandSource source, String pluginName) {
+        ServerCommandSender sender = VelocityUtils.wrap(source);
+        AbstractResult result = plugin.getPlugin().getPluginManager().watchPlugin(sender, pluginName);
+        result.sendTo(sender, "watch", pluginName);
     }
 
     /**
      * Stops watching the given plugin.
-     * @param sender The sender of the command.
+     * @param source The sender of the command.
      * @param pluginName The plugin name.
      */
     @Subcommand("unwatchplugin|uwp")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.watchplugin")
     @Description("Stops watching the specified plugin for changes.")
-    public void onUnwatchPlugin(CommandSender sender, String pluginName) {
-        AbstractResult result = BungeePluginManager.get().unwatchPlugin(pluginName);
-        result.sendTo(BungeeUtils.wrap(sender), "unwatch", pluginName);
+    public void onUnwatchPlugin(CommandSource source, String pluginName) {
+        AbstractResult result = plugin.getPlugin().getPluginManager().unwatchPlugin(pluginName);
+        result.sendTo(VelocityUtils.wrap(source), "unwatch", pluginName);
     }
 
     /**
      * Shows information about the specified plugin.
-     * @param commandSender The sender of the command.
+     * @param source The sender of the command.
      * @param pluginName The plugin name.
      */
     @Subcommand("plugininfo|pi")
     @CommandCompletion("@plugins")
     @CommandPermission("serverutils.plugininfo")
     @Description("Shows information about the specified plugin.")
-    public void onPluginInfo(CommandSender commandSender, String pluginName) {
-        ServerCommandSender sender = BungeeUtils.wrap(commandSender);
+    public void onPluginInfo(CommandSource source, String pluginName) {
+        ServerCommandSender sender = VelocityUtils.wrap(source);
 
-        Plugin plugin = ProxyServer.getInstance().getPluginManager().getPlugin(pluginName);
-        if (plugin == null) {
+        Optional<PluginContainer> container = plugin.getProxy().getPluginManager().getPlugin(pluginName);
+        if (!container.isPresent()) {
             Result.NOT_EXISTS.sendTo(sender, "fetch", pluginName);
             return;
         }
 
-        PluginDescription desc = plugin.getDescription();
+        PluginDescription desc = container.get().getDescription();
         String format = Messenger.getMessage("serverutils.plugininfo.format");
         String listFormatString = Messenger.getMessage("serverutils.plugininfo.list_format");
         String seperator = Messenger.getMessage("serverutils.plugininfo.seperator");
@@ -215,19 +218,19 @@ public class CommandServerUtils extends BaseCommand {
 
         FormatBuilder builder = FormatBuilder.create(format)
                 .orderedKeys("%key%", "%value%")
-                .add("Name", desc.getName())
-                .add("Version", desc.getVersion())
-                .add("Author", desc.getAuthor())
-                .add("Description", desc.getDescription())
-                .add("Main", desc.getMain())
-                .add("File", desc.getFile().getName())
-                .add("Depend", ListBuilder.create(desc.getDepends())
+                .add("Id", desc.getId())
+                .add("Name", desc.getName().orElse(null))
+                .add("Version", desc.getVersion().orElse("<UNKNOWN>"))
+                .add("Author" + (desc.getAuthors().size() == 1 ? "" : "s"), ListBuilder.create(desc.getAuthors())
                         .format(listFormat)
                         .seperator(seperator)
                         .lastSeperator(lastSeperator)
                         .toString())
-                .add("Soft Depend", ListBuilder.create(desc.getSoftDepends())
-                        .format(listFormat)
+                .add("Description", desc.getDescription().orElse(null))
+                .add("URL", desc.getUrl().orElse(null))
+                .add("Source", desc.getSource().map(Path::toString).orElse(null))
+                .add("Dependencies", ListBuilder.create(desc.getDependencies())
+                        .format(d -> listFormat.format(d.getId()))
                         .seperator(seperator)
                         .lastSeperator(lastSeperator)
                         .toString());
@@ -238,53 +241,33 @@ public class CommandServerUtils extends BaseCommand {
 
     /**
      * Shows information about a provided command.
-     * @param commandSender The sender of the command.
+     * @param source The sender of the command.
      * @param command The command to lookup.
      */
     @Subcommand("commandinfo|ci")
     @CommandCompletion("@commands")
     @CommandPermission("serverutils.commandinfo")
     @Description("Shows information about the specified command.")
-    public void onCommandInfo(CommandSender commandSender, String command) {
-        ServerCommandSender sender = BungeeUtils.wrap(commandSender);
+    public void onCommandInfo(CommandSource source, String command) {
+        ServerCommandSender sender = VelocityUtils.wrap(source);
 
-        Map<String, Command> commands;
-        try {
-            commands = RPluginManager.getCommands(proxy.getPluginManager());
-        } catch (IllegalAccessException ex) {
-            ex.printStackTrace();
-            return;
-        }
+        CommandDispatcher<CommandSource> dispatcher = RVelocityCommandManager.getDispatcher(
+                plugin.getProxy().getCommandManager()
+        );
 
-        Command cmd = commands.get(command);
-        if (cmd == null) {
+        CommandNode<CommandSource> node = dispatcher.getRoot().getChild(command);
+        if (node == null) {
             Messenger.sendMessage(sender, "serverutils.commandinfo.not_exists");
             return;
         }
 
-        Plugin plugin = RPluginManager.getPlugin(proxy.getPluginManager(), cmd);
-        if (plugin == null) {
-            return;
-        }
-
         String format = Messenger.getMessage("serverutils.commandinfo.format");
-        String listFormatString = Messenger.getMessage("serverutils.commandinfo.list_format");
-        String seperator = Messenger.getMessage("serverutils.commandinfo.seperator");
-        String lastSeperator = Messenger.getMessage("serverutils.commandinfo.last_seperator");
-
-        ListFormat<String> listFormat = str -> listFormatString.replace("%value%", str);
 
         Messenger.sendMessage(sender, "serverutils.commandinfo.header");
         FormatBuilder builder = FormatBuilder.create(format)
                 .orderedKeys("%key%", "%value%")
-                .add("Name", cmd.getName())
-                .add("Plugin", plugin.getDescription().getName())
-                .add("Aliases", ListBuilder.create(cmd.getAliases())
-                        .format(listFormat)
-                        .seperator(seperator)
-                        .lastSeperator(lastSeperator)
-                        .toString())
-                .add("Permission", cmd.getPermission());
+                .add("Name", node.getName())
+                .add("Plugin", plugin.getPluginCommandManager().findPluginId(command).orElse("<UNKNOWN>"));
 
         builder.sendTo(sender);
         Messenger.sendMessage(sender, "serverutils.commandinfo.footer");

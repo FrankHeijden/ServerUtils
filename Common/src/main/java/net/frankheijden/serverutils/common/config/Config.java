@@ -3,7 +3,7 @@ package net.frankheijden.serverutils.common.config;
 /**
  * The general common config class.
  */
-public class Config extends YamlResource {
+public class Config extends ServerUtilsResource {
 
     private static Config instance;
 
