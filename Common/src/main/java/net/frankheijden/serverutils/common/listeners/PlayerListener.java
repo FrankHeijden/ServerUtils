@@ -4,7 +4,7 @@ import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.tasks.UpdateCheckerTask;
 
-public abstract class PlayerListener<U extends ServerUtilsPlugin<?, ?, C, ?>, C extends ServerCommandSender<?>>
+public abstract class PlayerListener<U extends ServerUtilsPlugin<P, ?, C, ?>, P, C extends ServerCommandSender<?>>
         extends ServerUtilsListener<U, C> {
 
     protected PlayerListener(U plugin) {
@@ -17,7 +17,7 @@ public abstract class PlayerListener<U extends ServerUtilsPlugin<?, ?, C, ?>, C 
      */
     protected void handleUpdate(C sender) {
         if (sender.hasPermission("serverutils.notification.update")) {
-            UpdateCheckerTask.tryStart(sender, "login");
+            UpdateCheckerTask.tryStart(plugin, sender, "login");
         }
     }
 }

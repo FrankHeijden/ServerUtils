@@ -56,6 +56,11 @@ public class BungeePlugin extends ServerUtilsPlugin<
     }
 
     @Override
+    public Plugin getPlugin() {
+        return plugin;
+    }
+
+    @Override
     public BungeePluginManager getPluginManager() {
         return pluginManager;
     }

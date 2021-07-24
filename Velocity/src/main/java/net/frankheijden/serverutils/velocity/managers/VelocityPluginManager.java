@@ -30,7 +30,6 @@ import net.frankheijden.serverutils.common.entities.CloseableResult;
 import net.frankheijden.serverutils.common.entities.Result;
 import net.frankheijden.serverutils.common.events.PluginEvent;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
-import net.frankheijden.serverutils.velocity.ServerUtils;
 import net.frankheijden.serverutils.velocity.entities.VelocityLoadResult;
 import net.frankheijden.serverutils.velocity.events.VelocityPluginDisableEvent;
 import net.frankheijden.serverutils.velocity.events.VelocityPluginEnableEvent;
@@ -43,15 +42,23 @@ import net.frankheijden.serverutils.velocity.reflection.RVelocityEventManager;
 import net.frankheijden.serverutils.velocity.reflection.RVelocityPluginContainer;
 import net.frankheijden.serverutils.velocity.reflection.RVelocityPluginManager;
 import net.frankheijden.serverutils.velocity.reflection.RVelocityScheduler;
+import org.slf4j.Logger;
 
 public class VelocityPluginManager implements AbstractPluginManager<PluginContainer> {
 
     private static VelocityPluginManager instance;
     private final ProxyServer proxy;
+    private final Logger logger;
+    private final VelocityPluginCommandManager pluginCommandManager;
 
-    public VelocityPluginManager() {
+    /**
+     * Constructs a new VelocityPluginManager.
+     */
+    public VelocityPluginManager(ProxyServer proxy, Logger logger, VelocityPluginCommandManager pluginCommandManager) {
         instance = this;
-        this.proxy = ServerUtils.getInstance().getProxy();
+        this.proxy = proxy;
+        this.logger = logger;
+        this.pluginCommandManager = pluginCommandManager;
     }
 
     public static VelocityPluginManager get() {
@@ -73,7 +80,7 @@ public class VelocityPluginManager implements AbstractPluginManager<PluginContai
 
         for (PluginDependency dependency : candidate.getDependencies()) {
             if (!dependency.isOptional() && !proxy.getPluginManager().isLoaded(dependency.getId())) {
-                ServerUtils.getInstance().getLogger().error(
+                logger.error(
                         "Can't load plugin {} due to missing dependency {}",
                         candidate.getId(),
                         dependency.getId()
@@ -123,14 +130,14 @@ public class VelocityPluginManager implements AbstractPluginManager<PluginContai
         try {
             RJavaPluginLoader.createPlugin(javaPluginLoader, container, module, commonModule);
         } catch (Exception ex) {
-            ServerUtils.getInstance().getLogger().error(
+            logger.error(
                     String.format("Can't create plugin %s", container.getDescription().getId()),
                     ex
             );
             return Result.ERROR;
         }
 
-        ServerUtils.getInstance().getLogger().info(
+        logger.info(
                 "Loaded plugin {} {} by {}",
                 realPlugin.getId(),
                 realPlugin.getVersion().orElse("<UNKNOWN>"),
@@ -158,7 +165,7 @@ public class VelocityPluginManager implements AbstractPluginManager<PluginContai
             ).join().createFunction(console);
 
             if (permissionFunction == null) {
-                ServerUtils.getInstance().getLogger().error(
+                logger.error(
                         "A plugin permission provider {} provided an invalid permission function for the console."
                                 + " This is a bug in the plugin, not in Velocity."
                                 + " Falling back to the default permission function.",
@@ -232,7 +239,6 @@ public class VelocityPluginManager implements AbstractPluginManager<PluginContai
         }
 
         String pluginId = container.getDescription().getId();
-        VelocityPluginCommandManager pluginCommandManager = ServerUtils.getInstance().getPluginCommandManager();
         for (String alias : pluginCommandManager.getPluginCommands().removeAll(pluginId)) {
             proxy.getCommandManager().unregister(alias);
         }
@@ -285,6 +291,11 @@ public class VelocityPluginManager implements AbstractPluginManager<PluginContai
     @Override
     public PluginContainer getPlugin(String pluginName) {
         return proxy.getPluginManager().getPlugin(pluginName).orElse(null);
+    }
+
+    @Override
+    public Object getInstance(PluginContainer plugin) {
+        return plugin.getInstance().orElse(null);
     }
 
     @Override
