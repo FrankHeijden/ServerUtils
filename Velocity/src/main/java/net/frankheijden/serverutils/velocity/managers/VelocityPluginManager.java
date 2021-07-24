@@ -28,9 +28,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.frankheijden.serverutils.common.entities.CloseableResult;
 import net.frankheijden.serverutils.common.entities.Result;
+import net.frankheijden.serverutils.common.events.PluginEvent;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.velocity.ServerUtils;
 import net.frankheijden.serverutils.velocity.entities.VelocityLoadResult;
+import net.frankheijden.serverutils.velocity.events.VelocityPluginDisableEvent;
+import net.frankheijden.serverutils.velocity.events.VelocityPluginEnableEvent;
+import net.frankheijden.serverutils.velocity.events.VelocityPluginLoadEvent;
+import net.frankheijden.serverutils.velocity.events.VelocityPluginUnloadEvent;
 import net.frankheijden.serverutils.velocity.reflection.RJavaPluginLoader;
 import net.frankheijden.serverutils.velocity.reflection.RVelocityCommandManager;
 import net.frankheijden.serverutils.velocity.reflection.RVelocityConsole;
@@ -79,12 +84,15 @@ public class VelocityPluginManager implements AbstractPluginManager<PluginContai
 
         PluginDescription realPlugin = RJavaPluginLoader.loadPlugin(javaPluginLoader, candidate);
         PluginContainer container = RVelocityPluginContainer.newInstance(realPlugin);
+        proxy.getEventManager().fire(new VelocityPluginLoadEvent(container, PluginEvent.Stage.PRE));
+        proxy.getEventManager().fire(new VelocityPluginLoadEvent(container, PluginEvent.Stage.POST));
 
         return new VelocityLoadResult(container);
     }
 
     @Override
     public Result enablePlugin(PluginContainer container) {
+        proxy.getEventManager().fire(new VelocityPluginEnableEvent(container, PluginEvent.Stage.PRE));
         if (proxy.getPluginManager().isLoaded(container.getDescription().getId())) return Result.ALREADY_ENABLED;
 
         Object javaPluginLoader = RJavaPluginLoader.newInstance(
@@ -130,12 +138,12 @@ public class VelocityPluginManager implements AbstractPluginManager<PluginContai
         );
 
         RVelocityPluginManager.registerPlugin(proxy.getPluginManager(), container);
-        container.getInstance().ifPresent(instance -> {
-            RVelocityEventManager.registerInternally(proxy.getEventManager(), container, instance);
+        container.getInstance().ifPresent(pluginInstance -> {
+            RVelocityEventManager.registerInternally(proxy.getEventManager(), container, pluginInstance);
             RVelocityEventManager.fireForPlugin(
                     proxy.getEventManager(),
                     new ProxyInitializeEvent(),
-                    instance
+                    pluginInstance
             ).join();
 
             ConsoleCommandSource console = proxy.getConsoleCommandSource();
@@ -146,7 +154,7 @@ public class VelocityPluginManager implements AbstractPluginManager<PluginContai
             PermissionFunction permissionFunction = RVelocityEventManager.fireForPlugin(
                     proxy.getEventManager(),
                     event,
-                    instance
+                    pluginInstance
             ).join().createFunction(console);
 
             if (permissionFunction == null) {
@@ -162,12 +170,14 @@ public class VelocityPluginManager implements AbstractPluginManager<PluginContai
             RVelocityConsole.setPermissionFunction(console, permissionFunction);
         });
 
+        proxy.getEventManager().fire(new VelocityPluginEnableEvent(container, PluginEvent.Stage.POST));
         return Result.SUCCESS;
     }
 
     @Override
-    public Result disablePlugin(PluginContainer plugin) {
-        Object pluginInstance = plugin.getInstance().orElse(null);
+    public Result disablePlugin(PluginContainer container) {
+        proxy.getEventManager().fire(new VelocityPluginDisableEvent(container, PluginEvent.Stage.PRE));
+        Object pluginInstance = container.getInstance().orElse(null);
         if (pluginInstance == null) return Result.NOT_EXISTS;
 
         RVelocityEventManager.fireForPlugin(
@@ -176,6 +186,7 @@ public class VelocityPluginManager implements AbstractPluginManager<PluginContai
                 new ProxyShutdownEvent()
         );
 
+        proxy.getEventManager().fire(new VelocityPluginDisableEvent(container, PluginEvent.Stage.POST));
         return Result.SUCCESS;
     }
 
@@ -209,8 +220,9 @@ public class VelocityPluginManager implements AbstractPluginManager<PluginContai
     }
 
     @Override
-    public CloseableResult unloadPlugin(PluginContainer plugin) {
-        Optional<?> pluginInstanceOptional = plugin.getInstance();
+    public CloseableResult unloadPlugin(PluginContainer container) {
+        proxy.getEventManager().fire(new VelocityPluginUnloadEvent(container, PluginEvent.Stage.PRE));
+        Optional<?> pluginInstanceOptional = container.getInstance();
         if (!pluginInstanceOptional.isPresent()) return new CloseableResult(Result.INVALID_PLUGIN);
         Object pluginInstance = pluginInstanceOptional.get();
 
@@ -219,7 +231,7 @@ public class VelocityPluginManager implements AbstractPluginManager<PluginContai
             task.cancel();
         }
 
-        String pluginId = plugin.getDescription().getId();
+        String pluginId = container.getDescription().getId();
         VelocityPluginCommandManager pluginCommandManager = ServerUtils.getInstance().getPluginCommandManager();
         for (String alias : pluginCommandManager.getPluginCommands().removeAll(pluginId)) {
             proxy.getCommandManager().unregister(alias);
@@ -235,6 +247,7 @@ public class VelocityPluginManager implements AbstractPluginManager<PluginContai
             closeables.add((Closeable) loader);
         }
 
+        proxy.getEventManager().fire(new VelocityPluginUnloadEvent(container, PluginEvent.Stage.POST));
         return new CloseableResult(closeables);
     }
 

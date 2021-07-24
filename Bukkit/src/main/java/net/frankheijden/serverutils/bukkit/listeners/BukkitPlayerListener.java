@@ -2,24 +2,15 @@ package net.frankheijden.serverutils.bukkit.listeners;
 
 import net.frankheijden.serverutils.bukkit.entities.BukkitCommandSender;
 import net.frankheijden.serverutils.bukkit.entities.BukkitPlugin;
-import net.frankheijden.serverutils.common.listeners.ServerListener;
-import org.bukkit.command.CommandSender;
+import net.frankheijden.serverutils.common.listeners.PlayerListener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
 
-public class BukkitListener extends ServerListener<
-        BukkitPlugin,
-        Plugin,
-        BukkitTask,
-        BukkitCommandSender,
-        CommandSender
-        > implements Listener {
+public class BukkitPlayerListener extends PlayerListener<BukkitPlugin, BukkitCommandSender> implements Listener {
 
-    public BukkitListener(BukkitPlugin plugin) {
+    public BukkitPlayerListener(BukkitPlugin plugin) {
         super(plugin);
     }
 

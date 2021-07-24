@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import net.frankheijden.serverutils.bukkit.ServerUtils;
 import net.frankheijden.serverutils.bukkit.commands.BukkitCommandPlugins;
 import net.frankheijden.serverutils.bukkit.commands.BukkitCommandServerUtils;
-import net.frankheijden.serverutils.bukkit.listeners.BukkitListener;
+import net.frankheijden.serverutils.bukkit.listeners.BukkitPlayerListener;
 import net.frankheijden.serverutils.bukkit.managers.BukkitPluginManager;
 import net.frankheijden.serverutils.bukkit.managers.BukkitTaskManager;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
@@ -94,7 +94,7 @@ public class BukkitPlugin extends ServerUtilsPlugin<
 
     @Override
     protected void enablePlugin() {
-        Bukkit.getPluginManager().registerEvents(new BukkitListener(this), plugin);
+        Bukkit.getPluginManager().registerEvents(new BukkitPlayerListener(this), plugin);
     }
 
     @Override

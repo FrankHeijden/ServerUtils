@@ -11,6 +11,7 @@ import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.velocity.ServerUtils;
 import net.frankheijden.serverutils.velocity.commands.VelocityCommandPlugins;
 import net.frankheijden.serverutils.velocity.commands.VelocityCommandServerUtils;
+import net.frankheijden.serverutils.velocity.listeners.VelocityPlayerListener;
 import net.frankheijden.serverutils.velocity.managers.VelocityPluginManager;
 import net.frankheijden.serverutils.velocity.managers.VelocityTaskManager;
 
@@ -83,6 +84,11 @@ public class VelocityPlugin extends ServerUtilsPlugin<
     @Override
     public File getDataFolder() {
         return this.plugin.getDataDirectory().toFile();
+    }
+
+    @Override
+    protected void enablePlugin() {
+        plugin.getProxy().getEventManager().register(plugin, new VelocityPlayerListener(this));
     }
 
     @Override

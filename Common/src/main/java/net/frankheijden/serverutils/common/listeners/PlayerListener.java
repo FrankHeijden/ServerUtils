@@ -4,15 +4,10 @@ import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.tasks.UpdateCheckerTask;
 
-public abstract class ServerListener<
-        U extends ServerUtilsPlugin<P, T, C, S>,
-        P,
-        T,
-        C extends ServerCommandSender<S>,
-        S
-        > extends ServerUtilsListener<U, P, T, C, S> {
+public abstract class PlayerListener<U extends ServerUtilsPlugin<?, ?, C, ?>, C extends ServerCommandSender<?>>
+        extends ServerUtilsListener<U, C> {
 
-    protected ServerListener(U plugin) {
+    protected PlayerListener(U plugin) {
         super(plugin);
     }
 

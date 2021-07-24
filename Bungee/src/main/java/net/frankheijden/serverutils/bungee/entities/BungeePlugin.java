@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import net.frankheijden.serverutils.bungee.ServerUtils;
 import net.frankheijden.serverutils.bungee.commands.BungeeCommandPlugins;
 import net.frankheijden.serverutils.bungee.commands.BungeeCommandServerUtils;
-import net.frankheijden.serverutils.bungee.listeners.BungeeServerListener;
+import net.frankheijden.serverutils.bungee.listeners.BungeePlayerListener;
 import net.frankheijden.serverutils.bungee.managers.BungeePluginManager;
 import net.frankheijden.serverutils.bungee.managers.BungeeTaskManager;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
@@ -87,7 +87,7 @@ public class BungeePlugin extends ServerUtilsPlugin<
 
     @Override
     protected void enablePlugin() {
-        plugin.getProxy().getPluginManager().registerListener(plugin, new BungeeServerListener(this));
+        plugin.getProxy().getPluginManager().registerListener(plugin, new BungeePlayerListener(this));
     }
 
     @Override
