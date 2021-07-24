@@ -3,6 +3,7 @@ plugins {
 }
 
 group = rootProject.group + '.common'
+String dependencyDir = group + '.dependencies'
 version = rootProject.version
 archivesBaseName = rootProject.name + '-Common'
 
@@ -11,8 +12,8 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.google.code.gson:gson:2.8.6'
     compileOnly 'com.github.FrankHeijden:ServerUtilsUpdater:v1.0.0'
-    compileOnly 'com.google.code.gson:gson:2.8.6'
 }
 
 blossom {
@@ -24,4 +25,5 @@ shadowJar {
     exclude 'net/frankheijden/serverutilsupdater/**'
     exclude 'plugin.yml'
     exclude 'bungee.yml'
+    relocate 'com.google.gson', dependencyDir + '.gson'
 }

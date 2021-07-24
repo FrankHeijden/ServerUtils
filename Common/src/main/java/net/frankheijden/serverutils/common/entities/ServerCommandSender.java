@@ -3,7 +3,7 @@ package net.frankheijden.serverutils.common.entities;
 /**
  * A basic wrapper for a CommandSender.
  */
-public interface ServerCommandSender {
+public interface ServerCommandSender<C> {
 
     /**
      * Sends a message to a CommandSender.
@@ -23,4 +23,9 @@ public interface ServerCommandSender {
      * @return Boolean true or false.
      */
     boolean isPlayer();
+
+    /**
+     * Returns the server specific implementation source.
+     */
+    C getSource();
 }

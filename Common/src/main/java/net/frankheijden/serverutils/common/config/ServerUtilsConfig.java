@@ -1,9 +1,18 @@
 package net.frankheijden.serverutils.common.config;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
+import net.frankheijden.serverutils.common.providers.ResourceProvider;
 
 /**
  * A wrap for a Configuration file.
@@ -87,6 +96,9 @@ public interface ServerUtilsConfig {
             if (value instanceof ServerUtilsConfig) {
                 addDefaults((ServerUtilsConfig) value, conf, newKey);
             } else if (conf.get(newKey) == null) {
+                if (value instanceof JsonElement) {
+                    value = JsonConfig.toObjectValue((JsonElement) value);
+                }
                 conf.set(newKey, value);
             }
         }
@@ -131,5 +143,39 @@ public interface ServerUtilsConfig {
             ex.printStackTrace();
         }
         return conf;
+    }
+
+    /**
+     * Loads a resource from the jar file.
+     */
+    static <U extends ServerUtilsPlugin<P, T, C, S>, P, T, C extends ServerCommandSender<S>, S> ServerUtilsConfig load(
+            U plugin,
+            Path path,
+            String resource
+    ) {
+        ResourceProvider provider = plugin.getResourceProvider();
+
+        // Create the platform JsonConfig by merging the platformResource with the common resource
+        JsonConfig generalConfig = new JsonConfig(JsonConfig.gson.fromJson(
+                new InputStreamReader(provider.getRawResource(resource + ".json")),
+                JsonObject.class
+        ));
+
+        String platformResource = plugin.getPlatform().name().toLowerCase(Locale.ENGLISH) + '-' + resource;
+        JsonConfig platformConfig = new JsonConfig(JsonConfig.gson.fromJson(
+                new InputStreamReader(provider.getRawResource(platformResource + ".json")),
+                JsonObject.class
+        ));
+        addDefaults(platformConfig, generalConfig);
+
+        if (!Files.exists(path)) {
+            try {
+                Files.createFile(path);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        return init(generalConfig, provider.load(path.toFile()));
     }
 }

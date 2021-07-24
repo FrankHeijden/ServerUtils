@@ -39,7 +39,7 @@ import net.frankheijden.serverutils.velocity.reflection.RVelocityPluginContainer
 import net.frankheijden.serverutils.velocity.reflection.RVelocityPluginManager;
 import net.frankheijden.serverutils.velocity.reflection.RVelocityScheduler;
 
-public class VelocityPluginManager extends AbstractPluginManager<PluginContainer> {
+public class VelocityPluginManager implements AbstractPluginManager<PluginContainer> {
 
     private static VelocityPluginManager instance;
     private final ProxyServer proxy;

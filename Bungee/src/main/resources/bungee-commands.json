@@ -1,0 +1,13 @@
+{
+  "plugins": {
+    "flags": {
+      "modules": {
+        "main": "modules",
+        "aliases": ["m"],
+        "permission": "serverutils.plugins.modules",
+        "description": "Displays the proxy modules.",
+        "display-in-help": true
+      }
+    }
+  }
+}

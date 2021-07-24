@@ -1,37 +1,30 @@
 package net.frankheijden.serverutils.common.config;
 
-import java.io.File;
-import java.io.InputStream;
-import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
-import net.frankheijden.serverutils.common.providers.ResourceProvider;
 
-/**
- * A class which provides functionality for loading and setting defaults of Configurations.
- */
 public class ServerUtilsResource {
 
-    private static final ServerUtilsPlugin plugin = ServerUtilsApp.getPlugin();
+    protected final ServerUtilsPlugin<?, ?, ?, ?> plugin;
+    protected final ServerUtilsConfig config;
 
-    private final ServerUtilsConfig config;
-
-    /**
-     * Creates a new YamlResource instance.
-     * Loads the resource from the jar file.
-     * @param fileName The destination file.
-     * @param resource The resource from the jar file.
-     */
-    public ServerUtilsResource(String fileName, String resource) {
-        ResourceProvider provider = plugin.getResourceProvider();
-        InputStream is = provider.getResource(resource);
-        File file = plugin.copyResourceIfNotExists(fileName, resource);
-        config = ServerUtilsConfig.init(provider.load(is), provider.load(file));
+    protected ServerUtilsResource(ServerUtilsPlugin<?, ?, ?, ?> plugin, ServerUtilsConfig config) {
+        this.plugin = plugin;
+        this.config = config;
     }
 
-    /**
-     * Retrieves the YamlConfig of this resource.
-     * @return The YamlConfig.
-     */
+    protected ServerUtilsResource(ServerUtilsPlugin<?, ?, ?, ?> plugin, String resourceName) {
+        this(
+                plugin,
+                ServerUtilsConfig.load(
+                        plugin,
+                        plugin.getDataFolder().toPath().resolve(
+                                resourceName + plugin.getResourceProvider().getResourceExtension()
+                        ),
+                        resourceName
+                )
+        );
+    }
+
     public ServerUtilsConfig getConfig() {
         return config;
     }

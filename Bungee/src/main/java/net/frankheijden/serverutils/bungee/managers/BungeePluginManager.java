@@ -32,7 +32,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.PluginDescription;
 import org.yaml.snakeyaml.Yaml;
 
-public class BungeePluginManager extends AbstractPluginManager<Plugin> {
+public class BungeePluginManager implements AbstractPluginManager<Plugin> {
 
     private static final ProxyServer proxy = ProxyServer.getInstance();
 

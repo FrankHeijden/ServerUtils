@@ -9,5 +9,5 @@ public interface AbstractResult {
      * @param action The action which let to the result.
      * @param what An associated variable.
      */
-    void sendTo(ServerCommandSender sender, String action, String what);
+    void sendTo(ServerCommandSender<?> sender, String action, String what);
 }

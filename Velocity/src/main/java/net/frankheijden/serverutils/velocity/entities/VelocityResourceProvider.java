@@ -19,7 +19,7 @@ public class VelocityResourceProvider implements ResourceProvider {
     }
 
     @Override
-    public InputStream getResource(String resource) {
+    public InputStream getRawResource(String resource) {
         return plugin.getClass().getClassLoader().getResourceAsStream(resource);
     }
 
@@ -42,5 +42,10 @@ public class VelocityResourceProvider implements ResourceProvider {
     @Override
     public ServerUtilsConfig load(File file) {
         return new VelocityTomlConfig(file);
+    }
+
+    @Override
+    public String getResourceExtension() {
+        return ".toml";
     }
 }

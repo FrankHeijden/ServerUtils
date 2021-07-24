@@ -1,6 +1,6 @@
 package net.frankheijden.serverutils.common.entities;
 
-import net.frankheijden.serverutils.common.config.Messenger;
+import net.frankheijden.serverutils.common.ServerUtilsApp;
 
 public enum WatchResult implements AbstractResult {
 
@@ -17,8 +17,11 @@ public enum WatchResult implements AbstractResult {
      * @param what An associated variable.
      */
     @Override
-    public void sendTo(ServerCommandSender sender, String action, String what) {
-        Messenger.sendMessage(sender, "serverutils.watcher." + this.name().toLowerCase(),
-                "%what%", what);
+    public void sendTo(ServerCommandSender<?> sender, String action, String what) {
+        ServerUtilsApp.getPlugin().getMessagesResource().sendMessage(
+                sender,
+                "serverutils.watcher." + this.name().toLowerCase(),
+                "%what%", what
+        );
     }
 }

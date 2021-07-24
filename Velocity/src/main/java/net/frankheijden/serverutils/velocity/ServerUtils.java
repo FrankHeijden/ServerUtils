@@ -1,8 +1,5 @@
 package net.frankheijden.serverutils.velocity;
 
-import co.aikar.commands.CommandCompletions;
-import co.aikar.commands.VelocityCommandCompletionContext;
-import co.aikar.commands.VelocityCommandManager;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.velocitypowered.api.event.Subscribe;
@@ -15,13 +12,8 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import java.io.IOException;
 import java.nio.file.Path;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
-import net.frankheijden.serverutils.common.config.Config;
-import net.frankheijden.serverutils.common.config.Messenger;
-import net.frankheijden.serverutils.velocity.commands.CommandPlugins;
-import net.frankheijden.serverutils.velocity.commands.CommandServerUtils;
 import net.frankheijden.serverutils.velocity.entities.VelocityPlugin;
 import net.frankheijden.serverutils.velocity.managers.VelocityPluginCommandManager;
-import net.frankheijden.serverutils.velocity.managers.VelocityPluginManager;
 import net.frankheijden.serverutils.velocity.reflection.RVelocityCommandManager;
 import org.bstats.velocity.Metrics;
 import org.slf4j.Logger;
@@ -37,12 +29,9 @@ import org.slf4j.Logger;
 public class ServerUtils {
 
     private static ServerUtils instance;
-    private static final String CONFIG_RESOURCE = "velocity-config.toml";
-    private static final String MESSAGES_RESOURCE = "velocity-messages.toml";
     private static final String PLUGIN_COMMANDS_CACHE = ".pluginCommandsCache.json";
 
     private VelocityPlugin plugin;
-    private VelocityCommandManager commandManager;
 
     @Inject
     private ProxyServer proxy;
@@ -95,21 +84,7 @@ public class ServerUtils {
         ServerUtilsApp.init(this, plugin);
 
         metricsFactory.make(this, ServerUtilsApp.BSTATS_METRICS_ID);
-
-        this.commandManager = new VelocityCommandManager(proxy, this);
-        commandManager.registerCommand(new CommandPlugins());
-        commandManager.registerCommand(new CommandServerUtils(this));
-
-        VelocityPluginManager manager = plugin.getPluginManager();
-        CommandCompletions<VelocityCommandCompletionContext> completions = commandManager.getCommandCompletions();
-        completions.registerAsyncCompletion("plugins", context -> manager.getPluginNames());
-        completions.registerAsyncCompletion("pluginJars", context -> manager.getPluginFileNames());
-        completions.registerAsyncCompletion("commands", context -> manager.getCommands());
-
-        reload();
         plugin.enable();
-
-        ServerUtilsApp.tryCheckForUpdates();
     }
 
     /**
@@ -140,20 +115,15 @@ public class ServerUtils {
         return dataDirectory;
     }
 
-    public VelocityCommandManager getCommandManager() {
-        return commandManager;
-    }
-
     public VelocityPlugin getPlugin() {
         return plugin;
     }
 
-    public VelocityPluginCommandManager getPluginCommandManager() {
-        return pluginCommandManager;
+    public PluginContainer getPluginContainer() {
+        return pluginContainer;
     }
 
-    public void reload() {
-        new Config("config.toml", CONFIG_RESOURCE);
-        new Messenger("messages.toml", MESSAGES_RESOURCE);
+    public VelocityPluginCommandManager getPluginCommandManager() {
+        return pluginCommandManager;
     }
 }

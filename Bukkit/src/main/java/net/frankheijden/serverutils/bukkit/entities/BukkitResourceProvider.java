@@ -16,6 +16,11 @@ public class BukkitResourceProvider implements ResourceProvider {
 
     @Override
     public InputStream getResource(String resource) {
+        return getRawResource(resource + getResourceExtension());
+    }
+
+    @Override
+    public InputStream getRawResource(String resource) {
         return plugin.getResource(resource);
     }
 
@@ -27,5 +32,10 @@ public class BukkitResourceProvider implements ResourceProvider {
     @Override
     public ServerUtilsConfig load(File file) {
         return new BukkitYamlConfig(file);
+    }
+
+    @Override
+    public String getResourceExtension() {
+        return ".yml";
     }
 }

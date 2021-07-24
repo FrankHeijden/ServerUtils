@@ -39,7 +39,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.UnknownDependencyException;
 
-public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
+public class BukkitPluginManager implements AbstractPluginManager<Plugin> {
 
     private static BukkitPluginManager instance;
 
@@ -302,6 +302,25 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin> {
             }
             return false;
         });
+
+        RCraftServer.syncCommands();
+    }
+
+    /**
+     * Unregisters all the specified commands.
+     */
+    public static void unregisterCommands(String... commands) {
+        Map<String, Command> map;
+        try {
+            map = RCommandMap.getKnownCommands(RCraftServer.getCommandMap());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return;
+        }
+
+        for (String command : commands) {
+            map.remove(command);
+        }
 
         RCraftServer.syncCommands();
     }

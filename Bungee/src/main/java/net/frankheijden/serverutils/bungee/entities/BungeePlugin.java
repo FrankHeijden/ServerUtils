@@ -1,14 +1,26 @@
 package net.frankheijden.serverutils.bungee.entities;
 
+import cloud.commandframework.bungee.BungeeCommandManager;
+import cloud.commandframework.execution.AsynchronousCommandExecutionCoordinator;
 import java.io.File;
 import java.util.logging.Logger;
 import net.frankheijden.serverutils.bungee.ServerUtils;
+import net.frankheijden.serverutils.bungee.commands.BungeeCommandPlugins;
+import net.frankheijden.serverutils.bungee.commands.BungeeCommandServerUtils;
+import net.frankheijden.serverutils.bungee.listeners.BungeeServerListener;
 import net.frankheijden.serverutils.bungee.managers.BungeePluginManager;
 import net.frankheijden.serverutils.bungee.managers.BungeeTaskManager;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
-import net.md_5.bungee.api.plugin.PluginDescription;
+import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.api.scheduler.ScheduledTask;
 
-public class BungeePlugin extends ServerUtilsPlugin {
+public class BungeePlugin extends ServerUtilsPlugin<
+        Plugin,
+        ScheduledTask,
+        BungeeCommandSender,
+        CommandSender
+        > {
 
     private final ServerUtils plugin;
     private final BungeePluginManager pluginManager;
@@ -29,13 +41,26 @@ public class BungeePlugin extends ServerUtilsPlugin {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    protected BungeeCommandManager<BungeeCommandSender> newCommandManager() {
+        return new BungeeCommandManager<>(
+                plugin,
+                AsynchronousCommandExecutionCoordinator.<BungeeCommandSender>newBuilder().build(),
+                chatProvider::get,
+                BungeeCommandSender::getSource
+        );
+    }
+
+    @Override
+    public Platform getPlatform() {
+        return Platform.BUNGEE;
+    }
+
+    @Override
     public BungeePluginManager getPluginManager() {
         return pluginManager;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public BungeeTaskManager getTaskManager() {
         return taskManager;
     }
@@ -61,13 +86,13 @@ public class BungeePlugin extends ServerUtilsPlugin {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public PluginDescription fetchUpdaterData() {
-        try {
-            return BungeePluginManager.getPluginDescription(pluginManager.getPluginFile("ServerUtils"));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return null;
+    protected void enablePlugin() {
+        plugin.getProxy().getPluginManager().registerListener(plugin, new BungeeServerListener(this));
+    }
+
+    @Override
+    protected void reloadPlugin() {
+        new BungeeCommandPlugins(this).register(commandManager);
+        new BungeeCommandServerUtils(this).register(commandManager);
     }
 }

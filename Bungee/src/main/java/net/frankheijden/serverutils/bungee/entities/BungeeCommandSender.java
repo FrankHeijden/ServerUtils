@@ -4,7 +4,7 @@ import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
-public class BungeeCommandSender implements ServerCommandSender {
+public class BungeeCommandSender implements ServerCommandSender<CommandSender> {
 
     private final CommandSender sender;
 
@@ -29,5 +29,10 @@ public class BungeeCommandSender implements ServerCommandSender {
     @Override
     public boolean isPlayer() {
         return sender instanceof ProxiedPlayer;
+    }
+
+    @Override
+    public CommandSender getSource() {
+        return sender;
     }
 }

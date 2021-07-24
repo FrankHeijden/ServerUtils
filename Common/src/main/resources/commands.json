@@ -1,0 +1,88 @@
+{
+  "plugins": {
+    "main": "%prefix%plugins",
+    "aliases": ["%prefix%pl"],
+    "permission": "serverutils.plugins",
+    "display-in-help": true,
+    "flags": {
+      "version": {
+        "main": "version",
+        "aliases": ["v"],
+        "permission": "serverutils.plugins.version",
+        "description": "Displays the plugin versions.",
+        "display-in-help": true
+      }
+    }
+  },
+  "serverutils": {
+    "main": "%prefix%serverutils",
+    "aliases": ["%prefix%su"],
+    "permission": "serverutils.help",
+    "display-in-help": false,
+    "subcommands": {
+      "help": {
+        "main": "help",
+        "aliases": [],
+        "permission": "serverutils.help",
+        "description": "Displays the help page.",
+        "display-in-help": true
+      },
+      "reload": {
+        "main": "reload",
+        "aliases": [],
+        "permission": "serverutils.reload",
+        "description": "Reloads the ServerUtils plugin.",
+        "display-in-help": true
+      },
+      "loadplugin": {
+        "main": "loadplugin",
+        "aliases": ["lp"],
+        "permission": "serverutils.loadplugin",
+        "description": "Loads the specified jar file as a plugin.",
+        "display-in-help": true
+      },
+      "unloadplugin": {
+        "main": "unloadplugin",
+        "aliases": ["up"],
+        "permission": "serverutils.unloadplugin",
+        "description": "Disables and unloads the specified plugin.",
+        "display-in-help": true
+      },
+      "reloadplugin": {
+        "main": "reloadplugin",
+        "aliases": ["rp"],
+        "permission": "serverutils.reloadplugin",
+        "description": "Reloads the specified plugin.",
+        "display-in-help": true
+      },
+      "watchplugin": {
+        "main": "watchplugin",
+        "aliases": ["wp"],
+        "permission": "serverutils.watchplugin",
+        "description": "Watches the specified plugin for changes.",
+        "display-in-help": true
+      },
+      "unwatchplugin": {
+        "main": "unwatchplugin",
+        "aliases": ["uwp"],
+        "permission": "serverutils.watchplugin",
+        "description": "Stops watching the specified plugin for changes.",
+        "display-in-help": true
+      },
+      "plugininfo": {
+        "main": "plugininfo",
+        "aliases": ["pi"],
+        "permission": "serverutils.plugininfo",
+        "description": "Shows information about the specified plugin.",
+        "display-in-help": true
+      },
+      "commandinfo": {
+        "main": "commandinfo",
+        "aliases": ["ci"],
+        "permission": "serverutils.commandinfo",
+        "description": "Shows information about the specified command.",
+        "display-in-help": true
+      }
+    }
+  }
+}
