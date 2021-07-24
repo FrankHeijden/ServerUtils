@@ -1,16 +1,26 @@
 package net.frankheijden.serverutils.velocity.entities;
 
-import com.velocitypowered.api.plugin.PluginDescription;
+import cloud.commandframework.execution.AsynchronousCommandExecutionCoordinator;
+import cloud.commandframework.velocity.VelocityCommandManager;
+import com.velocitypowered.api.command.CommandSource;
+import com.velocitypowered.api.plugin.PluginContainer;
+import com.velocitypowered.api.scheduler.ScheduledTask;
 import java.io.File;
-import java.nio.file.Path;
 import java.util.logging.Logger;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.velocity.ServerUtils;
+import net.frankheijden.serverutils.velocity.commands.VelocityCommandPlugins;
+import net.frankheijden.serverutils.velocity.commands.VelocityCommandServerUtils;
+import net.frankheijden.serverutils.velocity.listeners.VelocityPlayerListener;
 import net.frankheijden.serverutils.velocity.managers.VelocityPluginManager;
 import net.frankheijden.serverutils.velocity.managers.VelocityTaskManager;
-import net.frankheijden.serverutils.velocity.reflection.RJavaPluginLoader;
 
-public class VelocityPlugin extends ServerUtilsPlugin {
+public class VelocityPlugin extends ServerUtilsPlugin<
+        PluginContainer,
+        ScheduledTask,
+        VelocityCommandSender,
+        CommandSource
+        > {
 
     private final ServerUtils plugin;
     private final VelocityPluginManager pluginManager;
@@ -31,25 +41,39 @@ public class VelocityPlugin extends ServerUtilsPlugin {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public VelocityPluginManager getPluginManager() {
-        return pluginManager;
+    protected VelocityCommandManager<VelocityCommandSender> newCommandManager() {
+        return new VelocityCommandManager<>(
+                plugin.getPluginContainer(),
+                plugin.getProxy(),
+                AsynchronousCommandExecutionCoordinator.<VelocityCommandSender>newBuilder().build(),
+                chatProvider::get,
+                VelocityCommandSender::getSource
+        );
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    public VelocityPluginManager getPluginManager() {
+        return this.pluginManager;
+    }
+
+    @Override
     public VelocityTaskManager getTaskManager() {
-        return taskManager;
+        return this.taskManager;
+    }
+
+    @Override
+    public Platform getPlatform() {
+        return Platform.VELOCITY;
     }
 
     @Override
     public VelocityResourceProvider getResourceProvider() {
-        return resourceProvider;
+        return this.resourceProvider;
     }
 
     @Override
     public VelocityChatProvider getChatProvider() {
-        return chatProvider;
+        return this.chatProvider;
     }
 
     @Override
@@ -59,14 +83,17 @@ public class VelocityPlugin extends ServerUtilsPlugin {
 
     @Override
     public File getDataFolder() {
-        return plugin.getDataDirectory().toFile();
+        return this.plugin.getDataDirectory().toFile();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public PluginDescription fetchUpdaterData() {
-        Path pluginPath = pluginManager.getPluginFile("ServerUtils").toPath();
-        Object javaPluginLoader = RJavaPluginLoader.newInstance(plugin.getProxy(), pluginPath.getParent());
-        return RJavaPluginLoader.loadPluginDescription(javaPluginLoader, pluginPath);
+    protected void enablePlugin() {
+        plugin.getProxy().getEventManager().register(plugin, new VelocityPlayerListener(this));
+    }
+
+    @Override
+    protected void reloadPlugin() {
+        new VelocityCommandPlugins(this).register(commandManager);
+        new VelocityCommandServerUtils(this).register(commandManager);
     }
 }

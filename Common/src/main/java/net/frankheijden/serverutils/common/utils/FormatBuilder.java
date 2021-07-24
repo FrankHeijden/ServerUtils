@@ -2,21 +2,19 @@ package net.frankheijden.serverutils.common.utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.frankheijden.serverutils.common.config.Messenger;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 
 public class FormatBuilder {
 
     private final String format;
     private final List<String[]> valueList;
     private String[] orderedKeys;
-    private boolean alwaysSend;
+    private boolean skipEmpty;
 
     private FormatBuilder(String format) {
         this.format = format;
         this.valueList = new ArrayList<>();
         this.orderedKeys = new String[0];
-        this.alwaysSend = false;
+        this.skipEmpty = true;
     }
 
     public static FormatBuilder create(String format) {
@@ -33,25 +31,33 @@ public class FormatBuilder {
         return this;
     }
 
-    public FormatBuilder alwaysSend(boolean alwaysSend) {
-        this.alwaysSend = alwaysSend;
+    public FormatBuilder skipEmpty(boolean skipEmpty) {
+        this.skipEmpty = skipEmpty;
         return this;
     }
 
     /**
-     * Builds the format and sends it to the CommandSender.
-     * @param sender The receiver of the list.
+     * Builds the current FormatBuilder instance into a list of strings.
      */
-    public void sendTo(ServerCommandSender sender) {
-        valueList.forEach(values -> {
-            int length = Math.min(values.length, orderedKeys.length);
-            String message = format;
-            for (int i = 0; i < length; i++) {
+    public List<String> build() {
+        List<String> strings = new ArrayList<>();
+
+        loop:
+        for (String[] values : valueList) {
+            String str = format;
+            for (int i = 0; i < Math.min(values.length, orderedKeys.length); i++) {
                 String value = values[i];
-                if ((value == null || value.isEmpty()) && !alwaysSend) return;
-                message = message.replace(orderedKeys[i], String.valueOf(value));
+                if ((value == null || value.isEmpty()) && skipEmpty) continue loop;
+                str = str.replace(orderedKeys[i], String.valueOf(value));
             }
-            Messenger.sendRawMessage(sender, message);
-        });
+            strings.add(str);
+        }
+
+        return strings;
+    }
+
+    @Override
+    public String toString() {
+        return build().toString();
     }
 }

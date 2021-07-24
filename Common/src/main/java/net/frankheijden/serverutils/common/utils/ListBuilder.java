@@ -12,21 +12,17 @@ public class ListBuilder<T> {
     private String seperator;
     private String lastSeperator;
 
-    private ListBuilder(List<T> list) {
-        this.list = list;
+    private ListBuilder() {
+        this.list = new ArrayList<>();
     }
 
-    public static <T> ListBuilder<T> create(List<T> list) {
-        return new ListBuilder<>(list);
-    }
-
-    public static <T> ListBuilder<T> create(Collection<T> list) {
-        return new ListBuilder<>(new ArrayList<>(list));
+    public static <T> ListBuilder<T> create(Collection<? extends T> list) {
+        return new ListBuilder<T>().addAll(list);
     }
 
     @SafeVarargs
     public static <T> ListBuilder<T> create(T... elements) {
-        return new ListBuilder<>(Arrays.asList(elements));
+        return new ListBuilder<T>().addAll(Arrays.asList(elements));
     }
 
     /**
@@ -53,6 +49,11 @@ public class ListBuilder<T> {
 
     public ListBuilder<T> lastSeperator(String lastSeperator) {
         this.lastSeperator = lastSeperator;
+        return this;
+    }
+
+    public ListBuilder<T> addAll(Collection<? extends T> collection) {
+        this.list.addAll(collection);
         return this;
     }
 

@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.AlexProgrammerDE.commands:acf-velocity:b0792607db'
+    implementation 'com.github.FrankHeijden.cloud:cloud-velocity:fea4605277'
     implementation 'org.bstats:bstats-velocity:2.2.1'
     implementation project(":Common")
     compileOnly 'com.velocitypowered:velocity-api:3.0.0'
@@ -24,8 +24,6 @@ dependencies {
 
 shadowJar {
     relocate 'org.bstats', dependencyDir + '.bstats'
-    relocate 'co.aikar.commands', dependencyDir + '.acf'
-    relocate 'co.aikar.locales', dependencyDir + '.locales'
 }
 
 blossom {

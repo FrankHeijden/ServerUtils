@@ -5,7 +5,7 @@ import com.velocitypowered.api.proxy.Player;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
-public class VelocityCommandSender implements ServerCommandSender {
+public class VelocityCommandSender implements ServerCommandSender<CommandSource> {
 
     private final CommandSource source;
 
@@ -30,5 +30,10 @@ public class VelocityCommandSender implements ServerCommandSender {
     @Override
     public boolean isPlayer() {
         return source instanceof Player;
+    }
+
+    @Override
+    public CommandSource getSource() {
+        return source;
     }
 }

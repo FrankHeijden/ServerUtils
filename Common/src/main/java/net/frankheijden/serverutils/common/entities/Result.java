@@ -1,6 +1,6 @@
 package net.frankheijden.serverutils.common.entities;
 
-import net.frankheijden.serverutils.common.config.Messenger;
+import net.frankheijden.serverutils.common.ServerUtilsApp;
 
 /**
  * An enum containing possible results.
@@ -45,10 +45,13 @@ public enum Result implements AbstractResult {
      * @param what An associated variable.
      */
     @Override
-    public void sendTo(ServerCommandSender sender, String action, String what) {
-        Messenger.sendMessage(sender, "serverutils." + this.name().toLowerCase(),
+    public void sendTo(ServerCommandSender<?> sender, String action, String what) {
+        ServerUtilsApp.getPlugin().getMessagesResource().sendMessage(
+                sender,
+                "serverutils." + this.name().toLowerCase(),
                 "%action%", action,
                 "%what%", what,
-                "%arg%", arg);
+                "%arg%", arg
+        );
     }
 }

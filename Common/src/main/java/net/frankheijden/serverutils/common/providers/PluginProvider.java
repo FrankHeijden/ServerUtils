@@ -8,30 +8,30 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 
-public abstract class PluginProvider<T> {
+public interface PluginProvider<P> {
 
-    public File getPluginsFolder() {
+    default File getPluginsFolder() {
         return ServerUtilsApp.getPlugin().getDataFolder().getParentFile();
     }
 
-    public abstract List<T> getPlugins();
+    List<P> getPlugins();
 
-    public abstract String getPluginName(T plugin);
+    String getPluginName(P plugin);
 
-    public abstract File getPluginFile(T plugin);
+    File getPluginFile(P plugin);
 
-    public abstract File getPluginFile(String pluginName);
+    File getPluginFile(String pluginName);
 
-    public abstract T getPlugin(String pluginName);
+    P getPlugin(String pluginName);
 
-    public abstract Set<String> getCommands();
+    Set<String> getCommands();
 
     /**
      * Retrieves a list of plugins, sorted by name.
      * @return The list of plugins.
      */
-    public List<T> getPluginsSorted() {
-        List<T> plugins = getPlugins();
+    default List<P> getPluginsSorted() {
+        List<P> plugins = getPlugins();
         plugins.sort(Comparator.comparing(this::getPluginName));
         return plugins;
     }
@@ -40,7 +40,7 @@ public abstract class PluginProvider<T> {
      * Retrieves a list of plugin names.
      * @return The plugin names.
      */
-    public List<String> getPluginNames() {
+    default List<String> getPluginNames() {
         return getPlugins().stream()
                 .map(this::getPluginName)
                 .collect(Collectors.toList());
@@ -50,7 +50,7 @@ public abstract class PluginProvider<T> {
      * Retrieves all files with a jar extension in the plugins/ folder and returns solely their name.
      * @return An list of jar file names.
      */
-    public List<String> getPluginFileNames() {
+    default List<String> getPluginFileNames() {
         return Arrays.stream(getPluginJars())
                 .map(File::getName)
                 .collect(Collectors.toList());
@@ -60,7 +60,7 @@ public abstract class PluginProvider<T> {
      * Retrieves all files with a jar extension in the plugins/ folder.
      * @return An array of jar files.
      */
-    public File[] getPluginJars() {
+    default File[] getPluginJars() {
         File parent = getPluginsFolder();
         if (parent == null || !parent.exists()) return new File[0];
         return parent.listFiles(f -> f.getName().endsWith(".jar"));

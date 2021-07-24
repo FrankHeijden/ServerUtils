@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 /**
  * A wrap for a Bukkit CommandSender.
  */
-public class BukkitCommandSender implements ServerCommandSender {
+public class BukkitCommandSender implements ServerCommandSender<CommandSender> {
 
     private final CommandSender sender;
 
@@ -45,5 +45,10 @@ public class BukkitCommandSender implements ServerCommandSender {
     @Override
     public boolean isPlayer() {
         return sender instanceof Player;
+    }
+
+    @Override
+    public CommandSender getSource() {
+        return sender;
     }
 }

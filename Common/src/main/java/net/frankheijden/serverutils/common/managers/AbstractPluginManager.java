@@ -11,23 +11,23 @@ import net.frankheijden.serverutils.common.entities.WatchResult;
 import net.frankheijden.serverutils.common.providers.PluginProvider;
 import net.frankheijden.serverutils.common.tasks.PluginWatcherTask;
 
-public abstract class AbstractPluginManager<T> extends PluginProvider<T> {
+public interface AbstractPluginManager<P> extends PluginProvider<P> {
 
-    public abstract LoadResult<T> loadPlugin(String pluginFile);
+    LoadResult<P> loadPlugin(String pluginFile);
 
-    public abstract LoadResult<T> loadPlugin(File file);
+    LoadResult<P> loadPlugin(File file);
 
-    public abstract Result enablePlugin(T plugin);
+    Result enablePlugin(P plugin);
 
-    public abstract Result disablePlugin(T plugin);
+    Result disablePlugin(P plugin);
 
-    public abstract Result reloadPlugin(String pluginName);
+    Result reloadPlugin(String pluginName);
 
-    public abstract Result reloadPlugin(T plugin);
+    Result reloadPlugin(P plugin);
 
-    public abstract CloseableResult unloadPlugin(String pluginName);
+    CloseableResult unloadPlugin(String pluginName);
 
-    public abstract CloseableResult unloadPlugin(T plugin);
+    CloseableResult unloadPlugin(P plugin);
 
     /**
      * Starts watching the specified plugin for changes.
@@ -35,7 +35,7 @@ public abstract class AbstractPluginManager<T> extends PluginProvider<T> {
      * @param pluginName The plugin to watch.
      * @return The result of the action.
      */
-    public AbstractResult watchPlugin(ServerCommandSender sender, String pluginName) {
+    default AbstractResult watchPlugin(ServerCommandSender<?> sender, String pluginName) {
         if (getPlugin(pluginName) == null) return Result.NOT_EXISTS;
         ServerUtilsApp.getPlugin().getTaskManager()
                 .runTaskAsynchronously(pluginName, new PluginWatcherTask(sender, pluginName));
@@ -47,7 +47,7 @@ public abstract class AbstractPluginManager<T> extends PluginProvider<T> {
      * @param pluginName The plugin to stop watching.
      * @return The result of the action.
      */
-    public AbstractResult unwatchPlugin(String pluginName) {
+    default AbstractResult unwatchPlugin(String pluginName) {
         if (ServerUtilsApp.getPlugin().getTaskManager().cancelTask(pluginName)) return WatchResult.STOPPED;
         return WatchResult.NOT_WATCHING;
     }

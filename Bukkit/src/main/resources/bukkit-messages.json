@@ -1,0 +1,8 @@
+{
+  "serverutils": {
+    "reloadconfig": {
+      "not_exists": "&cConfig &4%what% &cdoes not exist.",
+      "not_supported": "&cConfig &4%what% &cis not supported on your Minecraft version."
+    }
+  }
+}

@@ -1,14 +1,13 @@
 package net.frankheijden.serverutils.velocity.entities;
 
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import com.velocitypowered.api.command.CommandSource;
 import net.frankheijden.serverutils.common.providers.ChatProvider;
 import net.frankheijden.serverutils.common.utils.HexUtils;
 import net.frankheijden.serverutils.velocity.ServerUtils;
-import net.frankheijden.serverutils.velocity.utils.VelocityUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
-public class VelocityChatProvider extends ChatProvider {
+public class VelocityChatProvider implements ChatProvider<VelocityCommandSender, CommandSource> {
 
     private final ServerUtils plugin;
 
@@ -17,8 +16,13 @@ public class VelocityChatProvider extends ChatProvider {
     }
 
     @Override
-    public ServerCommandSender getConsoleSender() {
-        return VelocityUtils.wrap(plugin.getProxy().getConsoleCommandSource());
+    public VelocityCommandSender getConsoleSender() {
+        return new VelocityCommandSender(plugin.getProxy().getConsoleCommandSource());
+    }
+
+    @Override
+    public VelocityCommandSender get(CommandSource source) {
+        return new VelocityCommandSender(source);
     }
 
     @Override

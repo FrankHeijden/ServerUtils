@@ -16,7 +16,7 @@ public class BungeeResourceProvider implements ResourceProvider {
     }
 
     @Override
-    public InputStream getResource(String resource) {
+    public InputStream getRawResource(String resource) {
         return plugin.getResourceAsStream(resource);
     }
 
@@ -33,5 +33,10 @@ public class BungeeResourceProvider implements ResourceProvider {
             ex.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public String getResourceExtension() {
+        return ".yml";
     }
 }

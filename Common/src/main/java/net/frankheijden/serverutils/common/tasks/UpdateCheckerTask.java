@@ -10,8 +10,6 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
-import net.frankheijden.serverutils.common.config.Config;
-import net.frankheijden.serverutils.common.config.Messenger;
 import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.frankheijden.serverutils.common.entities.LoadResult;
 import net.frankheijden.serverutils.common.entities.Result;
@@ -26,10 +24,11 @@ import net.frankheijden.serverutilsupdater.common.Updater;
 
 public class UpdateCheckerTask implements Runnable {
 
-    private static final ServerUtilsPlugin plugin = ServerUtilsApp.getPlugin();
-    private static final ServerUtilsConfig config = Config.getInstance().getConfig();
+    @SuppressWarnings("unchecked")
+    private static final ServerUtilsPlugin<Object, ?, ?, ?> plugin = ServerUtilsApp.getPlugin();
+    private static final ServerUtilsConfig config = plugin.getConfigResource().getConfig();
 
-    private final ServerCommandSender sender;
+    private final ServerCommandSender<?> sender;
     private final boolean download;
     private final boolean install;
 
@@ -53,7 +52,7 @@ public class UpdateCheckerTask implements Runnable {
     private static final String UPDATER_ENABLE_ERROR = "Failed to enable ServerUtilsUpdater: {0}";
     private static final String UP_TO_DATE = "We are up-to-date!";
 
-    private UpdateCheckerTask(ServerCommandSender sender, boolean download, boolean install) {
+    private UpdateCheckerTask(ServerCommandSender<?> sender, boolean download, boolean install) {
         this.sender = sender;
         this.download = download;
         this.install = install;
@@ -63,7 +62,7 @@ public class UpdateCheckerTask implements Runnable {
      * Checks for updates if enabled per config for the specific action.
      * Action must be 'login' or 'boot'.
      */
-    public static void tryStart(ServerCommandSender sender, String action) {
+    public static void tryStart(ServerCommandSender<?> sender, String action) {
         if (config.getBoolean("settings.check-updates-" + action)) {
             start(sender, action);
         }
@@ -73,7 +72,7 @@ public class UpdateCheckerTask implements Runnable {
      * Checks for updates and downloads/installs if configured.
      * Action must be 'login' or 'boot'.
      */
-    public static void start(ServerCommandSender sender, String action) {
+    public static void start(ServerCommandSender<?> sender, String action) {
         plugin.getTaskManager().runTaskAsynchronously(new UpdateCheckerTask(
                 sender,
                 config.getBoolean("settings.download-updates-" + action),
@@ -113,7 +112,7 @@ public class UpdateCheckerTask implements Runnable {
         GitHubAsset pluginAsset = GitHubAsset.from(pluginJson);
         if (!download || pluginAsset == null) {
             if (sender.isPlayer()) {
-                Messenger.sendMessage(sender, "serverutils.update.available",
+                plugin.getMessagesResource().sendMessage(sender, "serverutils.update.available",
                         "%old%", ServerUtilsApp.VERSION,
                         "%new%", githubVersion,
                         "%info%", body);
@@ -123,7 +122,7 @@ public class UpdateCheckerTask implements Runnable {
 
         plugin.getLogger().log(Level.INFO, DOWNLOAD_START, pluginAsset.getDownloadUrl());
         if (sender.isPlayer()) {
-            Messenger.sendMessage(sender, "serverutils.update.downloading",
+            plugin.getMessagesResource().sendMessage(sender, "serverutils.update.downloading",
                     "%old%", ServerUtilsApp.VERSION,
                     "%new%", githubVersion,
                     "%info%", body);
@@ -228,7 +227,7 @@ public class UpdateCheckerTask implements Runnable {
     }
 
     private void deletePlugin() {
-        plugin.getPluginManager().getPluginFile((Object) ServerUtilsApp.getPlatformPlugin()).delete();
+        plugin.getPluginManager().getPluginFile(ServerUtilsApp.getPlatformPlugin()).delete();
     }
 
     private void tryReloadPlugin(File pluginFile, File updaterFile) {
@@ -254,7 +253,7 @@ public class UpdateCheckerTask implements Runnable {
 
     private void broadcastDownloadStatus(String githubVersion, boolean isError) {
         final String path = "serverutils.update." + (isError ? "failed" : "success");
-        String message = Messenger.getMessage(path, "%new%", githubVersion);
+        String message = plugin.getMessagesResource().getMessage(path, "%new%", githubVersion);
         plugin.getChatProvider().broadcast("serverutils.notification.update", message);
     }
 }

@@ -6,9 +6,15 @@ import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 
 public interface ResourceProvider {
 
-    InputStream getResource(String resource);
+    default InputStream getResource(String resource) {
+        return getRawResource(resource + getResourceExtension());
+    }
+
+    InputStream getRawResource(String resource);
 
     ServerUtilsConfig load(InputStream is);
 
     ServerUtilsConfig load(File file);
+
+    String getResourceExtension();
 }

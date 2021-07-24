@@ -18,7 +18,7 @@ public abstract class AbstractTaskManager<T> {
      *
      * @param taskCloser The consumer which will close tasks.
      */
-    public AbstractTaskManager(Consumer<T> taskCloser) {
+    protected AbstractTaskManager(Consumer<T> taskCloser) {
         this.taskCloser = taskCloser;
         this.serverTasks = new ArrayList<>();
         this.tasks = new HashMap<>();

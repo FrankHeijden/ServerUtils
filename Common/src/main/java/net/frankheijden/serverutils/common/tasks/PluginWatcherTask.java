@@ -28,15 +28,13 @@ public class PluginWatcherTask extends AbstractTask {
         StandardWatchEventKinds.ENTRY_DELETE
     };
 
-    private final ServerUtilsPlugin plugin = ServerUtilsApp.getPlugin();
-
-    @SuppressWarnings("rawtypes")
-    private final AbstractPluginManager pluginManager = plugin.getPluginManager();
-    private final ChatProvider chatProvider = plugin.getChatProvider();
+    private final ServerUtilsPlugin<?, ?, ?, ?> plugin = ServerUtilsApp.getPlugin();
+    private final AbstractPluginManager<?> pluginManager = plugin.getPluginManager();
+    private final ChatProvider<?, ?> chatProvider = plugin.getChatProvider();
     @SuppressWarnings("rawtypes")
     private final AbstractTaskManager taskManager = plugin.getTaskManager();
 
-    private final ServerCommandSender sender;
+    private final ServerCommandSender<?> sender;
     private final String pluginName;
     private final AtomicBoolean run;
     private File file;
@@ -51,7 +49,7 @@ public class PluginWatcherTask extends AbstractTask {
      *
      * @param pluginName The name of the plugin.
      */
-    public PluginWatcherTask(ServerCommandSender sender, String pluginName) {
+    public PluginWatcherTask(ServerCommandSender<?> sender, String pluginName) {
         this.sender = sender;
         this.pluginName = pluginName;
         this.file = pluginManager.getPluginFile(pluginName);
@@ -71,7 +69,6 @@ public class PluginWatcherTask extends AbstractTask {
                 for (WatchEvent<?> event : key.pollEvents()) {
                     if (file.getName().equals(event.context().toString())) {
                         if (task != null) {
-                            //noinspection unchecked
                             taskManager.cancelTask(task);
                         }
 
@@ -96,8 +93,10 @@ public class PluginWatcherTask extends AbstractTask {
                     break;
                 }
             }
-        } catch (IOException | InterruptedException ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         } catch (ClosedWatchServiceException ignored) {
             //
         }

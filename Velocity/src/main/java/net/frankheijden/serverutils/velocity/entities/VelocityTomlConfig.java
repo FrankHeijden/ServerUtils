@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
@@ -21,10 +22,10 @@ public class VelocityTomlConfig implements ServerUtilsConfig {
      * Creates a new VelocityTomlConfig instance.
      */
     public VelocityTomlConfig(File file) {
-        CommentedFileConfig config = CommentedFileConfig.of(file, TomlFormat.instance());
-        config.load();
+        CommentedFileConfig conf = CommentedFileConfig.of(file, TomlFormat.instance());
+        conf.load();
 
-        this.config = config;
+        this.config = conf;
         this.file = file;
     }
 
@@ -56,7 +57,11 @@ public class VelocityTomlConfig implements ServerUtilsConfig {
 
     @Override
     public void set(String path, Object value) {
-        config.set(path, value);
+        if (value == null) {
+            config.remove(path);
+        } else {
+            config.set(path, value);
+        }
     }
 
     @Override
@@ -70,8 +75,13 @@ public class VelocityTomlConfig implements ServerUtilsConfig {
     }
 
     @Override
+    public int getInt(String path) {
+        return config.getOrElse(path, -1);
+    }
+
+    @Override
     public Collection<? extends String> getKeys() {
-        return config.valueMap().keySet();
+        return new HashSet<>(config.valueMap().keySet());
     }
 
     @Override
