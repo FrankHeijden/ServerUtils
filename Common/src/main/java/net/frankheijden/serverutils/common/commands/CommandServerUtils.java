@@ -5,7 +5,6 @@ import cloud.commandframework.CommandManager;
 import cloud.commandframework.arguments.CommandArgument;
 import cloud.commandframework.context.CommandContext;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
@@ -29,22 +28,17 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?>
 
     @Override
     public void register(CommandManager<C> manager, Command.Builder<C> builder) {
-        final List<String> pluginFileNames = plugin.getPluginManager().getPluginFileNames();
         addArgument(CommandArgument.<C, String>ofType(String.class, "jarFile")
                 .manager(manager)
-                .withSuggestionsProvider((context, s) -> pluginFileNames)
+                .withSuggestionsProvider((context, s) -> plugin.getPluginManager().getPluginFileNames())
                 .build());
-
-        final List<String> pluginNames = plugin.getPluginManager().getPluginNames();
         addArgument(CommandArgument.<C, String>ofType(String.class, "plugin")
                 .manager(manager)
-                .withSuggestionsProvider((context, s) -> pluginNames)
+                .withSuggestionsProvider((context, s) -> plugin.getPluginManager().getPluginNames())
                 .build());
-
-        final List<String> commandNames = new ArrayList<>(plugin.getPluginManager().getCommands());
         addArgument(CommandArgument.<C, String>ofType(String.class, "command")
                 .manager(manager)
-                .withSuggestionsProvider((context, s) -> commandNames)
+                .withSuggestionsProvider((context, s) -> new ArrayList<>(plugin.getPluginManager().getCommands()))
                 .build());
 
         manager.command(builder
