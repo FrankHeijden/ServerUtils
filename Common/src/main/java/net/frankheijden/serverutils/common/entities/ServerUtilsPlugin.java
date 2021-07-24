@@ -4,6 +4,8 @@ import cloud.commandframework.Command;
 import cloud.commandframework.CommandManager;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.logging.Logger;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
@@ -93,6 +95,15 @@ public abstract class ServerUtilsPlugin<P, T, C extends ServerCommandSender<S>, 
      * Enables the plugin.
      */
     public final void enable() {
+        Path dataFolder = getDataFolder().toPath();
+        if (Files.notExists(dataFolder)) {
+            try {
+                Files.createDirectories(dataFolder);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
         reload();
         enablePlugin();
         ServerUtilsApp.tryCheckForUpdates();
