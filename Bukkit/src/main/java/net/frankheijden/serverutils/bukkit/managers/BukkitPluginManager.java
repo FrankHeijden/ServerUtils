@@ -438,6 +438,11 @@ public class BukkitPluginManager implements AbstractPluginManager<Plugin> {
     }
 
     @Override
+    public Plugin getInstance(Plugin plugin) {
+        return plugin;
+    }
+
+    @Override
     public Set<String> getCommands() {
         Map<String, Command> knownCommands = getKnownCommands();
         if (knownCommands == null) return Collections.emptySet();

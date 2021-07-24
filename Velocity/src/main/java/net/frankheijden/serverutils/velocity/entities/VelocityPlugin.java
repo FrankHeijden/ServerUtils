@@ -34,7 +34,11 @@ public class VelocityPlugin extends ServerUtilsPlugin<
      */
     public VelocityPlugin(ServerUtils plugin) {
         this.plugin = plugin;
-        this.pluginManager = new VelocityPluginManager();
+        this.pluginManager = new VelocityPluginManager(
+                plugin.getProxy(),
+                plugin.getLogger(),
+                plugin.getPluginCommandManager()
+        );
         this.taskManager = new VelocityTaskManager(plugin);
         this.resourceProvider = new VelocityResourceProvider(plugin);
         this.chatProvider = new VelocityChatProvider(plugin);
@@ -64,6 +68,11 @@ public class VelocityPlugin extends ServerUtilsPlugin<
     @Override
     public Platform getPlatform() {
         return Platform.VELOCITY;
+    }
+
+    @Override
+    public PluginContainer getPlugin() {
+        return plugin.getPluginContainer();
     }
 
     @Override

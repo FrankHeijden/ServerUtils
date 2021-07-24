@@ -27,6 +27,8 @@ public abstract class ServerUtilsPlugin<P, T, C extends ServerCommandSender<S>, 
 
     public abstract Platform getPlatform();
 
+    public abstract P getPlugin();
+
     public CommandsResource getCommandsResource() {
         return commandsResource;
     }
@@ -94,6 +96,7 @@ public abstract class ServerUtilsPlugin<P, T, C extends ServerCommandSender<S>, 
         reload();
         enablePlugin();
         ServerUtilsApp.tryCheckForUpdates();
+        ServerUtilsApp.unloadServerUtilsUpdater();
     }
 
     protected void enablePlugin() {

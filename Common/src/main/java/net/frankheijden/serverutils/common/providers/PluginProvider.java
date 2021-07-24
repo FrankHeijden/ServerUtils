@@ -24,6 +24,8 @@ public interface PluginProvider<P> {
 
     P getPlugin(String pluginName);
 
+    Object getInstance(P plugin);
+
     Set<String> getCommands();
 
     /**

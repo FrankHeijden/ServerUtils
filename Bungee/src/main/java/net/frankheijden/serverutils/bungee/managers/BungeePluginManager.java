@@ -230,6 +230,11 @@ public class BungeePluginManager implements AbstractPluginManager<Plugin> {
     }
 
     @Override
+    public Plugin getInstance(Plugin plugin) {
+        return plugin;
+    }
+
+    @Override
     public Set<String> getCommands() {
         return proxy.getPluginManager().getCommands().stream()
                 .map(Map.Entry::getKey)

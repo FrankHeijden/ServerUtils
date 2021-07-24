@@ -22,12 +22,9 @@ import net.frankheijden.serverutils.common.utils.GitHubUtils;
 import net.frankheijden.serverutils.common.utils.VersionUtils;
 import net.frankheijden.serverutilsupdater.common.Updater;
 
-public class UpdateCheckerTask implements Runnable {
+public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?>, P> implements Runnable {
 
-    @SuppressWarnings("unchecked")
-    private static final ServerUtilsPlugin<Object, ?, ?, ?> plugin = ServerUtilsApp.getPlugin();
-    private static final ServerUtilsConfig config = plugin.getConfigResource().getConfig();
-
+    private final U plugin;
     private final ServerCommandSender<?> sender;
     private final boolean download;
     private final boolean install;
@@ -52,7 +49,8 @@ public class UpdateCheckerTask implements Runnable {
     private static final String UPDATER_ENABLE_ERROR = "Failed to enable ServerUtilsUpdater: {0}";
     private static final String UP_TO_DATE = "We are up-to-date!";
 
-    private UpdateCheckerTask(ServerCommandSender<?> sender, boolean download, boolean install) {
+    private UpdateCheckerTask(U plugin, ServerCommandSender<?> sender, boolean download, boolean install) {
+        this.plugin = plugin;
         this.sender = sender;
         this.download = download;
         this.install = install;
@@ -62,9 +60,14 @@ public class UpdateCheckerTask implements Runnable {
      * Checks for updates if enabled per config for the specific action.
      * Action must be 'login' or 'boot'.
      */
-    public static void tryStart(ServerCommandSender<?> sender, String action) {
+    public static <U extends ServerUtilsPlugin<P, ?, ?, ?>, P> void tryStart(
+            U plugin,
+            ServerCommandSender<?> sender,
+            String action
+    ) {
+        ServerUtilsConfig config = ServerUtilsApp.getPlugin().getConfigResource().getConfig();
         if (config.getBoolean("settings.check-updates-" + action)) {
-            start(sender, action);
+            start(plugin, sender, action);
         }
     }
 
@@ -72,8 +75,14 @@ public class UpdateCheckerTask implements Runnable {
      * Checks for updates and downloads/installs if configured.
      * Action must be 'login' or 'boot'.
      */
-    public static void start(ServerCommandSender<?> sender, String action) {
-        plugin.getTaskManager().runTaskAsynchronously(new UpdateCheckerTask(
+    public static <U extends ServerUtilsPlugin<P, ?, ?, ?>, P> void start(
+            U plugin,
+            ServerCommandSender<?> sender,
+            String action
+    ) {
+        ServerUtilsConfig config = ServerUtilsApp.getPlugin().getConfigResource().getConfig();
+        ServerUtilsApp.getPlugin().getTaskManager().runTaskAsynchronously(new UpdateCheckerTask<>(
+                plugin,
                 sender,
                 config.getBoolean("settings.download-updates-" + action),
                 config.getBoolean("settings.install-updates-" + action)
@@ -227,25 +236,26 @@ public class UpdateCheckerTask implements Runnable {
     }
 
     private void deletePlugin() {
-        plugin.getPluginManager().getPluginFile(ServerUtilsApp.getPlatformPlugin()).delete();
+        plugin.getPluginManager().getPluginFile(plugin.getPlugin()).delete();
     }
 
     private void tryReloadPlugin(File pluginFile, File updaterFile) {
         plugin.getTaskManager().runTask(() -> {
-            LoadResult<?> loadResult = plugin.getPluginManager().loadPlugin(updaterFile);
-            Updater updater = (Updater) plugin.getPluginManager().getPlugin("ServerUtilsUpdater");
-            if (!loadResult.isSuccess() && updater == null) {
+            LoadResult<P> loadResult = plugin.getPluginManager().loadPlugin(updaterFile);
+            if (!loadResult.isSuccess()) {
                 plugin.getLogger().log(Level.INFO, UPDATER_LOAD_ERROR,
                         loadResult.getResult().name());
                 return;
             }
 
-            Result result = plugin.getPluginManager().enablePlugin(updater);
+            P updaterPlugin = loadResult.get();
+            Result result = plugin.getPluginManager().enablePlugin(updaterPlugin);
             if (result != Result.SUCCESS && result != Result.ALREADY_ENABLED) {
                 plugin.getLogger().log(Level.INFO, UPDATER_ENABLE_ERROR, result.name());
                 return;
             }
 
+            Updater updater = (Updater) plugin.getPluginManager().getInstance(updaterPlugin);
             updater.update(pluginFile);
             updaterFile.delete();
         });
