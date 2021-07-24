@@ -7,13 +7,8 @@ import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.utils.ListBuilder;
 import net.frankheijden.serverutils.common.utils.ListFormat;
 
-public abstract class CommandPlugins<
-        U extends ServerUtilsPlugin<P, T, C, S>,
-        P,
-        T,
-        C extends ServerCommandSender<S>,
-        S
-        > extends ServerUtilsCommand<U, P, T, C, S> {
+public abstract class CommandPlugins<U extends ServerUtilsPlugin<P, ?, C, ?>, P, C extends ServerCommandSender<?>>
+        extends ServerUtilsCommand<U, C> {
 
     protected CommandPlugins(U plugin) {
         super(plugin, "plugins");

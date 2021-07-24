@@ -5,7 +5,6 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.plugin.meta.PluginDependency;
-import com.velocitypowered.api.scheduler.ScheduledTask;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -18,13 +17,8 @@ import net.frankheijden.serverutils.velocity.entities.VelocityCommandSender;
 import net.frankheijden.serverutils.velocity.entities.VelocityPlugin;
 import net.frankheijden.serverutils.velocity.reflection.RVelocityCommandManager;
 
-public class VelocityCommandServerUtils extends CommandServerUtils<
-        VelocityPlugin,
-        PluginContainer,
-        ScheduledTask,
-        VelocityCommandSender,
-        CommandSource
-        > {
+public class VelocityCommandServerUtils
+        extends CommandServerUtils<VelocityPlugin, PluginContainer, VelocityCommandSender> {
 
     public VelocityCommandServerUtils(VelocityPlugin plugin) {
         super(plugin);

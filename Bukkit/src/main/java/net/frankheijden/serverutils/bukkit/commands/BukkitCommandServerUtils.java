@@ -24,19 +24,11 @@ import net.frankheijden.serverutils.common.utils.ForwardFilter;
 import net.frankheijden.serverutils.common.utils.ListBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.scheduler.BukkitTask;
 
-public class BukkitCommandServerUtils extends CommandServerUtils<
-        BukkitPlugin,
-        Plugin,
-        BukkitTask,
-        BukkitCommandSender,
-        CommandSender
-        > {
+public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, Plugin, BukkitCommandSender> {
 
     private static final Map<String, ReloadHandler> supportedConfigs;
 

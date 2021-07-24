@@ -11,20 +11,12 @@ import net.frankheijden.serverutils.bungee.reflection.RPluginManager;
 import net.frankheijden.serverutils.common.commands.CommandServerUtils;
 import net.frankheijden.serverutils.common.utils.FormatBuilder;
 import net.frankheijden.serverutils.common.utils.ListBuilder;
-import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.PluginDescription;
 import net.md_5.bungee.api.plugin.PluginManager;
-import net.md_5.bungee.api.scheduler.ScheduledTask;
 
-public class BungeeCommandServerUtils extends CommandServerUtils<
-        BungeePlugin,
-        Plugin,
-        ScheduledTask,
-        BungeeCommandSender,
-        CommandSender
-        > {
+public class BungeeCommandServerUtils extends CommandServerUtils<BungeePlugin, Plugin, BungeeCommandSender> {
 
     public BungeeCommandServerUtils(BungeePlugin plugin) {
         super(plugin);

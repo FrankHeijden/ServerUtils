@@ -6,18 +6,10 @@ import cloud.commandframework.context.CommandContext;
 import net.frankheijden.serverutils.bungee.entities.BungeeCommandSender;
 import net.frankheijden.serverutils.bungee.entities.BungeePlugin;
 import net.frankheijden.serverutils.common.commands.CommandPlugins;
-import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.PluginDescription;
-import net.md_5.bungee.api.scheduler.ScheduledTask;
 
-public class BungeeCommandPlugins extends CommandPlugins<
-        BungeePlugin,
-        Plugin,
-        ScheduledTask,
-        BungeeCommandSender,
-        CommandSender
-        > {
+public class BungeeCommandPlugins extends CommandPlugins<BungeePlugin, Plugin, BungeeCommandSender> {
 
     public BungeeCommandPlugins(BungeePlugin plugin) {
         super(plugin);

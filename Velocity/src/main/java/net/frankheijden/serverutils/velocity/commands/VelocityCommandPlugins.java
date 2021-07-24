@@ -3,21 +3,13 @@ package net.frankheijden.serverutils.velocity.commands;
 import cloud.commandframework.Command;
 import cloud.commandframework.CommandManager;
 import cloud.commandframework.context.CommandContext;
-import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.PluginDescription;
-import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.frankheijden.serverutils.common.commands.CommandPlugins;
 import net.frankheijden.serverutils.velocity.entities.VelocityCommandSender;
 import net.frankheijden.serverutils.velocity.entities.VelocityPlugin;
 
-public class VelocityCommandPlugins extends CommandPlugins<
-        VelocityPlugin,
-        PluginContainer,
-        ScheduledTask,
-        VelocityCommandSender,
-        CommandSource
-        > {
+public class VelocityCommandPlugins extends CommandPlugins<VelocityPlugin, PluginContainer, VelocityCommandSender> {
 
     public VelocityCommandPlugins(VelocityPlugin plugin) {
         super(plugin);

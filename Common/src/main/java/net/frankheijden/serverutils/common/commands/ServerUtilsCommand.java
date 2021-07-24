@@ -12,22 +12,14 @@ import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 
-public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<P, T, C, S>,
-        P,
-        T,
-        C extends ServerCommandSender<S>,
-        S
-        > {
+public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?>, C extends ServerCommandSender<?>> {
 
     protected final U plugin;
     protected final String commandName;
     protected final ServerUtilsConfig commandConfig;
     protected final Map<String, CommandArgument<C, ?>> arguments;
 
-    protected ServerUtilsCommand(
-            U plugin,
-            String commandName
-    ) {
+    protected ServerUtilsCommand(U plugin, String commandName) {
         this.plugin = plugin;
         this.commandName = commandName;
         this.commandConfig = (ServerUtilsConfig) plugin.getCommandsResource().getConfig().get(commandName);

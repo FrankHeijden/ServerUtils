@@ -6,18 +6,10 @@ import cloud.commandframework.context.CommandContext;
 import net.frankheijden.serverutils.bukkit.entities.BukkitCommandSender;
 import net.frankheijden.serverutils.bukkit.entities.BukkitPlugin;
 import net.frankheijden.serverutils.common.commands.CommandPlugins;
-import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.scheduler.BukkitTask;
 
-public class BukkitCommandPlugins extends CommandPlugins<
-        BukkitPlugin,
-        Plugin,
-        BukkitTask,
-        BukkitCommandSender,
-        CommandSender
-        > {
+public class BukkitCommandPlugins extends CommandPlugins<BukkitPlugin, Plugin, BukkitCommandSender> {
 
     public BukkitCommandPlugins(BukkitPlugin plugin) {
         super(plugin);
