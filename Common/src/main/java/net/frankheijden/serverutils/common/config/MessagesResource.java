@@ -53,4 +53,11 @@ public class MessagesResource extends ServerUtilsResource {
             sender.sendMessage(plugin.getChatProvider().color(message));
         }
     }
+
+    @Override
+    public void migrate(int currentConfigVersion) {
+        if (currentConfigVersion <= 1) {
+            reset("serverutils.help.format");
+        }
+    }
 }

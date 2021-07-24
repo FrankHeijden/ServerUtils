@@ -1,25 +1,33 @@
 {
-  "serverutils": {
-    "subcommands": {
-      "enableplugin": {
-        "main": "enableplugin",
-        "aliases": ["ep"],
-        "permission": "serverutils.enableplugin",
-        "description": "Enables the specified plugin.",
-        "display-in-help": true
-      },
-      "disableplugin": {
-        "main": "disableplugin",
-        "aliases": ["dp"],
-        "permission": "serverutils.disableplugin",
-        "description": "Disables the specified plugin.",
-        "display-in-help": true
-      },
-      "reloadconfig": {
-        "main": "reloadconfig",
-        "aliases": ["rc"],
-        "permission": "serverutils.reloadconfig",
-        "description": "Reloads particular server configurations."
+  "commands": {
+    "serverutils": {
+      "subcommands": {
+        "enableplugin": {
+          "main": "enableplugin",
+          "aliases": [
+            "ep"
+          ],
+          "permission": "serverutils.enableplugin",
+          "description": "Enables the specified plugin.",
+          "display-in-help": true
+        },
+        "disableplugin": {
+          "main": "disableplugin",
+          "aliases": [
+            "dp"
+          ],
+          "permission": "serverutils.disableplugin",
+          "description": "Disables the specified plugin.",
+          "display-in-help": true
+        },
+        "reloadconfig": {
+          "main": "reloadconfig",
+          "aliases": [
+            "rc"
+          ],
+          "permission": "serverutils.reloadconfig",
+          "description": "Reloads particular server configurations."
+        }
       }
     }
   }

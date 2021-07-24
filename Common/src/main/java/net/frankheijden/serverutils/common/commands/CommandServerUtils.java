@@ -83,7 +83,7 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?>
         FormatBuilder builder = FormatBuilder.create(plugin.getMessagesResource().getMessage("serverutils.help.format"))
                 .orderedKeys("%command%", "%help%");
 
-        ServerUtilsConfig config = plugin.getCommandsResource().getConfig();
+        ServerUtilsConfig config = (ServerUtilsConfig) plugin.getCommandsResource().getConfig().get("commands");
         for (String commandName : config.getKeys()) {
             ServerUtilsConfig commandConfig = (ServerUtilsConfig) config.get(commandName);
             CommandElement commandElement = parseElement(commandConfig);

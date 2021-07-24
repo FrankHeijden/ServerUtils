@@ -1,17 +1,12 @@
 package net.frankheijden.serverutils.common.config;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
-import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.providers.ResourceProvider;
 
 /**
@@ -60,6 +55,13 @@ public interface ServerUtilsConfig {
      * @return The boolean at given path.
      */
     boolean getBoolean(String path);
+
+    /**
+     * Retrieves an integer from a path.
+     * @param path The path.
+     * @return The integer at given path.
+     */
+    int getInt(String path);
 
     /**
      * Retrieves the key nodes at the current level.
@@ -146,28 +148,13 @@ public interface ServerUtilsConfig {
     }
 
     /**
-     * Loads a resource from the jar file.
+     * Loads a resource from the jar file and writes it to the given path, applying defaults if needed.
      */
-    static <U extends ServerUtilsPlugin<P, T, C, S>, P, T, C extends ServerCommandSender<S>, S> ServerUtilsConfig load(
-            U plugin,
-            Path path,
-            String resource
+    static ServerUtilsConfig init(
+            ServerUtilsConfig def,
+            ResourceProvider provider,
+            Path path
     ) {
-        ResourceProvider provider = plugin.getResourceProvider();
-
-        // Create the platform JsonConfig by merging the platformResource with the common resource
-        JsonConfig generalConfig = new JsonConfig(JsonConfig.gson.fromJson(
-                new InputStreamReader(provider.getRawResource(resource + ".json")),
-                JsonObject.class
-        ));
-
-        String platformResource = plugin.getPlatform().name().toLowerCase(Locale.ENGLISH) + '-' + resource;
-        JsonConfig platformConfig = new JsonConfig(JsonConfig.gson.fromJson(
-                new InputStreamReader(provider.getRawResource(platformResource + ".json")),
-                JsonObject.class
-        ));
-        addDefaults(platformConfig, generalConfig);
-
         if (!Files.exists(path)) {
             try {
                 Files.createFile(path);
@@ -176,6 +163,6 @@ public interface ServerUtilsConfig {
             }
         }
 
-        return init(generalConfig, provider.load(path.toFile()));
+        return init(def, provider.load(path.toFile()));
     }
 }

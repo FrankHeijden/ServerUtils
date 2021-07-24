@@ -8,13 +8,17 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
+import net.frankheijden.serverutils.common.providers.ResourceProvider;
 
 public class JsonConfig implements ServerUtilsConfig {
 
@@ -32,11 +36,34 @@ public class JsonConfig implements ServerUtilsConfig {
         this.config = config;
     }
 
+    /**
+     * Loads a resource from the jar file.
+     */
+    public static JsonConfig load(ResourceProvider provider, ServerUtilsPlugin.Platform platform, String resourceName) {
+        // Create the platform JsonConfig by merging the platformConfig with the generalConfig
+        JsonConfig generalConfig = new JsonConfig(JsonConfig.gson.fromJson(
+                new InputStreamReader(provider.getRawResource(resourceName + ".json")),
+                JsonObject.class
+        ));
+
+        String platformResource = platform.name().toLowerCase(Locale.ENGLISH) + '-' + resourceName;
+        JsonConfig platformConfig = new JsonConfig(JsonConfig.gson.fromJson(
+                new InputStreamReader(provider.getRawResource(platformResource + ".json")),
+                JsonObject.class
+        ));
+        ServerUtilsConfig.addDefaults(platformConfig, generalConfig);
+
+        return generalConfig;
+    }
+
     public JsonObject getConfig() {
         return config;
     }
 
-    private JsonElement getJsonElement(String path) {
+    /**
+     * Retrieves the JsonElement at given path.
+     */
+    public JsonElement getJsonElement(String path) {
         JsonElement result = config;
 
         for (String memberName : path.split("\\.")) {
@@ -135,6 +162,13 @@ public class JsonConfig implements ServerUtilsConfig {
         JsonElement element = getJsonElement(path);
         if (element == null) return false;
         return element.getAsBoolean();
+    }
+
+    @Override
+    public int getInt(String path) {
+        JsonElement element = getJsonElement(path);
+        if (element == null) return -1;
+        return element.getAsNumber().intValue();
     }
 
     @Override

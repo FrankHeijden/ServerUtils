@@ -12,4 +12,9 @@ public class CommandsResource extends ServerUtilsResource {
     public CommandsResource(ServerUtilsPlugin<?, ?, ?, ?> plugin) {
         super(plugin, COMMANDS_RESOURCE);
     }
+
+    @Override
+    public void migrate(int currentConfigVersion) {
+
+    }
 }

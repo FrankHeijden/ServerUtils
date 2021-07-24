@@ -1,4 +1,5 @@
 {
+  "config-version": 1,
   "settings": {
     "disable-plugins-command": false,
     "check-updates-boot": true,

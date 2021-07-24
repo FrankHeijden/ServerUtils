@@ -9,4 +9,9 @@ public class ConfigResource extends ServerUtilsResource {
     public ConfigResource(ServerUtilsPlugin<?, ?, ?, ?> plugin) {
         super(plugin, CONFIG_RESOURCE);
     }
+
+    @Override
+    public void migrate(int currentConfigVersion) {
+
+    }
 }

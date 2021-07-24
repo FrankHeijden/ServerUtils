@@ -23,7 +23,8 @@ public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?>
     protected ServerUtilsCommand(U plugin, String commandName) {
         this.plugin = plugin;
         this.commandName = commandName;
-        this.commandConfig = (ServerUtilsConfig) plugin.getCommandsResource().getConfig().get(commandName);
+        this.commandConfig = (ServerUtilsConfig) plugin.getCommandsResource().getConfig()
+                .get("commands." + commandName);
         this.arguments = new HashMap<>();
     }
 

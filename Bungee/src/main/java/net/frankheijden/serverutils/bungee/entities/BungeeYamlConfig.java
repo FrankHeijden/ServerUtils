@@ -76,6 +76,11 @@ public class BungeeYamlConfig implements ServerUtilsConfig {
     }
 
     @Override
+    public int getInt(String path) {
+        return config.getInt(path, -1);
+    }
+
+    @Override
     public Collection<? extends String> getKeys() {
         return config.getKeys();
     }

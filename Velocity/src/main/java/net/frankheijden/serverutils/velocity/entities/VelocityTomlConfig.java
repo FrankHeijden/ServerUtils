@@ -75,6 +75,11 @@ public class VelocityTomlConfig implements ServerUtilsConfig {
     }
 
     @Override
+    public int getInt(String path) {
+        return config.getOrElse(path, -1);
+    }
+
+    @Override
     public Collection<? extends String> getKeys() {
         return new HashSet<>(config.valueMap().keySet());
     }

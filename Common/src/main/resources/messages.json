@@ -1,4 +1,5 @@
 {
+  "config-version": 2,
   "serverutils": {
     "success": "&3Successfully %action%ed &b%what%&3!",
     "warning": "&3Successfully %action%ed &b%what%&3, but with warnings.",
