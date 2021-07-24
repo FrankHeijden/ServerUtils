@@ -3,6 +3,7 @@
     "main": "%prefix%plugins",
     "aliases": ["%prefix%pl"],
     "permission": "serverutils.plugins",
+    "description": "Displays the enabled plugins.",
     "display-in-help": true,
     "flags": {
       "version": {

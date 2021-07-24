@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.frankheijden.serverutils.common.entities.AbstractResult;
 import net.frankheijden.serverutils.common.entities.CloseableResult;
 import net.frankheijden.serverutils.common.entities.LoadResult;
@@ -48,29 +49,29 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?>
 
         manager.command(builder
                 .handler(this::handleHelpCommand));
-        manager.command(parseSubcommand(builder, "help")
+        manager.command(buildSubcommand(builder, "help")
                 .handler(this::handleHelpCommand));
-        manager.command(parseSubcommand(builder, "reload")
+        manager.command(buildSubcommand(builder, "reload")
                 .handler(this::handleReload));
-        manager.command(parseSubcommand(builder, "loadplugin")
+        manager.command(buildSubcommand(builder, "loadplugin")
                 .argument(getArgument("jarFile"))
                 .handler(this::handleLoadPlugin));
-        manager.command(parseSubcommand(builder, "unloadplugin")
+        manager.command(buildSubcommand(builder, "unloadplugin")
                 .argument(getArgument("plugin"))
                 .handler(this::handleUnloadPlugin));
-        manager.command(parseSubcommand(builder, "reloadplugin")
+        manager.command(buildSubcommand(builder, "reloadplugin")
                 .argument(getArgument("plugin"))
                 .handler(this::handleReloadPlugin));
-        manager.command(parseSubcommand(builder, "watchplugin")
+        manager.command(buildSubcommand(builder, "watchplugin")
                 .argument(getArgument("plugin"))
                 .handler(this::handleWatchPlugin));
-        manager.command(parseSubcommand(builder, "unwatchplugin")
+        manager.command(buildSubcommand(builder, "unwatchplugin")
                 .argument(getArgument("plugin"))
                 .handler(this::handleUnwatchPlugin));
-        manager.command(parseSubcommand(builder, "plugininfo")
+        manager.command(buildSubcommand(builder, "plugininfo")
                 .argument(getArgument("plugin"))
                 .handler(this::handlePluginInfo));
-        manager.command(parseSubcommand(builder, "commandinfo")
+        manager.command(buildSubcommand(builder, "commandinfo")
                 .argument(getArgument("command"))
                 .handler(this::handleCommandInfo));
     }
@@ -80,26 +81,65 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?>
         plugin.getMessagesResource().sendMessage(sender, "serverutils.help.header");
 
         FormatBuilder builder = FormatBuilder.create(plugin.getMessagesResource().getMessage("serverutils.help.format"))
-                .orderedKeys("%command%", "%subcommand%", "%help%");
+                .orderedKeys("%command%", "%help%");
 
-        for (Command<C> command : plugin.getCommands()) {
-            List<CommandArgument<C, ?>> arguments = command.getArguments();
-            if (arguments.size() < 2) continue;
+        ServerUtilsConfig config = plugin.getCommandsResource().getConfig();
+        for (String commandName : config.getKeys()) {
+            ServerUtilsConfig commandConfig = (ServerUtilsConfig) config.get(commandName);
+            CommandElement commandElement = parseElement(commandConfig);
+            String shortestCommandAlias = determineShortestAlias(commandElement);
 
-            String commandName = arguments.get(0).getName();
-            StringBuilder sb = new StringBuilder();
-            for (int i = 1; i < arguments.size(); i++) {
-                CommandArgument<C, ?> argument = arguments.get(i);
-                sb.append(" ").append(argument.getName());
+            if (commandElement.shouldDisplayInHelp()) {
+                builder.add(shortestCommandAlias, commandElement.getDescription().getDescription());
             }
 
-            String subcommand = sb.toString();
-            String description = command.getComponents().get(1).getArgumentDescription().getDescription();
+            Object subcommandsObject = commandConfig.get("subcommands");
+            if (subcommandsObject instanceof ServerUtilsConfig) {
+                ServerUtilsConfig subcommandsConfig = (ServerUtilsConfig) subcommandsObject;
 
-            builder.add(commandName, subcommand, description);
+                for (String subcommandName : subcommandsConfig.getKeys()) {
+                    ServerUtilsConfig subcommandConfig = (ServerUtilsConfig) subcommandsConfig.get(subcommandName);
+                    CommandElement subcommandElement = parseElement(subcommandConfig);
+                    if (subcommandElement.shouldDisplayInHelp()) {
+                        String shortestSubcommandAlias = determineShortestAlias(subcommandElement);
+                        builder.add(
+                                shortestCommandAlias + ' ' + shortestSubcommandAlias,
+                                subcommandElement.getDescription().getDescription()
+                        );
+                    }
+                }
+            }
+
+            Object flagsObject = commandConfig.get("flags");
+            if (flagsObject instanceof ServerUtilsConfig) {
+                ServerUtilsConfig flagsConfig = (ServerUtilsConfig) flagsObject;
+
+                for (String flagName : flagsConfig.getKeys()) {
+                    ServerUtilsConfig flagConfig = (ServerUtilsConfig) flagsConfig.get(flagName);
+                    CommandElement flagElement = parseElement(flagConfig);
+                    if (flagElement.shouldDisplayInHelp()) {
+                        String shortestFlagAlias = determineShortestAlias(flagElement);
+                        String flagPrefix = "-" + (flagElement.getMain().equals(shortestFlagAlias) ? "_" : "");
+                        builder.add(
+                                shortestCommandAlias + ' ' + flagPrefix + shortestFlagAlias,
+                                flagElement.getDescription().getDescription()
+                        );
+                    }
+                }
+            }
         }
         builder.build().forEach(msg -> plugin.getMessagesResource().sendRawMessage(sender, msg));
         plugin.getMessagesResource().sendMessage(sender, "serverutils.help.footer");
+    }
+
+    private String determineShortestAlias(CommandElement element) {
+        String shortestAlias = element.getMain();
+        for (String alias : element.getAliases()) {
+            if (alias.length() < shortestAlias.length()) {
+                shortestAlias = alias;
+            }
+        }
+        return shortestAlias;
     }
 
     private void handleReload(CommandContext<C> context) {

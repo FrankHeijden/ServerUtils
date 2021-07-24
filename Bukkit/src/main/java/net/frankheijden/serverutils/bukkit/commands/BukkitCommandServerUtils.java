@@ -71,13 +71,13 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
                 .withSuggestionsProvider((context, s) -> supportedConfigNames)
                 .build());
 
-        manager.command(parseSubcommand(builder, "enableplugin")
+        manager.command(buildSubcommand(builder, "enableplugin")
                 .argument(getArgument("plugin"))
                 .handler(this::handleEnablePlugin));
-        manager.command(parseSubcommand(builder, "disableplugin")
+        manager.command(buildSubcommand(builder, "disableplugin")
                 .argument(getArgument("plugin"))
                 .handler(this::handleDisablePlugin));
-        manager.command(parseSubcommand(builder, "reloadconfig")
+        manager.command(buildSubcommand(builder, "reloadconfig")
                 .argument(getArgument("config"))
                 .handler(this::handleReloadConfig));
     }

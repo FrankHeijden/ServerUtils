@@ -26,7 +26,7 @@
     },
     "help": {
       "header": "&8&m-------------=&r&8[ &b&lServerUtils Help&r &8]&m=---------------",
-      "format": "&8/&3%command%&b%subcommand% &f(&7%help%&f)",
+      "format": "&8/&3%command% &8(&b%help%&8)",
       "footer": "&8&m-------------------------------------------------"
     },
     "plugins": {

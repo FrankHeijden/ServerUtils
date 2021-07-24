@@ -5,6 +5,7 @@ import cloud.commandframework.Command;
 import cloud.commandframework.CommandManager;
 import cloud.commandframework.arguments.CommandArgument;
 import cloud.commandframework.arguments.flags.CommandFlag;
+import cloud.commandframework.permission.CommandPermission;
 import cloud.commandframework.permission.Permission;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,28 +53,47 @@ public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?>
     }
 
     /**
+     * Builds a subcommand from the config.
+     */
+    public Command.Builder<C> buildSubcommand(Command.Builder<C> builder, String subcommandName) {
+        CommandElement subcommand = parseSubcommand(subcommandName);
+        return builder
+                .literal(subcommand.getMain(), subcommand.getDescription(), subcommand.getAliases())
+                .permission(subcommand.getPermission());
+    }
+
+    /**
+     * Parses a command from the config.
+     */
+    public CommandElement parseElement(ServerUtilsConfig elementConfig) {
+        String main = applyPrefix(elementConfig.getString("main"));
+        String descriptionString = elementConfig.getString("description");
+        ArgumentDescription description = descriptionString == null ? null : ArgumentDescription.of(descriptionString);
+        CommandPermission permission = Permission.of(elementConfig.getString("permission"));
+        boolean displayInHelp = elementConfig.getBoolean("display-in-help");
+        String[] aliases = elementConfig.getStringList("aliases").stream()
+                .map(this::applyPrefix)
+                .toArray(String[]::new);
+
+        return new CommandElement(main, description, permission, displayInHelp, aliases);
+    }
+
+    /**
      * Parses a subcommand from the config.
      */
-    public Command.Builder<C> parseSubcommand(Command.Builder<C> builder, String subcommand) {
-        ServerUtilsConfig subcommandConfig = (ServerUtilsConfig) commandConfig.get("subcommands." + subcommand);
-        return builder
-                .literal(
-                        subcommandConfig.getString("main"),
-                        ArgumentDescription.of(subcommandConfig.getString("description")),
-                        subcommandConfig.getStringList("aliases").toArray(new String[0])
-                )
-                .permission(subcommandConfig.getString("permission"));
+    public CommandElement parseSubcommand(String subcommandName) {
+        return parseElement((ServerUtilsConfig) commandConfig.get("subcommands." + subcommandName));
     }
 
     /**
      * Parses a flag from the config.
      */
-    public CommandFlag<Void> parseFlag(String flag) {
-        ServerUtilsConfig flagConfig = (ServerUtilsConfig) commandConfig.get("flags." + flag);
-        return CommandFlag.newBuilder(flagConfig.getString("main"))
-                .withAliases(flagConfig.getStringList("aliases").toArray(new String[0]))
-                .withPermission(Permission.of(flagConfig.getString("permission")))
-                .withDescription(ArgumentDescription.of(flagConfig.getString("description")))
+    public CommandFlag<Void> parseFlag(String flagName) {
+        CommandElement flag = parseElement((ServerUtilsConfig) commandConfig.get("flags." + flagName));
+        return CommandFlag.newBuilder(flag.getMain())
+                .withAliases(flag.getAliases())
+                .withPermission(flag.getPermission())
+                .withDescription(flag.getDescription())
                 .build();
     }
 
@@ -94,5 +114,48 @@ public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?>
         }
 
         return str.replace("%prefix%", prefixChar);
+    }
+
+    protected static class CommandElement {
+
+        private final String main;
+        private final ArgumentDescription description;
+        private final CommandPermission permission;
+        private final boolean displayInHelp;
+        private final String[] aliases;
+
+        public CommandElement(
+                String main,
+                ArgumentDescription description,
+                CommandPermission permission,
+                boolean displayInHelp,
+                String... aliases
+        ) {
+            this.main = main;
+            this.description = description;
+            this.permission = permission;
+            this.displayInHelp = displayInHelp;
+            this.aliases = aliases;
+        }
+
+        public String getMain() {
+            return main;
+        }
+
+        public ArgumentDescription getDescription() {
+            return description;
+        }
+
+        public CommandPermission getPermission() {
+            return permission;
+        }
+
+        public boolean shouldDisplayInHelp() {
+            return displayInHelp;
+        }
+
+        public String[] getAliases() {
+            return aliases;
+        }
     }
 }
