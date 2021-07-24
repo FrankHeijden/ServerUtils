@@ -62,6 +62,10 @@ public class VelocityPluginCommandManager {
      * Saves the map to the {@link Path} it was loaded from.
      */
     public void save() throws IOException {
+        if (Files.notExists(path.getParent())) {
+            Files.createDirectories(path.getParent());
+        }
+
         Files.write(
                 path,
                 gson.toJson(pluginCommands.asMap()).getBytes(StandardCharsets.UTF_8),
