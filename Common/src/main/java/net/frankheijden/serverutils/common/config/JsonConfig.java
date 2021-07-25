@@ -83,10 +83,18 @@ public class JsonConfig implements ServerUtilsConfig {
         if (jsonElement == null) return null;
         if (jsonElement.isJsonPrimitive()) {
             JsonPrimitive jsonPrimitive = (JsonPrimitive) jsonElement;
-            if (jsonPrimitive.isBoolean()) return jsonPrimitive.getAsBoolean();
-            else if (jsonPrimitive.isNumber()) return jsonPrimitive.getAsNumber().intValue();
-            else if (jsonPrimitive.isString()) return jsonPrimitive.getAsString();
-            else {
+            if (jsonPrimitive.isBoolean()) {
+                return jsonPrimitive.getAsBoolean();
+            } else if (jsonPrimitive.isNumber()) {
+                double d = jsonPrimitive.getAsDouble();
+                if (d == Math.rint(d)) {
+                    return (int) d;
+                } else {
+                    return d;
+                }
+            } else if (jsonPrimitive.isString()) {
+                return jsonPrimitive.getAsString();
+            } else {
                 throw new IllegalStateException("Not a JSON Primitive: " + jsonPrimitive);
             }
         } else if (jsonElement.isJsonArray()) {
