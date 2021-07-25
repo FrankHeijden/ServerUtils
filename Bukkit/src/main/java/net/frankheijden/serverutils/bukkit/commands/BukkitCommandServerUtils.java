@@ -84,7 +84,7 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
 
     private void handleEnablePlugin(CommandContext<BukkitCommandSender> context) {
         BukkitCommandSender sender = context.getSender();
-        String pluginName = context.get("pluginName");
+        String pluginName = context.get("plugin");
 
         Result result = plugin.getPluginManager().enablePlugin(pluginName);
         result.sendTo(sender, "enabl", pluginName);
@@ -92,7 +92,7 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
 
     private void handleDisablePlugin(CommandContext<BukkitCommandSender> context) {
         BukkitCommandSender sender = context.getSender();
-        String pluginName = context.get("pluginName");
+        String pluginName = context.get("plugin");
 
         Result result = plugin.getPluginManager().disablePlugin(pluginName);
         result.sendTo(sender, "disabl", pluginName);
