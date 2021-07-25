@@ -106,10 +106,12 @@ public class BukkitPlugin extends ServerUtilsPlugin<
     protected void reloadPlugin() {
         if (getConfigResource().getConfig().getBoolean("settings.disable-plugins-command")) {
             if (registeredPluginsCommand) {
+                BukkitPluginManager.unregisterCommands("pl", "plugins");
                 plugin.restoreBukkitPluginCommand();
                 this.registeredPluginsCommand = false;
             }
         } else {
+            BukkitPluginManager.unregisterCommands("pl", "plugins");
             new BukkitCommandPlugins(this).register(commandManager);
             this.registeredPluginsCommand = true;
         }
