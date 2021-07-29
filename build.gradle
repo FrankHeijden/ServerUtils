@@ -19,14 +19,19 @@ subprojects {
     repositories {
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        maven { url 'https://repo.aikar.co/content/groups/aikar/' }
         maven { url 'https://repo.incendo.org/content/repositories/snapshots' }
         maven { url 'https://papermc.io/repo/repository/maven-public/' }
+        maven { url 'https://libraries.minecraft.net' }
     }
 
     dependencies {
         implementation 'com.github.FrankHeijden.cloud:cloud-core:fea4605277'
+        implementation 'com.github.FrankHeijden.cloud:cloud-brigadier:fea4605277'
         implementation 'com.github.FrankHeijden:MinecraftReflection:1.0.0'
+        implementation 'com.google.guava:guava:30.1.1-jre'
+        implementation 'com.google.code.gson:gson:2.8.6'
+        implementation 'me.lucko:commodore:1.10'
+        compileOnly 'com.mojang:brigadier:1.0.17'
 
         testCompile 'org.assertj:assertj-core:3.18.1'
         testCompile 'org.junit.jupiter:junit-jupiter-api:5.7.0'
@@ -55,6 +60,28 @@ subprojects {
 
     shadowJar {
         exclude 'com/mojang/**'
+        exclude 'javax/annotation/**'
+        exclude 'org/checkerframework/**'
+        exclude 'com/google/errorprone/**'
+        exclude 'com/google/j2objc/**'
+        exclude 'com/google/thirdparty/**'
+        exclude 'com/google/common/annotations/**'
+        exclude 'com/google/common/base/**'
+        exclude 'com/google/common/cache/**'
+        exclude 'com/google/common/collect/**'
+        exclude 'com/google/common/escape/**'
+        exclude 'com/google/common/eventbus/**'
+        exclude 'com/google/common/hash/**'
+        exclude 'com/google/common/html/**'
+        exclude 'com/google/common/io/**'
+        exclude 'com/google/common/math/**'
+        exclude 'com/google/common/net/**'
+        exclude 'com/google/common/primitives/**'
+        exclude 'com/google/common/reflect/**'
+        exclude 'com/google/common/util/**'
+        exclude 'com/google/common/xml/**'
+        relocate 'com.google.gson', dependencyDir + '.gson'
+        relocate 'com.google.common.graph', dependencyDir + '.common.graph'
         relocate 'dev.frankheijden.minecraftreflection', dependencyDir + '.minecraftreflection'
         relocate 'cloud.commandframework', dependencyDir + '.cloud'
         relocate 'io.leangen.geantyref', dependencyDir + '.typetoken'

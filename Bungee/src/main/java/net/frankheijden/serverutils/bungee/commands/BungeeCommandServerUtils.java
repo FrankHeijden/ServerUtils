@@ -19,17 +19,16 @@ import net.md_5.bungee.api.plugin.PluginManager;
 public class BungeeCommandServerUtils extends CommandServerUtils<BungeePlugin, Plugin, BungeeCommandSender> {
 
     public BungeeCommandServerUtils(BungeePlugin plugin) {
-        super(plugin);
+        super(plugin, Plugin[]::new);
     }
 
     @Override
     protected FormatBuilder createPluginInfo(
             FormatBuilder builder,
             Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
-            String pluginName
+            Plugin bungeePlugin
     ) {
-        Plugin container = plugin.getPluginManager().getPlugin(pluginName);
-        PluginDescription desc = container.getDescription();
+        PluginDescription desc = bungeePlugin.getDescription();
 
         return builder
                 .add("Name", desc.getName())

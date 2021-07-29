@@ -5,12 +5,12 @@ import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 
 public abstract class ServerUtilsResource {
 
-    protected final ServerUtilsPlugin<?, ?, ?, ?> plugin;
+    protected final ServerUtilsPlugin<?, ?, ?, ?, ?> plugin;
     protected final ServerUtilsConfig config;
     protected final JsonConfig defaultConfig;
 
     protected ServerUtilsResource(
-            ServerUtilsPlugin<?, ?, ?, ?> plugin,
+            ServerUtilsPlugin<?, ?, ?, ?, ?> plugin,
             ServerUtilsConfig config,
             JsonConfig defaultConfig
     ) {
@@ -19,7 +19,7 @@ public abstract class ServerUtilsResource {
         this.defaultConfig = defaultConfig;
     }
 
-    protected ServerUtilsResource(ServerUtilsPlugin<?, ?, ?, ?> plugin, String resourceName) {
+    protected ServerUtilsResource(ServerUtilsPlugin<?, ?, ?, ?, ?> plugin, String resourceName) {
         this.plugin = plugin;
         this.defaultConfig = JsonConfig.load(plugin.getResourceProvider(), plugin.getPlatform(), resourceName);
         this.config = ServerUtilsConfig.init(

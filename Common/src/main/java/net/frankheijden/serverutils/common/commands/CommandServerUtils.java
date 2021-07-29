@@ -4,14 +4,22 @@ import cloud.commandframework.Command;
 import cloud.commandframework.CommandManager;
 import cloud.commandframework.arguments.CommandArgument;
 import cloud.commandframework.context.CommandContext;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
+import net.frankheijden.serverutils.common.commands.arguments.JarFilesArgument;
+import net.frankheijden.serverutils.common.commands.arguments.PluginArgument;
+import net.frankheijden.serverutils.common.commands.arguments.PluginsArgument;
 import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
-import net.frankheijden.serverutils.common.entities.AbstractResult;
-import net.frankheijden.serverutils.common.entities.CloseableResult;
-import net.frankheijden.serverutils.common.entities.LoadResult;
-import net.frankheijden.serverutils.common.entities.Result;
+import net.frankheijden.serverutils.common.entities.results.AbstractResult;
+import net.frankheijden.serverutils.common.entities.results.CloseablePluginResults;
+import net.frankheijden.serverutils.common.entities.results.PluginResult;
+import net.frankheijden.serverutils.common.entities.results.PluginResults;
+import net.frankheijden.serverutils.common.entities.results.Result;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
@@ -19,23 +27,21 @@ import net.frankheijden.serverutils.common.utils.FormatBuilder;
 import net.frankheijden.serverutils.common.utils.ListBuilder;
 import net.frankheijden.serverutils.common.utils.ListFormat;
 
-public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?>, P, C extends ServerCommandSender<?>>
+public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?, ?>, P, C extends ServerCommandSender<?>>
         extends ServerUtilsCommand<U, C> {
 
-    protected CommandServerUtils(U plugin) {
+    private final IntFunction<P[]> arrayCreator;
+
+    protected CommandServerUtils(U plugin, IntFunction<P[]> arrayCreator) {
         super(plugin, "serverutils");
+        this.arrayCreator = arrayCreator;
     }
 
     @Override
     public void register(CommandManager<C> manager, Command.Builder<C> builder) {
-        addArgument(CommandArgument.<C, String>ofType(String.class, "jarFile")
-                .manager(manager)
-                .withSuggestionsProvider((context, s) -> plugin.getPluginManager().getPluginFileNames())
-                .build());
-        addArgument(CommandArgument.<C, String>ofType(String.class, "plugin")
-                .manager(manager)
-                .withSuggestionsProvider((context, s) -> plugin.getPluginManager().getPluginNames())
-                .build());
+        addArgument(new JarFilesArgument<>(true, "jarFiles", plugin));
+        addArgument(new PluginsArgument<>(true, "plugins", plugin, arrayCreator));
+        addArgument(new PluginArgument<>(true, "plugin", plugin));
         addArgument(CommandArgument.<C, String>ofType(String.class, "command")
                 .manager(manager)
                 .withSuggestionsProvider((context, s) -> new ArrayList<>(plugin.getPluginManager().getCommands()))
@@ -48,13 +54,13 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?>
         manager.command(buildSubcommand(builder, "reload")
                 .handler(this::handleReload));
         manager.command(buildSubcommand(builder, "loadplugin")
-                .argument(getArgument("jarFile"))
+                .argument(getArgument("jarFiles"))
                 .handler(this::handleLoadPlugin));
         manager.command(buildSubcommand(builder, "unloadplugin")
-                .argument(getArgument("plugin"))
+                .argument(getArgument("plugins"))
                 .handler(this::handleUnloadPlugin));
         manager.command(buildSubcommand(builder, "reloadplugin")
-                .argument(getArgument("plugin"))
+                .argument(getArgument("plugins"))
                 .handler(this::handleReloadPlugin));
         manager.command(buildSubcommand(builder, "watchplugin")
                 .argument(getArgument("plugin"))
@@ -146,69 +152,78 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?>
 
     private void handleLoadPlugin(CommandContext<C> context) {
         C sender = context.getSender();
-        String jarFile = context.get("jarFile");
+        List<File> jarFiles = Arrays.asList(context.get("jarFiles"));
 
-        AbstractPluginManager<P> pluginManager = plugin.getPluginManager();
-        LoadResult<P> loadResult = pluginManager.loadPlugin(jarFile);
-        if (!loadResult.isSuccess()) {
-            loadResult.getResult().sendTo(sender, "load", jarFile);
+        AbstractPluginManager<P, ?> pluginManager = plugin.getPluginManager();
+        PluginResults<P> loadResults = pluginManager.loadPlugins(jarFiles);
+        if (!loadResults.isSuccess()) {
+            PluginResult<P> failedResult = loadResults.last();
+            failedResult.getResult().sendTo(sender, "load", failedResult.getPluginId());
             return;
         }
 
-        P loadedPlugin = loadResult.get();
-        Result result = pluginManager.enablePlugin(loadedPlugin);
-        result.sendTo(sender, "load", pluginManager.getPluginName(loadedPlugin));
+        PluginResults<P> enableResults = pluginManager.enablePlugins(loadResults.getPlugins());
+        enableResults.sendTo(sender, "load");
     }
 
     private void handleUnloadPlugin(CommandContext<C> context) {
         C sender = context.getSender();
-        String pluginName = context.get("plugin");
+        List<P> plugins = Arrays.asList(context.get("plugins"));
 
-        CloseableResult result = plugin.getPluginManager().unloadPlugin(pluginName);
-        result.getResult().sendTo(sender, "unload", pluginName);
-        result.tryClose();
+        PluginResults<P> disableResults = plugin.getPluginManager().disablePlugins(plugins);
+        for (PluginResult<P> disableResult : disableResults.getResults()) {
+            if (!disableResult.isSuccess() && disableResult.getResult() != Result.ALREADY_DISABLED) {
+                disableResult.getResult().sendTo(sender, "disabl", disableResult.getPluginId());
+                return;
+            }
+        }
+
+        CloseablePluginResults<P> unloadResults = plugin.getPluginManager().unloadPlugins(plugins);
+        unloadResults.tryClose();
+        unloadResults.sendTo(sender, "unload");
     }
 
     private void handleReloadPlugin(CommandContext<C> context) {
         C sender = context.getSender();
-        String pluginName = context.get("plugin");
+        List<P> plugins = Arrays.asList(context.get("plugins"));
 
-        Result result = plugin.getPluginManager().reloadPlugin(pluginName);
-        result.sendTo(sender, "reload", pluginName);
+        PluginResults<P> reloadResult = plugin.getPluginManager().reloadPlugins(plugins);
+        reloadResult.sendTo(sender, "reload");
     }
 
     private void handleWatchPlugin(CommandContext<C> context) {
         C sender = context.getSender();
-        String pluginName = context.get("plugin");
+        P pluginArg = context.get("plugin");
 
-        AbstractResult result = plugin.getPluginManager().watchPlugin(sender, pluginName);
-        result.sendTo(sender, "watch", pluginName);
+        AbstractPluginManager<P, ?> pluginManager = plugin.getPluginManager();
+        String pluginId = pluginManager.getPluginId(pluginArg);
+
+        AbstractResult result = pluginManager.watchPlugin(sender, pluginId);
+        result.sendTo(sender, "watch", pluginId);
     }
 
     private void handleUnwatchPlugin(CommandContext<C> context) {
         C sender = context.getSender();
-        String pluginName = context.get("plugin");
+        P pluginArg = context.get("plugin");
 
-        AbstractResult result = plugin.getPluginManager().unwatchPlugin(pluginName);
-        result.sendTo(sender, "unwatch", pluginName);
+        AbstractPluginManager<P, ?> pluginManager = plugin.getPluginManager();
+        String pluginId = pluginManager.getPluginId(pluginArg);
+
+        AbstractResult result = pluginManager.unwatchPlugin(pluginId);
+        result.sendTo(sender, "unwatch", pluginId);
     }
 
     private void handlePluginInfo(CommandContext<C> context) {
         C sender = context.getSender();
-        String pluginName = context.get("plugin");
+        P pluginArg = context.get("plugin");
 
-        if (this.plugin.getPluginManager().getPlugin(pluginName) == null) {
-            Result.NOT_EXISTS.sendTo(sender, "fetch", pluginName);
-            return;
-        }
-
-        createInfo(sender, "plugininfo", pluginName, this::createPluginInfo);
+        createInfo(sender, "plugininfo", pluginArg, this::createPluginInfo);
     }
 
     protected abstract FormatBuilder createPluginInfo(
             FormatBuilder builder,
             Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
-            String pluginName
+            P pluginArg
     );
 
     private void handleCommandInfo(CommandContext<C> context) {
@@ -229,7 +244,7 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?>
             String commandName
     );
 
-    private void createInfo(C sender, String command, String item, InfoCreator creator) {
+    private <T> void createInfo(C sender, String command, T item, InfoCreator<T> creator) {
         String messagePrefix = "serverutils." + command;
         String format = plugin.getMessagesResource().getMessage(messagePrefix + ".format");
         String listFormatString = plugin.getMessagesResource().getMessage(messagePrefix + ".list_format");
@@ -256,12 +271,12 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?>
         plugin.getMessagesResource().sendMessage(sender, messagePrefix + ".footer");
     }
 
-    private interface InfoCreator {
+    private interface InfoCreator<T> {
 
         FormatBuilder createInfo(
                 FormatBuilder builder,
                 Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
-                String item
+                T item
         );
     }
 }

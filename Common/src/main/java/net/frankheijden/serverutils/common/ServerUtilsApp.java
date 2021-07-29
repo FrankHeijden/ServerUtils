@@ -3,13 +3,15 @@ package net.frankheijden.serverutils.common;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import net.frankheijden.serverutils.common.entities.CloseableResult;
-import net.frankheijden.serverutils.common.entities.Result;
+import java.util.Optional;
+import net.frankheijden.serverutils.common.entities.ServerUtilsPluginDescription;
+import net.frankheijden.serverutils.common.entities.results.CloseablePluginResult;
+import net.frankheijden.serverutils.common.entities.results.PluginResult;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.tasks.UpdateCheckerTask;
 
-public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S>, P, T, C extends ServerCommandSender<S>, S> {
+public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S, D>, P, T, C extends ServerCommandSender<S>, S, D extends ServerUtilsPluginDescription> {
 
     public static final int BSTATS_METRICS_ID = 7790;
     public static final String VERSION = "{version}";
@@ -25,7 +27,14 @@ public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S>, P, T, C ext
         this.plugin = plugin;
     }
 
-    public static <U extends ServerUtilsPlugin<P, T, C, S>, P, T, C extends ServerCommandSender<S>, S> void init(
+    public static <
+            U extends ServerUtilsPlugin<P, T, C, S, D>,
+            P,
+            T,
+            C extends ServerCommandSender<S>,
+            S,
+            D extends ServerUtilsPluginDescription
+        > void init(
             Object platformPlugin,
             U plugin
     ) {
@@ -42,30 +51,31 @@ public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S>, P, T, C ext
     /**
      * Unloads the ServerUtilsUpdater and deletes the file.
      */
-    public static <U extends ServerUtilsPlugin<P, T, C, S>, P, T, C extends ServerCommandSender<S>, S>
-        void unloadServerUtilsUpdater() {
-        U plugin = getPlugin();
+    public static <P> void unloadServerUtilsUpdater() {
+        ServerUtilsPlugin<P, ?, ?, ?, ?> plugin = getPlugin();
         plugin.getTaskManager().runTaskLater(() -> {
             String updaterName = plugin.getPlatform() == ServerUtilsPlugin.Platform.VELOCITY
                     ? "serverutilsupdater"
                     : "ServerUtilsUpdater";
-            P updaterPlugin = plugin.getPluginManager().getPlugin(updaterName);
-            if (updaterPlugin == null) return;
+            Optional<P> updaterPluginOptional = plugin.getPluginManager().getPlugin(updaterName);
+            if (!updaterPluginOptional.isPresent()) return;
+            P updaterPlugin = updaterPluginOptional.get();
 
             @SuppressWarnings("VariableDeclarationUsageDistance")
             File file = plugin.getPluginManager().getPluginFile(updaterPlugin);
-            Result result = plugin.getPluginManager().disablePlugin(updaterPlugin);
-            if (result != Result.SUCCESS) {
-                result.sendTo(plugin.getChatProvider().getConsoleSender(), "disabl", updaterName);
+            PluginResult<P> disableResult = plugin.getPluginManager().disablePlugin(updaterPlugin);
+            if (!disableResult.isSuccess()) {
+                disableResult.getResult().sendTo(plugin.getChatProvider().getConsoleSender(), "disabl", updaterName);
                 return;
             }
 
-            CloseableResult closeableResult = plugin.getPluginManager().unloadPlugin(updaterName);
-            if (closeableResult.getResult() != Result.SUCCESS) {
-                closeableResult.getResult().sendTo(plugin.getChatProvider().getConsoleSender(), "unload", updaterName);
+            CloseablePluginResult<P> unloadResult = plugin.getPluginManager().unloadPlugin(disableResult.getPlugin());
+            if (!unloadResult.isSuccess()) {
+                unloadResult.getResult().sendTo(plugin.getChatProvider().getConsoleSender(), "unload", updaterName);
+                return;
             }
 
-            closeableResult.tryClose();
+            unloadResult.tryClose();
 
             if (Files.exists(file.toPath())) {
                 try {
@@ -82,8 +92,14 @@ public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S>, P, T, C ext
     }
 
     @SuppressWarnings("unchecked")
-    public static <U extends ServerUtilsPlugin<P, T, C, S>, P, T, C extends ServerCommandSender<S>, S>
-        U getPlugin() {
+    public static <
+            U extends ServerUtilsPlugin<P, T, C, S, D>,
+            P,
+            T,
+            C extends ServerCommandSender<S>,
+            S,
+            D extends ServerUtilsPluginDescription
+        > U getPlugin() {
         return (U) instance.plugin;
     }
 }

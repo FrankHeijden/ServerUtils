@@ -8,7 +8,7 @@
             "ep"
           ],
           "permission": "serverutils.enableplugin",
-          "description": "Enables the specified plugin.",
+          "description": "Enables the specified plugin(s).",
           "display-in-help": true
         },
         "disableplugin": {
@@ -17,7 +17,7 @@
             "dp"
           ],
           "permission": "serverutils.disableplugin",
-          "description": "Disables the specified plugin.",
+          "description": "Disables the specified plugin(s).",
           "display-in-help": true
         },
         "reloadconfig": {

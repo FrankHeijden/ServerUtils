@@ -5,7 +5,7 @@ import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.entities.AbstractTask;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
-import net.frankheijden.serverutils.common.entities.WatchResult;
+import net.frankheijden.serverutils.common.entities.results.WatchResult;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.managers.AbstractTaskManager;
 import net.frankheijden.serverutils.common.providers.ChatProvider;
@@ -28,8 +28,8 @@ public class PluginWatcherTask extends AbstractTask {
         StandardWatchEventKinds.ENTRY_DELETE
     };
 
-    private final ServerUtilsPlugin<?, ?, ?, ?> plugin = ServerUtilsApp.getPlugin();
-    private final AbstractPluginManager<?> pluginManager = plugin.getPluginManager();
+    private final ServerUtilsPlugin<?, ?, ?, ?, ?> plugin = ServerUtilsApp.getPlugin();
+    private final AbstractPluginManager<?, ?> pluginManager = plugin.getPluginManager();
     private final ChatProvider<?, ?> chatProvider = plugin.getChatProvider();
     @SuppressWarnings("rawtypes")
     private final AbstractTaskManager taskManager = plugin.getTaskManager();
@@ -52,7 +52,7 @@ public class PluginWatcherTask extends AbstractTask {
     public PluginWatcherTask(ServerCommandSender<?> sender, String pluginName) {
         this.sender = sender;
         this.pluginName = pluginName;
-        this.file = pluginManager.getPluginFile(pluginName);
+        this.file = pluginManager.getPluginFile(pluginName).orElse(null);
         this.run = new AtomicBoolean(true);
     }
 
@@ -82,7 +82,7 @@ public class PluginWatcherTask extends AbstractTask {
                                 send(WatchResult.CHANGE);
 
                                 pluginManager.reloadPlugin(pluginName);
-                                file = pluginManager.getPluginFile(pluginName);
+                                file = pluginManager.getPluginFile(pluginName).orElse(null);
                             }
                         }, 10L);
                     }

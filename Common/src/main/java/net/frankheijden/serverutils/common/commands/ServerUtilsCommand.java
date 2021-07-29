@@ -13,7 +13,7 @@ import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 
-public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?>, C extends ServerCommandSender<?>> {
+public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?, ?>, C extends ServerCommandSender<?>> {
 
     protected final U plugin;
     protected final String commandName;

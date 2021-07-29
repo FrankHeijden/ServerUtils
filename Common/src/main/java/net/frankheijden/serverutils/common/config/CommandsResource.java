@@ -9,7 +9,7 @@ public class CommandsResource extends ServerUtilsResource {
 
     private static final String COMMANDS_RESOURCE = "commands";
 
-    public CommandsResource(ServerUtilsPlugin<?, ?, ?, ?> plugin) {
+    public CommandsResource(ServerUtilsPlugin<?, ?, ?, ?, ?> plugin) {
         super(plugin, COMMANDS_RESOURCE);
     }
 

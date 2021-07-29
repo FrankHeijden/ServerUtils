@@ -41,21 +41,21 @@
           "main": "loadplugin",
           "aliases": ["lp"],
           "permission": "serverutils.loadplugin",
-          "description": "Loads the specified jar file as a plugin.",
+          "description": "Loads the specified jar file(s).",
           "display-in-help": true
         },
         "unloadplugin": {
           "main": "unloadplugin",
           "aliases": ["up"],
           "permission": "serverutils.unloadplugin",
-          "description": "Disables and unloads the specified plugin.",
+          "description": "Disables and unloads the specified plugin(s).",
           "display-in-help": true
         },
         "reloadplugin": {
           "main": "reloadplugin",
           "aliases": ["rp"],
           "permission": "serverutils.reloadplugin",
-          "description": "Reloads the specified plugin.",
+          "description": "Reloads the specified plugin(s).",
           "display-in-help": true
         },
         "watchplugin": {

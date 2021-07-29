@@ -1,6 +1,7 @@
-package net.frankheijden.serverutils.common.entities;
+package net.frankheijden.serverutils.common.entities.results;
 
 import net.frankheijden.serverutils.common.ServerUtilsApp;
+import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 
 /**
  * An enum containing possible results.

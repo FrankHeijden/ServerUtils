@@ -1,4 +1,6 @@
-package net.frankheijden.serverutils.common.entities;
+package net.frankheijden.serverutils.common.entities.results;
+
+import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 
 public interface AbstractResult {
 

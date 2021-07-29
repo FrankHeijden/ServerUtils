@@ -39,7 +39,7 @@
         <property name="fileExtensions" value="java"/>
         <!-- changed from 100 to 120, loosen a bit -->
         <property name="max" value="120"/>
-        <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
+        <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://|^[ ]*(public )?(static )?(final )?(abstract )?class.*"/>
     </module>
 
     <module name="TreeWalker">

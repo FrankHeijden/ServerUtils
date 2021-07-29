@@ -9,6 +9,7 @@ import dev.frankheijden.minecraftreflection.MinecraftReflection;
 import java.lang.reflect.Array;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 public class RVelocityEventManager {
@@ -27,9 +28,14 @@ public class RVelocityEventManager {
      * Retrieves the registrations from a plugin for a specific event.
      */
     @SuppressWarnings("unchecked")
-    public static List<Object> getRegistrationsByPlugin(EventManager manager, Object plugin, Class<?> eventClass) {
+    public static List<Object> getRegistrationsByPlugins(
+            EventManager manager,
+            List<Object> plugins,
+            Class<?> eventClass
+    ) {
         return (List<Object>) getHandlersByType(manager).get(eventClass).stream()
-                .filter(r -> RHandlerRegistration.getPlugin(r).getInstance().orElse(null) == plugin)
+                .filter(r -> plugins.contains(RHandlerRegistration.getPlugin(r).getInstance().orElse(null)))
+                .sorted(reflection.get(manager, "handlerComparator"))
                 .collect(Collectors.toList());
     }
 
@@ -48,26 +54,27 @@ public class RVelocityEventManager {
     /**
      * Fires an event specifically for one plugin.
      */
-    public static <E> CompletableFuture<E> fireForPlugin(
+    public static <E> CompletableFuture<E> fireForPlugins(
             EventManager manager,
             E event,
-            Object plugin
+            List<Object> pluginInstances
     ) {
-        List<Object> registrations = getRegistrationsByPlugin(manager, plugin, event.getClass());
+        List<Object> registrations = getRegistrationsByPlugins(manager, pluginInstances, event.getClass());
         CompletableFuture<E> future = new CompletableFuture<>();
 
         Object registrationsEmptyArray = Array.newInstance(RHandlerRegistration.reflection.getClazz(), 0);
         Class<?> registrationsArrayClass = registrationsEmptyArray.getClass();
 
-        reflection.invoke(
+        ExecutorService executor = reflection.invoke(manager, "getAsyncExecutor");
+        executor.execute(() -> reflection.invoke(
                 manager,
                 "fire",
                 ClassObject.of(CompletableFuture.class, future),
                 ClassObject.of(Object.class, event),
                 ClassObject.of(int.class, 0),
-                ClassObject.of(boolean.class, false),
+                ClassObject.of(boolean.class, true),
                 ClassObject.of(registrationsArrayClass, registrations.toArray((Object[]) registrationsEmptyArray))
-        );
+        ));
 
         return future;
     }

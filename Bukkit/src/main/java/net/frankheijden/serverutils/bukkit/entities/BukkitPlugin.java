@@ -1,5 +1,6 @@
 package net.frankheijden.serverutils.bukkit.entities;
 
+import cloud.commandframework.bukkit.CloudBukkitCapabilities;
 import cloud.commandframework.execution.CommandExecutionCoordinator;
 import cloud.commandframework.paper.PaperCommandManager;
 import java.io.File;
@@ -16,12 +17,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
-public class BukkitPlugin extends ServerUtilsPlugin<
-        Plugin,
-        BukkitTask,
-        BukkitCommandSender,
-        CommandSender
-        > {
+public class BukkitPlugin extends ServerUtilsPlugin<Plugin, BukkitTask, BukkitCommandSender, CommandSender, BukkitPluginDescription> {
 
     private final ServerUtils plugin;
     private final BukkitPluginManager pluginManager;
@@ -45,8 +41,9 @@ public class BukkitPlugin extends ServerUtilsPlugin<
 
     @Override
     protected PaperCommandManager<BukkitCommandSender> newCommandManager() {
+        PaperCommandManager<BukkitCommandSender> commandManager;
         try {
-            return new PaperCommandManager<>(
+            commandManager = new PaperCommandManager<>(
                     plugin,
                     CommandExecutionCoordinator.simpleCoordinator(),
                     chatProvider::get,
@@ -55,6 +52,17 @@ public class BukkitPlugin extends ServerUtilsPlugin<
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+
+        if (commandManager.queryCapability(CloudBukkitCapabilities.BRIGADIER)) {
+            commandManager.registerBrigadier();
+            handleBrigadier(commandManager.brigadierManager());
+        }
+
+        if (commandManager.queryCapability(CloudBukkitCapabilities.ASYNCHRONOUS_COMPLETION)) {
+            commandManager.registerAsynchronousCompletions();
+        }
+
+        return commandManager;
     }
 
     @Override

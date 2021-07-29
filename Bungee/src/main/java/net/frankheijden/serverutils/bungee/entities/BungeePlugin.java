@@ -15,12 +15,7 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 
-public class BungeePlugin extends ServerUtilsPlugin<
-        Plugin,
-        ScheduledTask,
-        BungeeCommandSender,
-        CommandSender
-        > {
+public class BungeePlugin extends ServerUtilsPlugin<Plugin, ScheduledTask, BungeeCommandSender, CommandSender, BungeePluginDescription> {
 
     private final ServerUtils plugin;
     private final BungeePluginManager pluginManager;

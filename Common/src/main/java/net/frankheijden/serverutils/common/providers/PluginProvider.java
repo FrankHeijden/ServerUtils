@@ -4,11 +4,14 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
+import net.frankheijden.serverutils.common.entities.ServerUtilsPluginDescription;
+import net.frankheijden.serverutils.common.entities.exceptions.InvalidPluginDescriptionException;
 
-public interface PluginProvider<P> {
+public interface PluginProvider<P, D extends ServerUtilsPluginDescription> {
 
     default File getPluginsFolder() {
         return ServerUtilsApp.getPlugin().getDataFolder().getParentFile();
@@ -16,13 +19,43 @@ public interface PluginProvider<P> {
 
     List<P> getPlugins();
 
-    String getPluginName(P plugin);
+    default String getPluginId(P plugin) {
+        return getLoadedPluginDescription(plugin).getId();
+    }
 
-    File getPluginFile(P plugin);
+    default File getPluginFile(P plugin) {
+        return getLoadedPluginDescription(plugin).getFile();
+    }
 
-    File getPluginFile(String pluginName);
+    /**
+     * Attempts to find the file for a given plugin id.
+     */
+    default Optional<File> getPluginFile(String pluginId) {
+        for (File file : getPluginJars()) {
+            Optional<D> pluginDescriptionOptional;
+            try {
+                pluginDescriptionOptional = getPluginDescription(file);
+            } catch (InvalidPluginDescriptionException ex) {
+                continue;
+            }
 
-    P getPlugin(String pluginName);
+            if (pluginDescriptionOptional.isPresent() && pluginDescriptionOptional.get().getId().equals(pluginId)) {
+                return Optional.of(file);
+            }
+        }
+        return Optional.empty();
+    }
+
+    Optional<P> getPlugin(String pluginId);
+
+    D getLoadedPluginDescription(P plugin);
+
+    default Optional<D> getPluginDescription(String pluginId) throws InvalidPluginDescriptionException {
+        Optional<File> fileOptional = getPluginFile(pluginId);
+        return fileOptional.flatMap(this::getPluginDescription);
+    }
+
+    Optional<D> getPluginDescription(File file) throws InvalidPluginDescriptionException;
 
     Object getInstance(P plugin);
 
@@ -34,7 +67,7 @@ public interface PluginProvider<P> {
      */
     default List<P> getPluginsSorted() {
         List<P> plugins = getPlugins();
-        plugins.sort(Comparator.comparing(this::getPluginName));
+        plugins.sort(Comparator.comparing(this::getPluginId));
         return plugins;
     }
 
@@ -44,7 +77,7 @@ public interface PluginProvider<P> {
      */
     default List<String> getPluginNames() {
         return getPlugins().stream()
-                .map(this::getPluginName)
+                .map(this::getPluginId)
                 .collect(Collectors.toList());
     }
 

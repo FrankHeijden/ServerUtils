@@ -2,6 +2,7 @@ package net.frankheijden.serverutils.common.entities;
 
 import cloud.commandframework.Command;
 import cloud.commandframework.CommandManager;
+import cloud.commandframework.brigadier.CloudBrigadierManager;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,6 +10,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.logging.Logger;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
+import net.frankheijden.serverutils.common.commands.brigadier.BrigadierHandler;
 import net.frankheijden.serverutils.common.config.CommandsResource;
 import net.frankheijden.serverutils.common.config.ConfigResource;
 import net.frankheijden.serverutils.common.config.MessagesResource;
@@ -19,7 +21,7 @@ import net.frankheijden.serverutils.common.providers.ChatProvider;
 import net.frankheijden.serverutils.common.providers.ResourceProvider;
 import net.frankheijden.serverutils.common.utils.FileUtils;
 
-public abstract class ServerUtilsPlugin<P, T, C extends ServerCommandSender<S>, S> {
+public abstract class ServerUtilsPlugin<P, T, C extends ServerCommandSender<S>, S, D extends ServerUtilsPluginDescription> {
 
     private final UpdateManager updateManager = new UpdateManager();
     private CommandsResource commandsResource;
@@ -43,7 +45,7 @@ public abstract class ServerUtilsPlugin<P, T, C extends ServerCommandSender<S>, 
         return messagesResource;
     }
 
-    public abstract AbstractPluginManager<P> getPluginManager();
+    public abstract AbstractPluginManager<P, D> getPluginManager();
 
     public abstract AbstractTaskManager<T> getTaskManager();
 
@@ -90,6 +92,11 @@ public abstract class ServerUtilsPlugin<P, T, C extends ServerCommandSender<S>, 
     }
 
     protected abstract CommandManager<C> newCommandManager();
+
+    protected void handleBrigadier(CloudBrigadierManager<C, ?> brigadierManager) {
+        BrigadierHandler<C, P> handler = new BrigadierHandler<>(brigadierManager);
+        handler.registerTypes();
+    }
 
     /**
      * Enables the plugin.

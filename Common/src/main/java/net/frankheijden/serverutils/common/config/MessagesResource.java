@@ -8,7 +8,7 @@ public class MessagesResource extends ServerUtilsResource {
 
     public static final String MESSAGES_RESOURCE = "messages";
 
-    public MessagesResource(ServerUtilsPlugin<?, ?, ?, ?> plugin) {
+    public MessagesResource(ServerUtilsPlugin<?, ?, ?, ?, ?> plugin) {
         super(plugin, MESSAGES_RESOURCE);
     }
 
