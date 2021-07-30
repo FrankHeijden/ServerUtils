@@ -6,9 +6,11 @@ import cloud.commandframework.arguments.parser.ArgumentParser;
 import cloud.commandframework.context.CommandContext;
 import cloud.commandframework.exceptions.parsing.NoInputProvidedException;
 import io.leangen.geantyref.TypeToken;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.Set;
 import java.util.function.IntFunction;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
@@ -21,13 +23,12 @@ public class PluginsArgument<C extends ServerCommandSender<?>, P> extends Comman
     public PluginsArgument(
             boolean required,
             String name,
-            ServerUtilsPlugin<P, ?, C, ?, ?> plugin,
-            IntFunction<P[]> arrayCreator
+            PluginsParser<C, P> parser
     ) {
         super(
                 required,
                 name,
-                new PluginsParser<>(plugin, arrayCreator),
+                parser,
                 "",
                 new TypeToken<P[]>() {},
                 null
@@ -38,10 +39,23 @@ public class PluginsArgument<C extends ServerCommandSender<?>, P> extends Comman
 
         private final ServerUtilsPlugin<P, ?, C, ?, ?> plugin;
         private final IntFunction<P[]> arrayCreator;
+        private final String commandConfigPath;
 
         public PluginsParser(ServerUtilsPlugin<P, ?, C, ?, ?> plugin, IntFunction<P[]> arrayCreator) {
+            this(plugin, arrayCreator, null);
+        }
+
+        /**
+         * Constructs a new PluginsParser.
+         */
+        public PluginsParser(
+                ServerUtilsPlugin<P, ?, C, ?, ?> plugin,
+                IntFunction<P[]> arrayCreator,
+                String commandConfigPath
+        ) {
             this.plugin = plugin;
             this.arrayCreator = arrayCreator;
+            this.commandConfigPath = commandConfigPath;
         }
 
         @Override
@@ -50,8 +64,13 @@ public class PluginsArgument<C extends ServerCommandSender<?>, P> extends Comman
                 return ArgumentParseResult.failure(new NoInputProvidedException(PluginsParser.class, context));
             }
 
-            P[] plugins = arrayCreator.apply(inputQueue.size());
-            for (int i = 0; i < plugins.length; i++) {
+            Set<String> flags = plugin.getCommandsResource().getAllFlagAliases(commandConfigPath + ".flags.force");
+
+            int queueSize = inputQueue.size();
+            List<P> plugins = new ArrayList<>(queueSize);
+            for (int i = 0; i < queueSize; i++) {
+                if (flags.contains(inputQueue.peek())) continue;
+
                 Optional<P> pluginOptional = plugin.getPluginManager().getPlugin(inputQueue.peek());
                 if (!pluginOptional.isPresent()) {
                     return ArgumentParseResult.failure(new IllegalArgumentException(
@@ -60,10 +79,10 @@ public class PluginsArgument<C extends ServerCommandSender<?>, P> extends Comman
                 }
 
                 inputQueue.remove();
-                plugins[i] = pluginOptional.get();
+                plugins.add(pluginOptional.get());
             }
 
-            return ArgumentParseResult.success(plugins);
+            return ArgumentParseResult.success(plugins.stream().toArray(arrayCreator));
         }
 
         @Override

@@ -4,7 +4,7 @@ version = rootProject.version
 archivesBaseName = rootProject.name + '-Bukkit'
 
 dependencies {
-    implementation 'com.github.FrankHeijden.cloud:cloud-paper:fea4605277'
+    implementation "com.github.FrankHeijden.cloud:cloud-paper:${rootProject.cloudVersion}"
     implementation 'org.bstats:bstats-bukkit:2.2.1'
     implementation project(":Common")
     compileOnly 'com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT'

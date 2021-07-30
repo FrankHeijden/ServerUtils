@@ -13,6 +13,13 @@
     "invalid_description": "&cAn error occurred while %action%ing &4%what%&c, plugin doesn't have a valid description!",
     "invalid_plugin": "&cAn error occurred while %action%ing &4%what%&c, plugin is invalid!",
     "unknown_dependency": "&cAn error occurred while %action%ing &4%what%&c, plugin has a dependeny which is not loaded: &4%arg%",
+    "depending_plugins": {
+      "prefix": "&cPlugin &4%what%&c has depending plugins: ",
+      "format": "&4%plugin%",
+      "separator": "&c, ",
+      "last_separator": " &cand ",
+      "override": "&cUse \"&4/%command%&c\" to force command execution."
+    },
     "watcher": {
       "start": "&3Started watching &b%what%&3!",
       "change": "&3Change detected for plugin &b%what%&3, reloading now...",

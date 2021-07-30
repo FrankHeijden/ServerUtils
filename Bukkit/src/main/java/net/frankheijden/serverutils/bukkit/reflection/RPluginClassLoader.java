@@ -1,7 +1,9 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
+import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
 import java.util.Map;
+import org.bukkit.plugin.PluginLoader;
 
 public class RPluginClassLoader {
 
@@ -23,12 +25,23 @@ public class RPluginClassLoader {
         }
     }
 
+    public static PluginLoader getLoader(ClassLoader loader) {
+        if (loader == null) return null;
+        return reflection.get(loader, "loader");
+    }
+
+    public static ClassLoader getLibraryLoader(ClassLoader loader) {
+        if (loader == null && MinecraftReflectionVersion.MINOR <= 16) return null;
+        return reflection.get(loader, "libraryLoader");
+    }
+
     /**
      * Clears the plugin fields from the specified PluginClassLoader.
      * @param pluginLoader The plugin loader instance.
      */
     public static void clearPluginClassLoader(Object pluginLoader) {
         if (pluginLoader == null) return;
+
         reflection.set(pluginLoader, "plugin", null);
         reflection.set(pluginLoader, "pluginInit", null);
     }

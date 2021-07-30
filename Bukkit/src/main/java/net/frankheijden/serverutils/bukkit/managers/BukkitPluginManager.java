@@ -131,16 +131,17 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
                 RSimplePluginManager.getPlugins(Bukkit.getPluginManager()).remove(plugin);
                 RSimplePluginManager.removeLookupName(Bukkit.getPluginManager(), pluginId);
 
-                ClassLoader loader = RJavaPlugin.getClassLoader(plugin);
-                RPluginClassLoader.clearClassLoader(loader);
-                addIfInstance(closeables, (Closeable) () -> {
-                    Map<String, Class<?>> classes = RPluginClassLoader.getClasses(loader);
-                    getPluginLoader(getPluginFile(plugin)).ifPresent(pluginLoader -> {
-                        RJavaPluginLoader.removeClasses(pluginLoader, classes.keySet());
-                    });
-                });
-                addIfInstance(closeables, loader);
-                addIfInstance(closeables, RJavaPlugin.clearJavaPlugin(plugin));
+                ClassLoader classLoader = plugin.getClass().getClassLoader();
+                RPluginClassLoader.clearClassLoader(classLoader);
+
+                PluginLoader loader = RPluginClassLoader.getLoader(classLoader);
+                Map<String, Class<?>> classes = RPluginClassLoader.getClasses(classLoader);
+                RJavaPluginLoader.removeClasses(loader, classes.keySet());
+
+                RJavaPlugin.clearJavaPlugin(plugin);
+
+                addIfInstance(closeables, RPluginClassLoader.getLibraryLoader(classLoader));
+                addIfInstance(closeables, classLoader);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return unloadResults.addResult(pluginId, Result.ERROR);

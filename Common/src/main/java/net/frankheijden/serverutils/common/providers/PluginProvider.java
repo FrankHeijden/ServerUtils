@@ -1,6 +1,7 @@
 package net.frankheijden.serverutils.common.providers;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -44,6 +45,22 @@ public interface PluginProvider<P, D extends ServerUtilsPluginDescription> {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Retrieves plugins which depend on the given plugin.
+     */
+    default List<P> getPluginsDependingOn(String pluginId) {
+        List<P> plugins = new ArrayList<>();
+
+        for (P loadedPlugin : getPlugins()) {
+            ServerUtilsPluginDescription description = getLoadedPluginDescription(loadedPlugin);
+            if (description.getDependencies().contains(pluginId)) {
+                plugins.add(loadedPlugin);
+            }
+        }
+
+        return plugins;
     }
 
     Optional<P> getPlugin(String pluginId);

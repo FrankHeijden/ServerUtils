@@ -19,6 +19,7 @@ import net.frankheijden.serverutils.bukkit.reflection.RDedicatedServer;
 import net.frankheijden.serverutils.bukkit.utils.ReloadHandler;
 import net.frankheijden.serverutils.bukkit.utils.VersionReloadHandler;
 import net.frankheijden.serverutils.common.commands.CommandServerUtils;
+import net.frankheijden.serverutils.common.commands.arguments.PluginsArgument;
 import net.frankheijden.serverutils.common.entities.results.PluginResults;
 import net.frankheijden.serverutils.common.utils.FormatBuilder;
 import net.frankheijden.serverutils.common.utils.ForwardFilter;
@@ -76,7 +77,11 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
                 .argument(getArgument("plugins"))
                 .handler(this::handleEnablePlugin));
         manager.command(buildSubcommand(builder, "disableplugin")
-                .argument(getArgument("plugins"))
+                .argument(new PluginsArgument<>(
+                        true,
+                        "plugins",
+                        new PluginsArgument.PluginsParser<>(plugin, arrayCreator, getRawPath("disableplugin"))
+                ))
                 .handler(this::handleDisablePlugin));
         manager.command(buildSubcommand(builder, "reloadconfig")
                 .argument(getArgument("config"))
@@ -94,6 +99,10 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
     private void handleDisablePlugin(CommandContext<BukkitCommandSender> context) {
         BukkitCommandSender sender = context.getSender();
         List<Plugin> plugins = Arrays.asList(context.get("plugins"));
+
+        if (checkDependingPlugins(context, sender, plugins, "disableplugin")) {
+            return;
+        }
 
         PluginResults<Plugin> result = plugin.getPluginManager().disablePlugins(plugins);
         result.sendTo(sender, "disabl");

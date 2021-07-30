@@ -49,14 +49,32 @@
           "aliases": ["up"],
           "permission": "serverutils.unloadplugin",
           "description": "Disables and unloads the specified plugin(s).",
-          "display-in-help": true
+          "display-in-help": true,
+          "flags": {
+            "force": {
+              "main": "force",
+              "aliases": ["f"],
+              "permission": "serverutils.unloadplugin",
+              "description": "Force disable and unload the specified plugin(s).",
+              "display-in-help": false
+            }
+          }
         },
         "reloadplugin": {
           "main": "reloadplugin",
           "aliases": ["rp"],
           "permission": "serverutils.reloadplugin",
           "description": "Reloads the specified plugin(s).",
-          "display-in-help": true
+          "display-in-help": true,
+          "flags": {
+            "force": {
+              "main": "force",
+              "aliases": ["f"],
+              "permission": "serverutils.reloadplugin",
+              "description": "Force reloads the specified plugin(s).",
+              "display-in-help": false
+            }
+          }
         },
         "watchplugin": {
           "main": "watchplugin",

@@ -1,10 +1,10 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
+import dev.frankheijden.minecraftreflection.exceptions.MinecraftReflectionException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import dev.frankheijden.minecraftreflection.exceptions.MinecraftReflectionException;
 import org.bukkit.plugin.java.JavaPluginLoader;
 
 public class RJavaPluginLoader {
