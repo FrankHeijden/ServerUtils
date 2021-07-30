@@ -123,6 +123,9 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
             String pluginId = getPluginId(plugin);
             Bukkit.getPluginManager().callEvent(new BukkitPluginUnloadEvent(plugin, PluginEvent.Stage.PRE));
 
+            RCraftingManager.removeRecipesFor(plugin);
+            unregisterCommands(plugin);
+
             List<Closeable> closeables = new ArrayList<>();
             try {
                 RSimplePluginManager.getPlugins(Bukkit.getPluginManager()).remove(plugin);
