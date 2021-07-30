@@ -21,11 +21,15 @@ public class BrigadierHandler<C extends ServerCommandSender<?>, P> {
     public void registerTypes() {
         brigadierManager.registerMapping(
                 new TypeToken<JarFilesArgument.JarFilesParser<C>>() {},
-                builder -> builder.toConstant(StringArgumentType.greedyString())
+                builder -> builder
+                        .cloudSuggestions()
+                        .toConstant(StringArgumentType.greedyString())
         );
         brigadierManager.registerMapping(
                 new TypeToken<PluginsArgument.PluginsParser<C, P>>() {},
-                builder -> builder.toConstant(StringArgumentType.greedyString())
+                builder -> builder
+                        .cloudSuggestions()
+                        .toConstant(StringArgumentType.greedyString())
         );
     }
 }
