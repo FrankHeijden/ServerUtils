@@ -4,10 +4,10 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,7 +21,6 @@ import net.frankheijden.serverutils.bungee.events.BungeePluginDisableEvent;
 import net.frankheijden.serverutils.bungee.events.BungeePluginEnableEvent;
 import net.frankheijden.serverutils.bungee.events.BungeePluginLoadEvent;
 import net.frankheijden.serverutils.bungee.events.BungeePluginUnloadEvent;
-import net.frankheijden.serverutils.bungee.reflection.RLibraryLoader;
 import net.frankheijden.serverutils.bungee.reflection.RPluginClassLoader;
 import net.frankheijden.serverutils.bungee.reflection.RPluginManager;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPluginDescription;
@@ -34,6 +33,7 @@ import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.PluginDescription;
+import net.md_5.bungee.api.plugin.PluginManager;
 import org.yaml.snakeyaml.Yaml;
 
 public class BungeePluginManager extends AbstractPluginManager<Plugin, BungeePluginDescription> {
@@ -72,35 +72,25 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin, BungeePlu
     public PluginResults<Plugin> loadPluginDescriptions(List<BungeePluginDescription> descriptions) {
         PluginResults<Plugin> loadResults = new PluginResults<>();
 
+        PluginManager proxyPluginManager = proxy.getPluginManager();
+        Map<String, PluginDescription> toLoad = RPluginManager.getToLoad(proxyPluginManager);
+        if (toLoad == null) toLoad = new HashMap<>(descriptions.size());
+
         for (BungeePluginDescription description : descriptions) {
             PluginDescription desc = description.getDescription();
-            Plugin plugin;
+            toLoad.put(desc.getName(), desc);
+        }
 
-            try {
-                Object libraryLoader = RPluginManager.getLibraryLoader(proxy.getPluginManager());
-                ClassLoader classLoader = RLibraryLoader.createLoader(libraryLoader, desc);
-                URLClassLoader loader = (URLClassLoader) RPluginClassLoader.newInstance(
-                        proxy,
-                        desc,
-                        desc.getFile(),
-                        classLoader
-                );
+        RPluginManager.setToLoad(proxyPluginManager, toLoad);
+        proxyPluginManager.loadPlugins();
 
-                Class<?> main = loader.loadClass(desc.getMain());
-                plugin = (Plugin) main.getDeclaredConstructor().newInstance();
+        for (BungeePluginDescription description : descriptions) {
+            Optional<Plugin> pluginOptional = getPlugin(description.getId());
+            if (!pluginOptional.isPresent()) return loadResults.addResult(description.getId(), Result.ERROR);
 
-                RPluginManager.getPlugins(proxy.getPluginManager()).put(description.getId(), plugin);
-                proxy.getPluginManager().callEvent(new BungeePluginLoadEvent(plugin, PluginEvent.Stage.PRE));
-                plugin.onLoad();
-            } catch (Throwable th) {
-                proxy.getLogger().log(Level.WARNING, "Error loading plugin " + description.getId(), th);
-                return loadResults.addResult(description.getId(), Result.ERROR);
-            }
-
-            proxy.getLogger().log(Level.INFO, "Loaded plugin {0} version {1} by {2}", new Object[] {
-                    desc.getName(), desc.getVersion(), desc.getAuthor()
-            });
-            proxy.getPluginManager().callEvent(new BungeePluginLoadEvent(plugin, PluginEvent.Stage.POST));
+            Plugin plugin = pluginOptional.get();
+            proxyPluginManager.callEvent(new BungeePluginLoadEvent(plugin, PluginEvent.Stage.PRE));
+            proxyPluginManager.callEvent(new BungeePluginLoadEvent(plugin, PluginEvent.Stage.POST));
             loadResults.addResult(description.getId(), plugin);
         }
 
@@ -134,7 +124,7 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin, BungeePlu
 
     @Override
     public boolean isPluginEnabled(String pluginId) {
-        return proxy.getPluginManager().getPlugin(pluginId) != null;
+        return false; // Not supported on BungeeCord.
     }
 
     @Override
@@ -170,11 +160,12 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin, BungeePlu
             proxy.getPluginManager().unregisterCommands(plugin);
             proxy.getPluginManager().unregisterListeners(plugin);
             proxy.getScheduler().cancel(plugin);
+            plugin.getExecutorService().shutdown();
 
             List<Closeable> closeables = new ArrayList<>();
             try {
                 RPluginManager.clearPlugin(proxy.getPluginManager(), plugin);
-                addIfInstance(closeables, RPluginClassLoader.getPluginClassLoader(plugin));
+                addIfInstance(closeables, RPluginClassLoader.removePluginClassLoader(plugin));
                 addIfInstance(closeables, plugin.getClass().getClassLoader());
             } catch (Exception ex) {
                 ex.printStackTrace();

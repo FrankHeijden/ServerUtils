@@ -60,11 +60,7 @@ public class CloseablePluginResults<T> extends PluginResults<T> implements Close
      */
     public void tryClose() {
         try {
-            for (PluginResult<T> pluginResult : this) {
-                if (pluginResult instanceof CloseablePluginResult) {
-                    ((CloseablePluginResult<T>) pluginResult).close();
-                }
-            }
+            close();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -77,5 +73,6 @@ public class CloseablePluginResults<T> extends PluginResults<T> implements Close
                 ((CloseablePluginResult<T>) pluginResult).close();
             }
         }
+        System.gc();
     }
 }
