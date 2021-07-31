@@ -2,6 +2,7 @@ package net.frankheijden.serverutils.bukkit;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import net.frankheijden.serverutils.bukkit.entities.BukkitPlugin;
 import net.frankheijden.serverutils.bukkit.managers.BukkitPluginManager;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
@@ -65,14 +66,14 @@ public class ServerUtils extends JavaPlugin {
                 String commandString = StringUtils.join(":", split, 1);
                 PluginCommand pluginCommand = Bukkit.getPluginCommand(commandString);
 
-                Plugin plugin = getPlugin().getPluginManager().getPlugin(split[0]);
-                if (plugin == null) {
+                Optional<Plugin> pluginOptional = getPlugin().getPluginManager().getPlugin(split[0]);
+                if (!pluginOptional.isPresent()) {
                     getLogger().warning("Unknown plugin '" + split[0] + "' in disabled-commands!");
                     continue;
                 } else if (pluginCommand == null) {
                     getLogger().warning("Unknown command '" + commandString + "' in disabled-commands!");
                     continue;
-                } else if (!plugin.getName().equalsIgnoreCase(pluginCommand.getPlugin().getName())) {
+                } else if (pluginOptional.get().getName().equalsIgnoreCase(pluginCommand.getPlugin().getName())) {
                     // No output here, plugin didn't match!
                     continue;
                 }

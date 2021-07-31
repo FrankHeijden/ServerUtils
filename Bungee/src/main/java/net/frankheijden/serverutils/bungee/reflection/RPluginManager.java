@@ -6,6 +6,7 @@ import dev.frankheijden.minecraftreflection.MinecraftReflection;
 import net.frankheijden.serverutils.common.utils.MapUtils;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.api.plugin.PluginDescription;
 import org.yaml.snakeyaml.Yaml;
 
 public class RPluginManager {
@@ -26,16 +27,20 @@ public class RPluginManager {
         MapUtils.remove(reflection.get(instance, "toLoad"), pluginName);
     }
 
-    public static Map<String, Plugin> getPlugins(Object instance) {
-        return reflection.get(instance, "plugins");
-    }
-
     public static Yaml getYaml(Object instance) {
         return reflection.get(instance, "yaml");
     }
 
     public static Map<String, Command> getCommands(Object instance) throws IllegalAccessException {
         return reflection.get(instance, "commandMap");
+    }
+
+    public static Map<String, PluginDescription> getToLoad(Object pluginManager) {
+        return reflection.get(pluginManager, "toLoad");
+    }
+
+    public static void setToLoad(Object pluginManager, Map<String, PluginDescription> toLoad) {
+        reflection.set(pluginManager, "toLoad", toLoad);
     }
 
     /**
@@ -52,9 +57,5 @@ public class RPluginManager {
             if (entry.getValue().equals(cmd)) return entry.getKey();
         }
         return null;
-    }
-
-    public static Object getLibraryLoader(Object instance) {
-        return reflection.get(instance, "libraryLoader");
     }
 }

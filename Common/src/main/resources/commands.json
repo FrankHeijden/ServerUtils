@@ -41,29 +41,56 @@
           "main": "loadplugin",
           "aliases": ["lp"],
           "permission": "serverutils.loadplugin",
-          "description": "Loads the specified jar file as a plugin.",
+          "description": "Loads the specified jar file(s).",
           "display-in-help": true
         },
         "unloadplugin": {
           "main": "unloadplugin",
           "aliases": ["up"],
           "permission": "serverutils.unloadplugin",
-          "description": "Disables and unloads the specified plugin.",
-          "display-in-help": true
+          "description": "Disables and unloads the specified plugin(s).",
+          "display-in-help": true,
+          "flags": {
+            "force": {
+              "main": "force",
+              "aliases": ["f"],
+              "permission": "serverutils.unloadplugin",
+              "description": "Force disable and unload the specified plugin(s).",
+              "display-in-help": false
+            }
+          }
         },
         "reloadplugin": {
           "main": "reloadplugin",
           "aliases": ["rp"],
           "permission": "serverutils.reloadplugin",
-          "description": "Reloads the specified plugin.",
-          "display-in-help": true
+          "description": "Reloads the specified plugin(s).",
+          "display-in-help": true,
+          "flags": {
+            "force": {
+              "main": "force",
+              "aliases": ["f"],
+              "permission": "serverutils.reloadplugin",
+              "description": "Force reloads the specified plugin(s).",
+              "display-in-help": false
+            }
+          }
         },
         "watchplugin": {
           "main": "watchplugin",
           "aliases": ["wp"],
           "permission": "serverutils.watchplugin",
-          "description": "Watches the specified plugin for changes.",
-          "display-in-help": true
+          "description": "Watches the specified plugin(s) for changes.",
+          "display-in-help": true,
+          "flags": {
+            "force": {
+              "main": "force",
+              "aliases": ["f"],
+              "permission": "serverutils.watchplugin",
+              "description": "Force watches the specified plugin(s) for changes.",
+              "display-in-help": false
+            }
+          }
         },
         "unwatchplugin": {
           "main": "unwatchplugin",

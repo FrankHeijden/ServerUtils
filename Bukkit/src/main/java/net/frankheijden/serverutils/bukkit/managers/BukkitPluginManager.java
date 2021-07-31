@@ -9,10 +9,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.frankheijden.serverutils.bukkit.entities.BukkitLoadResult;
+import net.frankheijden.serverutils.bukkit.entities.BukkitPluginDescription;
 import net.frankheijden.serverutils.bukkit.events.BukkitPluginDisableEvent;
 import net.frankheijden.serverutils.bukkit.events.BukkitPluginEnableEvent;
 import net.frankheijden.serverutils.bukkit.events.BukkitPluginLoadEvent;
@@ -24,8 +25,10 @@ import net.frankheijden.serverutils.bukkit.reflection.RJavaPlugin;
 import net.frankheijden.serverutils.bukkit.reflection.RJavaPluginLoader;
 import net.frankheijden.serverutils.bukkit.reflection.RPluginClassLoader;
 import net.frankheijden.serverutils.bukkit.reflection.RSimplePluginManager;
-import net.frankheijden.serverutils.common.entities.CloseableResult;
-import net.frankheijden.serverutils.common.entities.Result;
+import net.frankheijden.serverutils.common.entities.results.CloseablePluginResults;
+import net.frankheijden.serverutils.common.entities.results.PluginResults;
+import net.frankheijden.serverutils.common.entities.results.Result;
+import net.frankheijden.serverutils.common.entities.exceptions.InvalidPluginDescriptionException;
 import net.frankheijden.serverutils.common.events.PluginEvent;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import org.bukkit.Bukkit;
@@ -35,11 +38,11 @@ import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.UnknownDependencyException;
 
-public class BukkitPluginManager implements AbstractPluginManager<Plugin> {
+public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPluginDescription> {
 
     private static BukkitPluginManager instance;
 
@@ -51,122 +54,105 @@ public class BukkitPluginManager implements AbstractPluginManager<Plugin> {
         return instance;
     }
 
-    /**
-     * Loads the specified file as a plugin.
-     * @param jarFile The name of the file in the plugins/ folder.
-     * @return The result of the loading procedure.
-     */
     @Override
-    public BukkitLoadResult loadPlugin(String jarFile) {
-        return loadPlugin(new File(getPluginsFolder(), jarFile));
-    }
+    public PluginResults<Plugin> loadPluginDescriptions(List<BukkitPluginDescription> descriptions) {
+        PluginResults<Plugin> pluginResults = new PluginResults<>();
 
-    /**
-     * Loads the specified file as a plugin.
-     * @param file The file to be loaded.
-     * @return The result of the loading procedure.
-     */
-    @Override
-    public BukkitLoadResult loadPlugin(File file) {
-        if (!file.exists()) return new BukkitLoadResult(Result.NOT_EXISTS);
+        for (BukkitPluginDescription description : descriptions) {
+            String pluginId = description.getId();
 
-        Plugin loadedPlugin = getLoadedPlugin(file);
-        if (loadedPlugin != null) return new BukkitLoadResult(Result.ALREADY_LOADED);
-
-        Plugin plugin;
-        try {
-            plugin = Bukkit.getPluginManager().loadPlugin(file);
-        } catch (InvalidDescriptionException ex) {
-            return new BukkitLoadResult(Result.INVALID_DESCRIPTION);
-        } catch (UnknownDependencyException ex) {
-            return new BukkitLoadResult(Result.UNKNOWN_DEPENDENCY.arg(ex.getMessage()));
-        } catch (InvalidPluginException ex) {
-            if (ex.getCause() instanceof IllegalArgumentException) {
-                IllegalArgumentException e = (IllegalArgumentException) ex.getCause();
-                if (e.getMessage().equalsIgnoreCase("Plugin already initialized!")) {
-                    return new BukkitLoadResult(Result.ALREADY_ENABLED);
+            Plugin plugin;
+            try {
+                plugin = Bukkit.getPluginManager().loadPlugin(description.getFile());
+            } catch (InvalidDescriptionException ex) {
+                return pluginResults.addResult(pluginId, Result.INVALID_DESCRIPTION);
+            } catch (UnknownDependencyException ex) {
+                return pluginResults.addResult(pluginId, Result.UNKNOWN_DEPENDENCY.arg(ex.getMessage()));
+            } catch (InvalidPluginException ex) {
+                if (ex.getCause() instanceof IllegalArgumentException) {
+                    IllegalArgumentException e = (IllegalArgumentException) ex.getCause();
+                    if (e.getMessage().equalsIgnoreCase("Plugin already initialized!")) {
+                        return pluginResults.addResult(pluginId, Result.ALREADY_ENABLED);
+                    }
                 }
+                ex.printStackTrace();
+                return pluginResults.addResult(pluginId, Result.ERROR);
             }
-            ex.printStackTrace();
-            return new BukkitLoadResult(Result.ERROR);
+
+            if (plugin == null) return pluginResults.addResult(pluginId, Result.INVALID_PLUGIN);
+            Bukkit.getPluginManager().callEvent(new BukkitPluginLoadEvent(plugin, PluginEvent.Stage.PRE));
+            plugin.onLoad();
+            Bukkit.getPluginManager().callEvent(new BukkitPluginLoadEvent(plugin, PluginEvent.Stage.POST));
+            pluginResults.addResult(pluginId, plugin);
         }
 
-        if (plugin == null) return new BukkitLoadResult(Result.INVALID_PLUGIN);
-        Bukkit.getPluginManager().callEvent(new BukkitPluginLoadEvent(plugin, PluginEvent.Stage.PRE));
-        plugin.onLoad();
-        Bukkit.getPluginManager().callEvent(new BukkitPluginLoadEvent(plugin, PluginEvent.Stage.POST));
-        return new BukkitLoadResult(plugin);
+        return pluginResults;
     }
 
-    /**
-     * Disables the specified plugin by name and cleans all commands and recipes of the plugin.
-     * @param pluginName The plugin to disable.
-     * @return The result of the disable call.
-     */
-    public Result disablePlugin(String pluginName) {
-        return disablePlugin(Bukkit.getPluginManager().getPlugin(pluginName));
-    }
-
-    /**
-     * Disables the specified plugin and cleans all commands and recipes of the plugin.
-     * @param plugin The plugin to disable.
-     * @return The result of the disable call.
-     */
     @Override
-    public Result disablePlugin(Plugin plugin) {
-        if (plugin == null) return Result.NOT_ENABLED;
-        if (!plugin.isEnabled()) return Result.ALREADY_DISABLED;
-        Bukkit.getPluginManager().callEvent(new BukkitPluginDisableEvent(plugin, PluginEvent.Stage.PRE));
-        try {
-            Bukkit.getPluginManager().disablePlugin(plugin);
+    public PluginResults<Plugin> disableOrderedPlugins(List<Plugin> plugins) {
+        PluginResults<Plugin> disableResults = new PluginResults<>();
+
+        for (Plugin plugin : plugins) {
+            String pluginId = getPluginId(plugin);
+            if (!isPluginEnabled(pluginId)) return disableResults.addResult(pluginId, Result.ALREADY_DISABLED);
+
+            Bukkit.getPluginManager().callEvent(new BukkitPluginDisableEvent(plugin, PluginEvent.Stage.PRE));
+            try {
+                Bukkit.getPluginManager().disablePlugin(plugin);
+                RCraftingManager.removeRecipesFor(plugin);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return disableResults.addResult(pluginId, Result.ERROR);
+            }
+
+            unregisterCommands(plugin);
+            Bukkit.getPluginManager().callEvent(new BukkitPluginDisableEvent(plugin, PluginEvent.Stage.POST));
+
+            disableResults.addResult(pluginId, plugin);
+        }
+
+        return disableResults;
+    }
+
+    @Override
+    public CloseablePluginResults<Plugin> unloadOrderedPlugins(List<Plugin> plugins) {
+        CloseablePluginResults<Plugin> unloadResults = new CloseablePluginResults<>();
+
+        for (Plugin plugin : plugins) {
+            String pluginId = getPluginId(plugin);
+            Bukkit.getPluginManager().callEvent(new BukkitPluginUnloadEvent(plugin, PluginEvent.Stage.PRE));
+
             RCraftingManager.removeRecipesFor(plugin);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return Result.ERROR;
+            unregisterCommands(plugin);
+
+            List<Closeable> closeables = new ArrayList<>();
+            try {
+                RSimplePluginManager.getPlugins(Bukkit.getPluginManager()).remove(plugin);
+                RSimplePluginManager.removeLookupName(Bukkit.getPluginManager(), pluginId);
+
+                ClassLoader classLoader = plugin.getClass().getClassLoader();
+                RPluginClassLoader.clearClassLoader(classLoader);
+
+                PluginLoader loader = RPluginClassLoader.getLoader(classLoader);
+                Map<String, Class<?>> classes = RPluginClassLoader.getClasses(classLoader);
+                RJavaPluginLoader.removeClasses(loader, classes.keySet());
+
+                RJavaPlugin.clearJavaPlugin(plugin);
+
+                addIfInstance(closeables, RPluginClassLoader.getLibraryLoader(classLoader));
+                addIfInstance(closeables, classLoader);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return unloadResults.addResult(pluginId, Result.ERROR);
+            }
+
+            Bukkit.getPluginManager().callEvent(new BukkitPluginUnloadEvent(plugin, PluginEvent.Stage.POST));
+
+            unloadResults.addResult(pluginId, plugin, closeables);
         }
-        unregisterCommands(plugin);
-        Bukkit.getPluginManager().callEvent(new BukkitPluginDisableEvent(plugin, PluginEvent.Stage.POST));
-        return Result.SUCCESS;
-    }
 
-    /**
-     * Unloads the specified plugin by name and cleans all traces within bukkit.
-     * @param pluginName The plugin to unload.
-     * @return The result of the unload.
-     */
-    @Override
-    public CloseableResult unloadPlugin(String pluginName) {
-        return unloadPlugin(Bukkit.getPluginManager().getPlugin(pluginName));
-    }
-
-    /**
-     * Unloads the specified plugin and cleans all traces within bukkit.
-     * @param plugin The plugin to unload.
-     * @return The result of the unload.
-     */
-    @Override
-    public CloseableResult unloadPlugin(Plugin plugin) {
-        if (plugin == null) return new CloseableResult(Result.NOT_EXISTS);
-        Bukkit.getPluginManager().callEvent(new BukkitPluginUnloadEvent(plugin, PluginEvent.Stage.PRE));
-        List<Closeable> closeables = new ArrayList<>();
-        try {
-            RSimplePluginManager.getPlugins(Bukkit.getPluginManager()).remove(plugin);
-            RSimplePluginManager.removeLookupName(Bukkit.getPluginManager(), plugin.getName());
-
-            ClassLoader loader = RJavaPlugin.getClassLoader(plugin);
-            RPluginClassLoader.clearClassLoader(loader);
-            addIfInstance(closeables, (Closeable) () -> {
-                Map<String, Class<?>> classes = RPluginClassLoader.getClasses(loader);
-                RJavaPluginLoader.removeClasses(getPluginLoader(getPluginFile(plugin)), classes.keySet());
-            });
-            addIfInstance(closeables, loader);
-            addIfInstance(closeables, RJavaPlugin.clearJavaPlugin(plugin));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return new CloseableResult(Result.ERROR);
-        }
-        Bukkit.getPluginManager().callEvent(new BukkitPluginUnloadEvent(plugin, PluginEvent.Stage.POST));
-        return new CloseableResult(closeables);
+        return unloadResults;
     }
 
     private static void addIfInstance(List<Closeable> list, Object obj) {
@@ -175,68 +161,29 @@ public class BukkitPluginManager implements AbstractPluginManager<Plugin> {
         }
     }
 
-    /**
-     * Enables the specified plugin by name.
-     * @param pluginName The plugin to enable.
-     * @return The result of the enabling.
-     */
-    public Result enablePlugin(String pluginName) {
-        return enablePlugin(Bukkit.getPluginManager().getPlugin(pluginName));
-    }
-
-    /**
-     * Enables the specified plugin.
-     * @param plugin The plugin to enable.
-     * @return The result of the enabling.
-     */
     @Override
-    public Result enablePlugin(Plugin plugin) {
-        if (plugin == null) return Result.NOT_EXISTS;
-        if (Bukkit.getPluginManager().isPluginEnabled(plugin.getName())) return Result.ALREADY_ENABLED;
+    protected PluginResults<Plugin> enableOrderedPlugins(List<Plugin> plugins) {
+        PluginResults<Plugin> enableResults = new PluginResults<>();
+        PluginManager bukkitPluginManager = Bukkit.getPluginManager();
+        for (Plugin plugin : plugins) {
+            String pluginId = getPluginId(plugin);
+            bukkitPluginManager.callEvent(new BukkitPluginEnableEvent(plugin, PluginEvent.Stage.PRE));
+            bukkitPluginManager.enablePlugin(plugin);
 
-        Bukkit.getPluginManager().callEvent(new BukkitPluginEnableEvent(plugin, PluginEvent.Stage.PRE));
-        Bukkit.getPluginManager().enablePlugin(plugin);
-        RCraftServer.syncCommands();
-
-        if (!Bukkit.getPluginManager().isPluginEnabled(plugin.getName())) return Result.ERROR;
-        Bukkit.getPluginManager().callEvent(new BukkitPluginEnableEvent(plugin, PluginEvent.Stage.POST));
-        return Result.SUCCESS;
-    }
-
-    /**
-     * Reloads the specified plugin by name.
-     * @param pluginName The plugin to reload.
-     * @return The result of the reload.
-     */
-    @Override
-    public Result reloadPlugin(String pluginName) {
-        Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
-        if (plugin == null) return Result.NOT_EXISTS;
-        return reloadPlugin(plugin);
-    }
-
-    /**
-     * Reloads the specified plugin.
-     * @param plugin The plugin to reload.
-     * @return The result of the reload.
-     */
-    @Override
-    public Result reloadPlugin(Plugin plugin) {
-        Result disableResult = disablePlugin(plugin);
-        if (disableResult != Result.SUCCESS && disableResult != Result.ALREADY_DISABLED) {
-            return disableResult;
+            if (!bukkitPluginManager.isPluginEnabled(plugin.getName())) {
+                return enableResults.addResult(pluginId, Result.ERROR);
+            }
+            bukkitPluginManager.callEvent(new BukkitPluginEnableEvent(plugin, PluginEvent.Stage.POST));
+            enableResults.addResult(pluginId, plugin);
         }
 
-        CloseableResult result = unloadPlugin(plugin);
-        if (result.getResult() != Result.SUCCESS) return result.getResult();
-        result.tryClose();
+        RCraftServer.syncCommands();
+        return enableResults;
+    }
 
-        File pluginFile = getPluginFile(plugin.getName());
-        if (pluginFile == null) return Result.FILE_DELETED;
-
-        BukkitLoadResult loadResult = loadPlugin(pluginFile);
-        if (!loadResult.isSuccess()) return loadResult.getResult();
-        return enablePlugin(loadResult.get());
+    @Override
+    public boolean isPluginEnabled(String pluginId) {
+        return Bukkit.getPluginManager().isPluginEnabled(pluginId);
     }
 
     /**
@@ -366,45 +313,30 @@ public class BukkitPluginManager implements AbstractPluginManager<Plugin> {
      * @param file The file.
      * @return The appropiate PluginLoader.
      */
-    public static PluginLoader getPluginLoader(File file) {
+    public static Optional<PluginLoader> getPluginLoader(File file) {
         Map<Pattern, PluginLoader> fileAssociations = getFileAssociations();
-        if (fileAssociations == null) return null;
-
-        for (Pattern filter : fileAssociations.keySet()) {
-            Matcher match = filter.matcher(file.getName());
-            if (match.find()) {
-                return fileAssociations.get(filter);
+        if (fileAssociations != null) {
+            for (Map.Entry<Pattern, PluginLoader> entry : fileAssociations.entrySet()) {
+                Matcher match = entry.getKey().matcher(file.getName());
+                if (match.find()) {
+                    return Optional.ofNullable(entry.getValue());
+                }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
-    /**
-     * Retrieves a loaded plugin associated to a jar file.
-     * @param file The jar file.
-     * @return The already loaded plugin, or null if none.
-     */
-    public static Plugin getLoadedPlugin(File file) {
-        PluginDescriptionFile descriptionFile;
+    @Override
+    public Optional<BukkitPluginDescription> getPluginDescription(File file) throws InvalidPluginDescriptionException {
+        if (!file.exists()) return Optional.empty();
+
+        Optional<PluginLoader> loader = getPluginLoader(file);
+        if (!loader.isPresent()) throw new InvalidPluginDescriptionException("Plugin loader is not present!");
         try {
-            descriptionFile = getPluginDescription(file);
+            return Optional.of(new BukkitPluginDescription(loader.get().getPluginDescription(file), file));
         } catch (InvalidDescriptionException ex) {
-            return null;
+            throw new InvalidPluginDescriptionException(ex);
         }
-        if (descriptionFile == null) return null;
-        return Bukkit.getPluginManager().getPlugin(descriptionFile.getName());
-    }
-
-    /**
-     * Retrieves the PluginDescriptionFile of a jar file.
-     * @param file The jar file.
-     * @return The PluginDescriptionFile.
-     * @throws InvalidDescriptionException Iff the PluginDescriptionFile is invalid.
-     */
-    public static PluginDescriptionFile getPluginDescription(File file) throws InvalidDescriptionException {
-        PluginLoader loader = getPluginLoader(file);
-        if (loader == null) return null;
-        return loader.getPluginDescription(file);
     }
 
     @Override
@@ -412,29 +344,14 @@ public class BukkitPluginManager implements AbstractPluginManager<Plugin> {
         return RJavaPlugin.getFile(plugin);
     }
 
-    /**
-     * Attempts to retrieve the plugin file by plugin name.
-     * @param pluginName The plugin name.
-     * @return The file, or null if invalid or not found.
-     */
     @Override
-    public File getPluginFile(String pluginName) {
-        for (File file : getPluginJars()) {
-            PluginDescriptionFile descriptionFile;
-            try {
-                descriptionFile = getPluginDescription(file);
-            } catch (InvalidDescriptionException ex) {
-                return null;
-            }
-            if (descriptionFile == null) return null;
-            if (descriptionFile.getName().equals(pluginName)) return file;
-        }
-        return null;
+    public Optional<Plugin> getPlugin(String pluginName) {
+        return Optional.ofNullable(Bukkit.getPluginManager().getPlugin(pluginName));
     }
 
     @Override
-    public Plugin getPlugin(String pluginName) {
-        return Bukkit.getPluginManager().getPlugin(pluginName);
+    public BukkitPluginDescription getLoadedPluginDescription(Plugin plugin) {
+        return new BukkitPluginDescription(plugin.getDescription(), getPluginFile(plugin));
     }
 
     @Override
@@ -455,7 +372,7 @@ public class BukkitPluginManager implements AbstractPluginManager<Plugin> {
     }
 
     @Override
-    public String getPluginName(Plugin plugin) {
+    public String getPluginId(Plugin plugin) {
         return plugin.getName();
     }
 }

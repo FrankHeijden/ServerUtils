@@ -7,13 +7,15 @@ import cloud.commandframework.arguments.CommandArgument;
 import cloud.commandframework.arguments.flags.CommandFlag;
 import cloud.commandframework.permission.CommandPermission;
 import cloud.commandframework.permission.Permission;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 
-public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?>, C extends ServerCommandSender<?>> {
+public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?, ?>, C extends ServerCommandSender<?>> {
 
     protected final U plugin;
     protected final String commandName;
@@ -58,9 +60,14 @@ public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?>
      */
     public Command.Builder<C> buildSubcommand(Command.Builder<C> builder, String subcommandName) {
         CommandElement subcommand = parseSubcommand(subcommandName);
-        return builder
+
+        builder = builder
                 .literal(subcommand.getMain(), subcommand.getDescription(), subcommand.getAliases())
                 .permission(subcommand.getPermission());
+        for (CommandElement flagElement : subcommand.getFlags()) {
+            builder = builder.flag(createFlag(flagElement));
+        }
+        return builder;
     }
 
     /**
@@ -76,7 +83,16 @@ public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?>
                 .map(this::applyPrefix)
                 .toArray(String[]::new);
 
-        return new CommandElement(main, description, permission, displayInHelp, aliases);
+        List<CommandElement> flags = new ArrayList<>();
+        Object flagsObject = elementConfig.get("flags");
+        if (flagsObject instanceof ServerUtilsConfig) {
+            ServerUtilsConfig flagsConfig = ((ServerUtilsConfig) flagsObject);
+            for (String flagName : flagsConfig.getKeys()) {
+                flags.add(parseElement((ServerUtilsConfig) flagsConfig.get(flagName)));
+            }
+        }
+
+        return new CommandElement(main, description, permission, displayInHelp, aliases, flags);
     }
 
     /**
@@ -86,15 +102,25 @@ public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?>
         return parseElement((ServerUtilsConfig) commandConfig.get("subcommands." + subcommandName));
     }
 
+    public String getRawPath(String subcommandName) {
+        return "commands." + commandName + ".subcommands." + subcommandName;
+    }
+
     /**
      * Parses a flag from the config.
      */
     public CommandFlag<Void> parseFlag(String flagName) {
-        CommandElement flag = parseElement((ServerUtilsConfig) commandConfig.get("flags." + flagName));
-        return CommandFlag.newBuilder(flag.getMain())
-                .withAliases(flag.getAliases())
-                .withPermission(flag.getPermission())
-                .withDescription(flag.getDescription())
+        return createFlag(parseElement((ServerUtilsConfig) commandConfig.get("flags." + flagName)));
+    }
+
+    /**
+     * Creates a flag from a CommandElement.
+     */
+    public CommandFlag<Void> createFlag(CommandElement flagElement) {
+        return CommandFlag.newBuilder(flagElement.getMain())
+                .withAliases(flagElement.getAliases())
+                .withPermission(flagElement.getPermission())
+                .withDescription(flagElement.getDescription())
                 .build();
     }
 
@@ -124,19 +150,22 @@ public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?>
         private final CommandPermission permission;
         private final boolean displayInHelp;
         private final String[] aliases;
+        private final List<CommandElement> flags;
 
         public CommandElement(
                 String main,
                 ArgumentDescription description,
                 CommandPermission permission,
                 boolean displayInHelp,
-                String... aliases
+                String[] aliases,
+                List<CommandElement> flags
         ) {
             this.main = main;
             this.description = description;
             this.permission = permission;
             this.displayInHelp = displayInHelp;
             this.aliases = aliases;
+            this.flags = flags;
         }
 
         public String getMain() {
@@ -157,6 +186,10 @@ public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?>
 
         public String[] getAliases() {
             return aliases;
+        }
+
+        public List<CommandElement> getFlags() {
+            return flags;
         }
     }
 }

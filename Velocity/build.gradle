@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.FrankHeijden.cloud:cloud-velocity:fea4605277'
+    implementation "com.github.FrankHeijden.cloud:cloud-velocity:${rootProject.cloudVersion}"
     implementation 'org.bstats:bstats-velocity:2.2.1'
     implementation project(":Common")
     compileOnly 'com.velocitypowered:velocity-api:3.0.0'

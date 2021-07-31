@@ -29,10 +29,6 @@ public class RJavaPlugin {
     public static Closeable clearJavaPlugin(Object instance) {
         reflection.set(instance, "loader", null);
         reflection.set(instance, "classLoader", null);
-        Class<?> clazz = reflection.invoke(instance, "getClass");
-        if (clazz != null && clazz.getClassLoader() instanceof Closeable) {
-            return (Closeable) clazz.getClassLoader();
-        }
         return null;
     }
 }

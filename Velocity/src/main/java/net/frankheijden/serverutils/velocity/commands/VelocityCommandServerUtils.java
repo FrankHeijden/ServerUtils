@@ -21,16 +21,15 @@ public class VelocityCommandServerUtils
         extends CommandServerUtils<VelocityPlugin, PluginContainer, VelocityCommandSender> {
 
     public VelocityCommandServerUtils(VelocityPlugin plugin) {
-        super(plugin);
+        super(plugin, PluginContainer[]::new);
     }
 
     @Override
     protected FormatBuilder createPluginInfo(
             FormatBuilder builder,
             Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
-            String pluginName
+            PluginContainer container
     ) {
-        PluginContainer container = plugin.getPluginManager().getPlugin(pluginName);
         PluginDescription desc = container.getDescription();
 
         return builder

@@ -13,11 +13,21 @@
     "invalid_description": "&cAn error occurred while %action%ing &4%what%&c, plugin doesn't have a valid description!",
     "invalid_plugin": "&cAn error occurred while %action%ing &4%what%&c, plugin is invalid!",
     "unknown_dependency": "&cAn error occurred while %action%ing &4%what%&c, plugin has a dependeny which is not loaded: &4%arg%",
-    "watcher": {
+    "depending_plugins": {
+      "prefix": "&cPlugin &4%what%&c has depending plugins: ",
+      "format": "&4%plugin%",
+      "separator": "&c, ",
+      "last_separator": " &cand ",
+      "override": "&cUse \"&4/%command%&c\" to force command execution."
+    },
+    "watchplugin": {
       "start": "&3Started watching &b%what%&3!",
-      "change": "&3Change detected for plugin &b%what%&3, reloading now...",
+      "change": "&3Changes detected, reloading plugins now...",
       "stopped": "&3Stopped watching &b%what%&3!",
-      "not_watching": "&cWe aren't watching that plugin!"
+      "file_deleted": "&cPlugin file &4%what%&c has been deleted! Waiting for plugin to show up...",
+      "deleted_file_is_created": "&3Plugin file &b%what%&3 has shown up again!",
+      "already_watching": "&cYou are already watching &4%what%&c!",
+      "not_watching": "&cYou are not watching &4%what%&c!"
     },
     "update": {
       "available": "&8&m------------=&r&8[ &b&lServerUtils Update&r &8]&m=--------------\n &3Current version: &b%old%\n &3New version: &b%new%\n &3Release info: &b%info%\n&8&m-------------------------------------------------",

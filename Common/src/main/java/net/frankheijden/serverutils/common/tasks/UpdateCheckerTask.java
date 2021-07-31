@@ -11,8 +11,8 @@ import java.net.UnknownHostException;
 import java.util.logging.Level;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
-import net.frankheijden.serverutils.common.entities.LoadResult;
-import net.frankheijden.serverutils.common.entities.Result;
+import net.frankheijden.serverutils.common.entities.results.PluginResult;
+import net.frankheijden.serverutils.common.entities.results.Result;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.entities.http.GitHubAsset;
@@ -22,7 +22,7 @@ import net.frankheijden.serverutils.common.utils.GitHubUtils;
 import net.frankheijden.serverutils.common.utils.VersionUtils;
 import net.frankheijden.serverutilsupdater.common.Updater;
 
-public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?>, P> implements Runnable {
+public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> implements Runnable {
 
     private final U plugin;
     private final ServerCommandSender<?> sender;
@@ -60,7 +60,7 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?>, P> imple
      * Checks for updates if enabled per config for the specific action.
      * Action must be 'login' or 'boot'.
      */
-    public static <U extends ServerUtilsPlugin<P, ?, ?, ?>, P> void tryStart(
+    public static <U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> void tryStart(
             U plugin,
             ServerCommandSender<?> sender,
             String action
@@ -75,7 +75,7 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?>, P> imple
      * Checks for updates and downloads/installs if configured.
      * Action must be 'login' or 'boot'.
      */
-    public static <U extends ServerUtilsPlugin<P, ?, ?, ?>, P> void start(
+    public static <U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> void start(
             U plugin,
             ServerCommandSender<?> sender,
             String action
@@ -241,21 +241,19 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?>, P> imple
 
     private void tryReloadPlugin(File pluginFile, File updaterFile) {
         plugin.getTaskManager().runTask(() -> {
-            LoadResult<P> loadResult = plugin.getPluginManager().loadPlugin(updaterFile);
+            PluginResult<P> loadResult = plugin.getPluginManager().loadPlugin(updaterFile);
             if (!loadResult.isSuccess()) {
-                plugin.getLogger().log(Level.INFO, UPDATER_LOAD_ERROR,
-                        loadResult.getResult().name());
+                plugin.getLogger().log(Level.INFO, UPDATER_LOAD_ERROR, loadResult.getResult().name());
                 return;
             }
 
-            P updaterPlugin = loadResult.get();
-            Result result = plugin.getPluginManager().enablePlugin(updaterPlugin);
-            if (result != Result.SUCCESS && result != Result.ALREADY_ENABLED) {
-                plugin.getLogger().log(Level.INFO, UPDATER_ENABLE_ERROR, result.name());
+            PluginResult<P> enableResult = plugin.getPluginManager().enablePlugin(loadResult.getPlugin());
+            if (!enableResult.isSuccess() && enableResult.getResult() != Result.ALREADY_ENABLED) {
+                plugin.getLogger().log(Level.INFO, UPDATER_ENABLE_ERROR, enableResult.getResult().name());
                 return;
             }
 
-            Updater updater = (Updater) plugin.getPluginManager().getInstance(updaterPlugin);
+            Updater updater = (Updater) plugin.getPluginManager().getInstance(enableResult.getPlugin());
             updater.update(pluginFile);
             updaterFile.delete();
         });

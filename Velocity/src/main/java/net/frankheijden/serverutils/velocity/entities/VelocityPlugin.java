@@ -15,12 +15,7 @@ import net.frankheijden.serverutils.velocity.listeners.VelocityPlayerListener;
 import net.frankheijden.serverutils.velocity.managers.VelocityPluginManager;
 import net.frankheijden.serverutils.velocity.managers.VelocityTaskManager;
 
-public class VelocityPlugin extends ServerUtilsPlugin<
-        PluginContainer,
-        ScheduledTask,
-        VelocityCommandSender,
-        CommandSource
-        > {
+public class VelocityPlugin extends ServerUtilsPlugin<PluginContainer, ScheduledTask, VelocityCommandSender, CommandSource, VelocityPluginDescription> {
 
     private final ServerUtils plugin;
     private final VelocityPluginManager pluginManager;
@@ -46,13 +41,15 @@ public class VelocityPlugin extends ServerUtilsPlugin<
 
     @Override
     protected VelocityCommandManager<VelocityCommandSender> newCommandManager() {
-        return new VelocityCommandManager<>(
+        VelocityCommandManager<VelocityCommandSender> commandManager = new VelocityCommandManager<>(
                 plugin.getPluginContainer(),
                 plugin.getProxy(),
                 AsynchronousCommandExecutionCoordinator.<VelocityCommandSender>newBuilder().build(),
                 chatProvider::get,
                 VelocityCommandSender::getSource
         );
+        handleBrigadier(commandManager.brigadierManager());
+        return commandManager;
     }
 
     @Override

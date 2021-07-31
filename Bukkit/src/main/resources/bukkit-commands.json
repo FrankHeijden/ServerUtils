@@ -8,7 +8,7 @@
             "ep"
           ],
           "permission": "serverutils.enableplugin",
-          "description": "Enables the specified plugin.",
+          "description": "Enables the specified plugin(s).",
           "display-in-help": true
         },
         "disableplugin": {
@@ -17,8 +17,17 @@
             "dp"
           ],
           "permission": "serverutils.disableplugin",
-          "description": "Disables the specified plugin.",
-          "display-in-help": true
+          "description": "Disables the specified plugin(s).",
+          "display-in-help": true,
+          "flags": {
+            "force": {
+              "main": "force",
+              "aliases": ["f"],
+              "permission": "serverutils.disableplugin",
+              "description": "Force disables the specified plugin(s).",
+              "display-in-help": false
+            }
+          }
         },
         "reloadconfig": {
           "main": "reloadconfig",

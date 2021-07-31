@@ -3,6 +3,7 @@ package net.frankheijden.serverutils.bukkit.commands;
 import cloud.commandframework.CommandManager;
 import cloud.commandframework.arguments.CommandArgument;
 import cloud.commandframework.context.CommandContext;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,8 @@ import net.frankheijden.serverutils.bukkit.reflection.RDedicatedServer;
 import net.frankheijden.serverutils.bukkit.utils.ReloadHandler;
 import net.frankheijden.serverutils.bukkit.utils.VersionReloadHandler;
 import net.frankheijden.serverutils.common.commands.CommandServerUtils;
-import net.frankheijden.serverutils.common.entities.Result;
+import net.frankheijden.serverutils.common.commands.arguments.PluginsArgument;
+import net.frankheijden.serverutils.common.entities.results.PluginResults;
 import net.frankheijden.serverutils.common.utils.FormatBuilder;
 import net.frankheijden.serverutils.common.utils.ForwardFilter;
 import net.frankheijden.serverutils.common.utils.ListBuilder;
@@ -46,7 +48,7 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
     }
 
     public BukkitCommandServerUtils(BukkitPlugin plugin) {
-        super(plugin);
+        super(plugin, Plugin[]::new);
     }
 
     @Override
@@ -72,10 +74,14 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
                 .build());
 
         manager.command(buildSubcommand(builder, "enableplugin")
-                .argument(getArgument("plugin"))
+                .argument(getArgument("plugins"))
                 .handler(this::handleEnablePlugin));
         manager.command(buildSubcommand(builder, "disableplugin")
-                .argument(getArgument("plugin"))
+                .argument(new PluginsArgument<>(
+                        true,
+                        "plugins",
+                        new PluginsArgument.PluginsParser<>(plugin, arrayCreator, getRawPath("disableplugin"))
+                ))
                 .handler(this::handleDisablePlugin));
         manager.command(buildSubcommand(builder, "reloadconfig")
                 .argument(getArgument("config"))
@@ -84,18 +90,22 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
 
     private void handleEnablePlugin(CommandContext<BukkitCommandSender> context) {
         BukkitCommandSender sender = context.getSender();
-        String pluginName = context.get("plugin");
+        List<Plugin> plugins = Arrays.asList(context.get("plugins"));
 
-        Result result = plugin.getPluginManager().enablePlugin(pluginName);
-        result.sendTo(sender, "enabl", pluginName);
+        PluginResults<Plugin> result = plugin.getPluginManager().enablePlugins(plugins);
+        result.sendTo(sender, "enabl");
     }
 
     private void handleDisablePlugin(CommandContext<BukkitCommandSender> context) {
         BukkitCommandSender sender = context.getSender();
-        String pluginName = context.get("plugin");
+        List<Plugin> plugins = Arrays.asList(context.get("plugins"));
 
-        Result result = plugin.getPluginManager().disablePlugin(pluginName);
-        result.sendTo(sender, "disabl", pluginName);
+        if (checkDependingPlugins(context, sender, plugins, "disableplugin")) {
+            return;
+        }
+
+        PluginResults<Plugin> result = plugin.getPluginManager().disablePlugins(plugins);
+        result.sendTo(sender, "disabl");
     }
 
     private void handleReloadConfig(CommandContext<BukkitCommandSender> context) {
@@ -148,12 +158,11 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
     protected FormatBuilder createPluginInfo(
             FormatBuilder builder,
             Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
-            String pluginName
+            Plugin bukkitPlugin
     ) {
-        Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
-        PluginDescriptionFile description = plugin.getDescription();
+        PluginDescriptionFile description = bukkitPlugin.getDescription();
 
-        builder.add("Name", plugin.getName())
+        builder.add("Name", bukkitPlugin.getName())
                 .add("Full Name", description.getFullName())
                 .add("Version", description.getVersion())
                 .add("Website", description.getWebsite())
