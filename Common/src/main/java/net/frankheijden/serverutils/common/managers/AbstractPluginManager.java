@@ -10,19 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import net.frankheijden.serverutils.common.ServerUtilsApp;
-import net.frankheijden.serverutils.common.entities.results.AbstractResult;
 import net.frankheijden.serverutils.common.entities.results.CloseablePluginResult;
 import net.frankheijden.serverutils.common.entities.results.CloseablePluginResults;
 import net.frankheijden.serverutils.common.entities.results.PluginResult;
 import net.frankheijden.serverutils.common.entities.results.PluginResults;
 import net.frankheijden.serverutils.common.entities.results.Result;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPluginDescription;
-import net.frankheijden.serverutils.common.entities.results.WatchResult;
 import net.frankheijden.serverutils.common.entities.exceptions.InvalidPluginDescriptionException;
 import net.frankheijden.serverutils.common.providers.PluginProvider;
-import net.frankheijden.serverutils.common.tasks.PluginWatcherTask;
 import net.frankheijden.serverutils.common.utils.DependencyUtils;
 
 public abstract class AbstractPluginManager<P, D extends ServerUtilsPluginDescription> implements PluginProvider<P, D> {
@@ -293,24 +288,5 @@ public abstract class AbstractPluginManager<P, D extends ServerUtilsPluginDescri
         }
 
         return DependencyUtils.determineOrder(dependencyMap);
-    }
-
-    /**
-     * Starts watching the specified plugin for changes.
-     * Reloads the plugin if a change is detected.
-     */
-    public AbstractResult watchPlugin(ServerCommandSender<?> sender, String pluginId) {
-        if (getPlugin(pluginId).isPresent()) return Result.NOT_EXISTS;
-        ServerUtilsApp.getPlugin().getTaskManager()
-                .runTaskAsynchronously(pluginId, new PluginWatcherTask(sender, pluginId));
-        return WatchResult.START;
-    }
-
-    /**
-     * Stops watching the plugin for changes.
-     */
-    public AbstractResult unwatchPlugin(String pluginId) {
-        if (ServerUtilsApp.getPlugin().getTaskManager().cancelTask(pluginId)) return WatchResult.STOPPED;
-        return WatchResult.NOT_WATCHING;
     }
 }

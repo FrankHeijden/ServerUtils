@@ -80,8 +80,17 @@
           "main": "watchplugin",
           "aliases": ["wp"],
           "permission": "serverutils.watchplugin",
-          "description": "Watches the specified plugin for changes.",
-          "display-in-help": true
+          "description": "Watches the specified plugin(s) for changes.",
+          "display-in-help": true,
+          "flags": {
+            "force": {
+              "main": "force",
+              "aliases": ["f"],
+              "permission": "serverutils.watchplugin",
+              "description": "Force watches the specified plugin(s) for changes.",
+              "display-in-help": false
+            }
+          }
         },
         "unwatchplugin": {
           "main": "unwatchplugin",

@@ -17,6 +17,7 @@ import net.frankheijden.serverutils.common.config.MessagesResource;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.managers.AbstractTaskManager;
 import net.frankheijden.serverutils.common.managers.UpdateManager;
+import net.frankheijden.serverutils.common.managers.WatchManager;
 import net.frankheijden.serverutils.common.providers.ChatProvider;
 import net.frankheijden.serverutils.common.providers.ResourceProvider;
 import net.frankheijden.serverutils.common.utils.FileUtils;
@@ -24,6 +25,7 @@ import net.frankheijden.serverutils.common.utils.FileUtils;
 public abstract class ServerUtilsPlugin<P, T, C extends ServerCommandSender<S>, S, D extends ServerUtilsPluginDescription> {
 
     private final UpdateManager updateManager = new UpdateManager();
+    private final WatchManager<P, T> watchManager = new WatchManager<>(this);
     private CommandsResource commandsResource;
     private ConfigResource configResource;
     private MessagesResource messagesResource;
@@ -55,6 +57,10 @@ public abstract class ServerUtilsPlugin<P, T, C extends ServerCommandSender<S>, 
 
     public UpdateManager getUpdateManager() {
         return updateManager;
+    }
+
+    public WatchManager<P, T> getWatchManager() {
+        return watchManager;
     }
 
     public abstract Logger getLogger();

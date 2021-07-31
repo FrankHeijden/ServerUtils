@@ -17,13 +17,13 @@ import net.frankheijden.serverutils.common.commands.arguments.PluginArgument;
 import net.frankheijden.serverutils.common.commands.arguments.PluginsArgument;
 import net.frankheijden.serverutils.common.config.MessagesResource;
 import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
-import net.frankheijden.serverutils.common.entities.results.AbstractResult;
 import net.frankheijden.serverutils.common.entities.results.CloseablePluginResults;
 import net.frankheijden.serverutils.common.entities.results.PluginResult;
 import net.frankheijden.serverutils.common.entities.results.PluginResults;
 import net.frankheijden.serverutils.common.entities.results.Result;
 import net.frankheijden.serverutils.common.entities.ServerCommandSender;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
+import net.frankheijden.serverutils.common.entities.results.WatchResult;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.utils.FormatBuilder;
 import net.frankheijden.serverutils.common.utils.ListBuilder;
@@ -73,7 +73,11 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
                 ))
                 .handler(this::handleReloadPlugin));
         manager.command(buildSubcommand(builder, "watchplugin")
-                .argument(getArgument("plugin"))
+                .argument(new PluginsArgument<>(
+                        true,
+                        "plugins",
+                        new PluginsArgument.PluginsParser<>(plugin, arrayCreator, getRawPath("watchplugin"))
+                ))
                 .handler(this::handleWatchPlugin));
         manager.command(buildSubcommand(builder, "unwatchplugin")
                 .argument(getArgument("plugin"))
@@ -256,24 +260,23 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
 
     private void handleWatchPlugin(CommandContext<C> context) {
         C sender = context.getSender();
-        P pluginArg = context.get("plugin");
+        List<P> plugins = Arrays.asList(context.get("plugins"));
 
-        AbstractPluginManager<P, ?> pluginManager = plugin.getPluginManager();
-        String pluginId = pluginManager.getPluginId(pluginArg);
+        if (checkDependingPlugins(context, sender, plugins, "watchplugin")) {
+            return;
+        }
 
-        AbstractResult result = pluginManager.watchPlugin(sender, pluginId);
-        result.sendTo(sender, "watch", pluginId);
+        WatchResult result = plugin.getWatchManager().watchPlugins(sender, plugins);
+        result.sendTo(sender);
     }
 
     private void handleUnwatchPlugin(CommandContext<C> context) {
         C sender = context.getSender();
         P pluginArg = context.get("plugin");
 
-        AbstractPluginManager<P, ?> pluginManager = plugin.getPluginManager();
-        String pluginId = pluginManager.getPluginId(pluginArg);
-
-        AbstractResult result = pluginManager.unwatchPlugin(pluginId);
-        result.sendTo(sender, "unwatch", pluginId);
+        String pluginId = plugin.getPluginManager().getPluginId(pluginArg);
+        WatchResult result = plugin.getWatchManager().unwatchPluginsAssociatedWith(pluginId);
+        result.sendTo(sender);
     }
 
     private void handlePluginInfo(CommandContext<C> context) {
