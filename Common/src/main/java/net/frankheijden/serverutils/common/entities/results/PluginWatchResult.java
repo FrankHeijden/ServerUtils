@@ -1,24 +1,23 @@
 package net.frankheijden.serverutils.common.entities.results;
 
 import net.frankheijden.serverutils.common.config.ConfigKey;
-import net.kyori.adventure.text.minimessage.Template;
 
 public class PluginWatchResult implements AbstractResult {
 
     private final WatchResult result;
-    private final Template[] templates;
+    private final String[] placeholders;
 
-    public PluginWatchResult(WatchResult result, Template... templates) {
+    public PluginWatchResult(WatchResult result, String... placeholders) {
         this.result = result;
-        this.templates = templates;
+        this.placeholders = placeholders;
     }
 
     public WatchResult getResult() {
         return result;
     }
 
-    public Template[] getTemplates() {
-        return templates;
+    public String[] getPlaceholders() {
+        return placeholders;
     }
 
     @Override

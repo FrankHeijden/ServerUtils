@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import net.frankheijden.serverutils.common.config.ConfigKey;
 import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
-import net.kyori.adventure.text.minimessage.Template;
 
 public class PluginResults<T> implements Iterable<PluginResult<T>> {
 
@@ -15,18 +14,18 @@ public class PluginResults<T> implements Iterable<PluginResult<T>> {
         this.results = new ArrayList<>();
     }
 
-    public PluginResults<T> addResult(String pluginId, Result result, Template... templates) {
-        addResult(pluginId, null, result, templates);
+    public PluginResults<T> addResult(String pluginId, Result result, String... placeholders) {
+        addResult(pluginId, null, result, placeholders);
         return this;
     }
 
-    public PluginResults<T> addResult(String pluginId, T plugin, Template... templates) {
-        addResult(pluginId, plugin, Result.SUCCESS, templates);
+    public PluginResults<T> addResult(String pluginId, T plugin, String... placeholders) {
+        addResult(pluginId, plugin, Result.SUCCESS, placeholders);
         return this;
     }
 
-    protected PluginResults<T> addResult(String pluginId, T plugin, Result result, Template... templates) {
-        addResult(new PluginResult<>(pluginId, plugin, result, templates));
+    protected PluginResults<T> addResult(String pluginId, T plugin, Result result, String... placeholders) {
+        addResult(new PluginResult<>(pluginId, plugin, result, placeholders));
         return this;
     }
 

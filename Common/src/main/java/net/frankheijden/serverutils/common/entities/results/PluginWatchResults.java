@@ -6,7 +6,6 @@ import java.util.List;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.config.MessagesResource;
 import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
-import net.kyori.adventure.text.minimessage.Template;
 
 public class PluginWatchResults implements Iterable<PluginWatchResult> {
 
@@ -16,8 +15,8 @@ public class PluginWatchResults implements Iterable<PluginWatchResult> {
         this.watchResults = new ArrayList<>();
     }
 
-    public PluginWatchResults add(WatchResult result, Template... templates) {
-        return add(new PluginWatchResult(result, templates));
+    public PluginWatchResults add(WatchResult result, String... placeholders) {
+        return add(new PluginWatchResult(result, placeholders));
     }
 
     public PluginWatchResults add(PluginWatchResult watchResult) {
@@ -32,7 +31,7 @@ public class PluginWatchResults implements Iterable<PluginWatchResult> {
         MessagesResource messages = ServerUtilsApp.getPlugin().getMessagesResource();
 
         for (PluginWatchResult watchResult : watchResults) {
-            sender.sendMessage(messages.get(watchResult.getKey()).toComponent(watchResult.getTemplates()));
+            sender.sendMessage(messages.get(watchResult.getKey()).toComponent(watchResult.getPlaceholders()));
         }
     }
 

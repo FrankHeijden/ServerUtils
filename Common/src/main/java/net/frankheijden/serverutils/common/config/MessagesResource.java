@@ -1,6 +1,5 @@
 package net.frankheijden.serverutils.common.config;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,19 +60,22 @@ public class MessagesResource extends ServerUtilsResource {
         /**
          * Creates a {@link Component}.
          */
-        public Component toComponent(Template... placeholders) {
-            if (this.component == null) {
-                if (placeholders.length == 0) {
-                    throw new IllegalArgumentException("Message '" + key + "' has placeholders"
-                            + " but none were provided!");
-                }
-                return miniMessage.parse(messageString, placeholders);
-            } else if (placeholders.length != 0) {
-                throw new IllegalArgumentException("Message '" + key + "' does not have placeholders"
-                        + " but the following placeholders were provided: " + Arrays.toString(placeholders));
-            } else {
-                return this.component;
-            }
+        public Component toComponent() {
+            return this.component == null ? miniMessage.parse(messageString) : this.component;
+        }
+
+        /**
+         * Creates a {@link Component}.
+         */
+        public Component toComponent(Template... templates) {
+            return this.component == null ? miniMessage.parse(messageString, templates) : this.component;
+        }
+
+        /**
+         * Creates a {@link Component}.
+         */
+        public Component toComponent(String... placeholders) {
+            return this.component == null ? miniMessage.parse(messageString, placeholders) : this.component;
         }
 
         public void sendTo(ServerUtilsAudience<?> serverAudience, Template... placeholders) {

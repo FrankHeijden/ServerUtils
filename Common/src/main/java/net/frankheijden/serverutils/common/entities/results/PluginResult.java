@@ -3,14 +3,13 @@ package net.frankheijden.serverutils.common.entities.results;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.config.ConfigKey;
 import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
-import net.kyori.adventure.text.minimessage.Template;
 
 public class PluginResult<T> implements AbstractResult {
 
     private final String pluginId;
     private final T plugin;
     private final Result result;
-    private final Template[] templates;
+    private final String[] placeholders;
 
     public PluginResult(String pluginId, Result result) {
         this(pluginId, null, result);
@@ -19,13 +18,14 @@ public class PluginResult<T> implements AbstractResult {
     /**
      * Constructs a new PluginResult.
      */
-    public PluginResult(String pluginId, T plugin, Result result, Template... templates) {
+    public PluginResult(String pluginId, T plugin, Result result, String... placeholders) {
         this.pluginId = pluginId;
         this.plugin = plugin;
         this.result = result;
-        this.templates = new Template[templates.length + 1];
-        this.templates[0] = Template.of("plugin", pluginId);
-        System.arraycopy(templates, 0, this.templates, 1, templates.length);
+        this.placeholders = new String[placeholders.length + 2];
+        this.placeholders[0] = "plugin";
+        this.placeholders[1] = pluginId;
+        System.arraycopy(placeholders, 0, this.placeholders, 2, placeholders.length);
     }
 
     public String getPluginId() {
@@ -40,8 +40,8 @@ public class PluginResult<T> implements AbstractResult {
         return result;
     }
 
-    public Template[] getTemplates() {
-        return templates;
+    public String[] getPlaceholders() {
+        return placeholders;
     }
 
     public boolean isSuccess() {
@@ -50,7 +50,7 @@ public class PluginResult<T> implements AbstractResult {
 
     public void sendTo(ServerUtilsAudience<?> sender, ConfigKey successKey) {
         ConfigKey key = isSuccess() ? successKey : result.getKey();
-        sender.sendMessage(ServerUtilsApp.getPlugin().getMessagesResource().get(key).toComponent(templates));
+        sender.sendMessage(ServerUtilsApp.getPlugin().getMessagesResource().get(key).toComponent(placeholders));
     }
 
     @Override

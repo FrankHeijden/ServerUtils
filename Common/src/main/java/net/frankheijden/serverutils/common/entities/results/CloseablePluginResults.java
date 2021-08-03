@@ -3,7 +3,6 @@ package net.frankheijden.serverutils.common.entities.results;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
-import net.kyori.adventure.text.minimessage.Template;
 
 public class CloseablePluginResults<T> extends PluginResults<T> implements Closeable {
 
@@ -17,21 +16,21 @@ public class CloseablePluginResults<T> extends PluginResults<T> implements Close
     }
 
     @Override
-    public CloseablePluginResults<T> addResult(String pluginId, Result result, Template... templates) {
-        super.addResult(pluginId, result, templates);
+    public CloseablePluginResults<T> addResult(String pluginId, Result result, String... placeholders) {
+        super.addResult(pluginId, result, placeholders);
         return this;
     }
 
     @Override
-    public CloseablePluginResults<T> addResult(String pluginId, T plugin, Template... templates) {
-        super.addResult(pluginId, plugin, templates);
+    public CloseablePluginResults<T> addResult(String pluginId, T plugin, String... placeholders) {
+        super.addResult(pluginId, plugin, placeholders);
         return this;
     }
 
     @Override
-    protected CloseablePluginResults<T> addResult(String pluginId, T plugin, Result result, Template... templates
+    protected CloseablePluginResults<T> addResult(String pluginId, T plugin, Result result, String... placeholders
     ) {
-        super.addResult(pluginId, plugin, result, templates);
+        super.addResult(pluginId, plugin, result, placeholders);
         return this;
     }
 
@@ -39,9 +38,9 @@ public class CloseablePluginResults<T> extends PluginResults<T> implements Close
             String pluginId,
             T plugin,
             List<Closeable> closeables,
-            Template... templates
+            String... placeholders
     ) {
-        return addResult(new CloseablePluginResult<>(pluginId, plugin, Result.SUCCESS, closeables, templates));
+        return addResult(new CloseablePluginResult<>(pluginId, plugin, Result.SUCCESS, closeables, placeholders));
     }
 
     @Override
