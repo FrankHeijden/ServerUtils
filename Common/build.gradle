@@ -23,7 +23,6 @@ blossom {
 }
 
 shadowJar {
-    exclude 'net/frankheijden/serverutilsupdater/**'
     exclude 'plugin.yml'
     exclude 'bungee.yml'
 }

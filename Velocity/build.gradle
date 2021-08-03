@@ -24,6 +24,8 @@ dependencies {
 
 shadowJar {
     relocate 'org.bstats', dependencyDir + '.bstats'
+    relocate 'net.frankheijden.serverutils.common', dependencyDir + '.su.common'
+    relocate 'net.kyori.adventure.text.minimessage', dependencyDir + '.adventure.text.minimessage'
 }
 
 blossom {

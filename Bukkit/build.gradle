@@ -24,4 +24,6 @@ shadowJar {
     relocate 'org.bstats', dependencyDir + '.bstats'
     relocate 'net.kyori.adventure', rootDependencyDir + '.adventure'
     relocate 'net.kyori.examination', rootDependencyDir + '.examination'
+    relocate 'net.frankheijden.serverutils.common', dependencyDir + '.su.common'
+    relocate 'net.kyori.adventure.text.minimessage', dependencyDir + '.adventure.text.minimessage'
 }

@@ -93,7 +93,6 @@ subprojects {
         relocate 'com.google.common.graph', dependencyDir + '.common.graph'
         relocate 'dev.frankheijden.minecraftreflection', dependencyDir + '.minecraftreflection'
         relocate 'cloud.commandframework', dependencyDir + '.cloud'
-        relocate 'net.kyori.adventure.text.minimessage', dependencyDir + '.adventure.text.minimessage'
         relocate 'me.lucko.commodore', dependencyDir + '.commodore'
         relocate 'io.leangen.geantyref', dependencyDir + '.typetoken'
     }
