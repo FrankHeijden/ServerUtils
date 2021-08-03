@@ -22,6 +22,6 @@ public class PluginWatchResult implements AbstractResult {
 
     @Override
     public ConfigKey getKey() {
-        return null;
+        return result.getKey();
     }
 }
