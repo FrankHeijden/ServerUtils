@@ -124,7 +124,12 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin, BungeePlu
 
     @Override
     public boolean isPluginEnabled(String pluginId) {
-        return false; // Not supported on BungeeCord.
+        return getPlugin(pluginId).isPresent();
+    }
+
+    @Override
+    protected Optional<Plugin> checkPluginStates(List<Plugin> plugins, boolean enabled) {
+        return Optional.empty(); // Bungee can't differentiate between "loaded" and "enabled"
     }
 
     @Override

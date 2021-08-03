@@ -97,11 +97,9 @@ public abstract class AbstractPluginManager<P, D extends ServerUtilsPluginDescri
      * Enables a list of plugins.
      */
     public PluginResults<P> enablePlugins(List<P> plugins) {
-        for (P plugin : plugins) {
-            String pluginId = getPluginId(plugin);
-            if (isPluginEnabled(pluginId)) {
-                return new PluginResults<P>().addResult(pluginId, Result.ALREADY_ENABLED);
-            }
+        Optional<P> pluginOptional = checkPluginStates(plugins, false);
+        if (pluginOptional.isPresent()) {
+            return new PluginResults<P>().addResult(getPluginId(pluginOptional.get()), Result.ALREADY_ENABLED);
         }
 
         return enableOrderedPlugins(determineLoadOrder(plugins));
@@ -114,6 +112,19 @@ public abstract class AbstractPluginManager<P, D extends ServerUtilsPluginDescri
     }
 
     public abstract boolean isPluginEnabled(String pluginId);
+
+    /**
+     * Finds the first plugin where the enabled state does not match the given state it must be in.
+     * This method can be overridden by implementations which don't support the enabled state.
+     */
+    protected Optional<P> checkPluginStates(List<P> plugins, boolean enabled) {
+        for (P plugin : plugins) {
+            if (isPluginEnabled(plugin) != enabled) {
+                return Optional.of(plugin);
+            }
+        }
+        return Optional.empty();
+    }
 
     /**
      * Disables the given plugin by name.
@@ -132,10 +143,9 @@ public abstract class AbstractPluginManager<P, D extends ServerUtilsPluginDescri
      * Disables a list of plugins.
      */
     public PluginResults<P> disablePlugins(List<P> plugins) {
-        for (P plugin : plugins) {
-            if (!isPluginEnabled(plugin)) {
-                return new PluginResults<P>().addResult(getPluginId(plugin), Result.ALREADY_DISABLED);
-            }
+        Optional<P> pluginOptional = checkPluginStates(plugins, true);
+        if (pluginOptional.isPresent()) {
+            return new PluginResults<P>().addResult(getPluginId(pluginOptional.get()), Result.ALREADY_DISABLED);
         }
 
         List<P> orderedPlugins;
