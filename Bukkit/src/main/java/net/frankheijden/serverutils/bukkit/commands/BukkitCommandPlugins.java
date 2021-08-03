@@ -44,7 +44,7 @@ public class BukkitCommandPlugins extends CommandPlugins<BukkitPlugin, Plugin, B
                     Template.of("plugin", description.getName())
             ));
             if (hasVersionFlag) {
-                builder.append(messages.get(MessageKey.PLUGINS_FORMAT).toComponent(
+                builder.append(messages.get(MessageKey.PLUGINS_VERSION).toComponent(
                         Template.of("version", description.getVersion())
                 ));
             }

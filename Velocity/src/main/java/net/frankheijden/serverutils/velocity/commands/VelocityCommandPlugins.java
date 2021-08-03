@@ -44,7 +44,7 @@ public class VelocityCommandPlugins extends CommandPlugins<VelocityPlugin, Plugi
                     Template.of("plugin", description.getId())
             ));
             if (hasVersionFlag) {
-                builder.append(messages.get(MessageKey.PLUGINS_FORMAT).toComponent(
+                builder.append(messages.get(MessageKey.PLUGINS_VERSION).toComponent(
                         Template.of("version", description.getVersion().orElse("<UNKNOWN>"))
                 ));
             }
