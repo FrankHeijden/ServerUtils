@@ -60,6 +60,15 @@ public class VelocityTomlConfig implements ServerUtilsConfig {
         if (value == null) {
             config.remove(path);
         } else {
+            int lastDotIndex = path.lastIndexOf('.');
+            if (lastDotIndex != -1) {
+                String parentPath = path.substring(0, lastDotIndex);
+                try {
+                    CommentedConfig parent = config.get(parentPath);
+                } catch (ClassCastException ex) {
+                    config.remove(parentPath);
+                }
+            }
             config.set(path, value);
         }
     }
