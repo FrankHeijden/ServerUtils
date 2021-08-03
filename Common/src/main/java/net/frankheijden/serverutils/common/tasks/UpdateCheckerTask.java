@@ -39,18 +39,14 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
 
     private static final String UPDATE_CHECK_START = "Checking for updates...";
     private static final String RATE_LIMIT = "Received ratelimit from GitHub.";
-    private static final String GENERAL_ERROR = "Error fetching new version of ServerUtils";
+    private static final String GENERAL_ERROR = "Error fetching GitHub";
     private static final String TRY_LATER = GENERAL_ERROR + ", please try again later!";
     private static final String CONNECTION_ERROR = GENERAL_ERROR + ": ({0}) {1} (maybe check your connection?)";
     private static final String UNAVAILABLE = GENERAL_ERROR + ": ({0}) {1} (no update available)";
     private static final String UPDATE_AVAILABLE = "ServerUtils {0} is available!";
     private static final String RELEASE_INFO = "Release info: {0}";
     private static final String DOWNLOAD_START = "Started downloading from \"{0}\"...";
-    private static final String DOWNLOAD_ERROR = "Error downloading a new version of ServerUtils";
-    private static final String DOWNLOADED = "Downloaded ServerUtils version v{0}.";
-    private static final String DOWNLOADED_RESTART = DOWNLOADED + " Restarting plugin now...";
-    private static final String UPDATER_LOAD_ERROR = "Failed to load ServerUtilsUpdater: {0}";
-    private static final String UPDATER_ENABLE_ERROR = "Failed to enable ServerUtilsUpdater: {0}";
+    private static final String DOWNLOADED = "Downloaded {0} version v{1}.";
     private static final String UP_TO_DATE = "We are up-to-date!";
 
     private UpdateCheckerTask(U plugin, ServerUtilsAudience<?> sender, boolean download, boolean install) {
@@ -91,6 +87,16 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
                 config.getBoolean("settings.download-updates-" + action),
                 config.getBoolean("settings.install-updates-" + action)
         ));
+    }
+
+    /**
+     * Restarts the plugin.
+     */
+    public static <P> void restart(ServerUtilsAudience<?> sender) {
+        ServerUtilsApp.getPlugin().getTaskManager().runTaskAsynchronously(() -> {
+            UpdateCheckerTask<?, P> task = new UpdateCheckerTask<>(ServerUtilsApp.getPlugin(), sender, true, true);
+            task.downloadUpdaterAndReload(task.plugin.getPluginManager().getPluginFile(task.plugin.getPlugin()));
+        });
     }
 
     @Override
@@ -146,18 +152,25 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
         }
 
         File pluginTarget = new File(plugin.getPluginManager().getPluginsFolder(), pluginAsset.getName());
-        download(githubVersion, pluginAsset.getDownloadUrl(), pluginTarget);
+        download(pluginAsset.getDownloadUrl(), pluginTarget);
         updateManager.setDownloadedVersion(githubVersion);
         if (!install) {
             deletePlugin();
             if (sender.isPlayer()) {
                 broadcastDownloadStatus(githubVersion, false);
             } else {
-                plugin.getLogger().log(Level.INFO, DOWNLOADED, githubVersion);
+                plugin.getLogger().log(Level.INFO, DOWNLOADED, new Object[]{ "ServerUtils", githubVersion });
             }
             return;
         }
 
+        downloadUpdaterAndReload(pluginTarget);
+    }
+
+    /**
+     * Downloads the updater and restarts the plugin.
+     */
+    public void downloadUpdaterAndReload(File pluginTarget) {
         GitHubResponse updaterResponse = getResponse(GITHUB_UPDATER_LINK);
         if (updaterResponse == null) return;
 
@@ -169,10 +182,12 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
 
         plugin.getLogger().log(Level.INFO, DOWNLOAD_START, updaterAsset.getDownloadUrl());
         File updaterTarget = new File(plugin.getPluginManager().getPluginsFolder(), updaterAsset.getName());
-        download(githubVersion, updaterAsset.getDownloadUrl(), updaterTarget);
-        plugin.getLogger().log(Level.INFO, DOWNLOADED_RESTART, githubVersion);
+        download(updaterAsset.getDownloadUrl(), updaterTarget);
+        plugin.getLogger().log(Level.INFO, DOWNLOADED, new Object[]{ "ServerUtilsUpdater", getVersion(updaterJson) });
 
-        deletePlugin();
+        if (!pluginTarget.equals(getPluginFile())) {
+            deletePlugin();
+        }
         tryReloadPlugin(pluginTarget, updaterTarget);
     }
 
@@ -223,12 +238,7 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
         return jsonObject.getAsJsonPrimitive("tag_name").getAsString().replace("v", "");
     }
 
-    private void download(String githubVersion, String downloadLink, File target) {
-        if (downloadLink == null) {
-            broadcastDownloadStatus(githubVersion, true);
-            return;
-        }
-
+    private void download(String downloadLink, File target) {
         try {
             GitHubResponse response = GitHubUtils.stream(downloadLink);
             if (response.getRateLimit().isRateLimited()) {
@@ -238,32 +248,35 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
 
             GitHubUtils.download(response, target);
         } catch (IOException ex) {
-            broadcastDownloadStatus(githubVersion, true);
-            throw new RuntimeException(DOWNLOAD_ERROR, ex);
+            ex.printStackTrace();
         }
     }
 
+    private File getPluginFile() {
+        return plugin.getPluginManager().getPluginFile(plugin.getPlugin());
+    }
+
     private void deletePlugin() {
-        plugin.getPluginManager().getPluginFile(plugin.getPlugin()).delete();
+        getPluginFile().delete();
     }
 
     private void tryReloadPlugin(File pluginFile, File updaterFile) {
         plugin.getTaskManager().runTask(() -> {
             PluginResult<P> loadResult = plugin.getPluginManager().loadPlugin(updaterFile);
             if (!loadResult.isSuccess()) {
-                plugin.getLogger().log(Level.INFO, UPDATER_LOAD_ERROR, loadResult.getResult().name());
+                loadResult.sendTo(sender, null);
                 return;
             }
 
             PluginResult<P> enableResult = plugin.getPluginManager().enablePlugin(loadResult.getPlugin());
             if (!enableResult.isSuccess() && enableResult.getResult() != Result.ALREADY_ENABLED) {
-                plugin.getLogger().log(Level.INFO, UPDATER_ENABLE_ERROR, enableResult.getResult().name());
+                loadResult.sendTo(sender, null);
                 return;
             }
 
             Updater updater = (Updater) plugin.getPluginManager().getInstance(enableResult.getPlugin());
+            sender.sendMessage(plugin.getMessagesResource().get(MessageKey.SERVERUTILS_UPDATER).toComponent());
             updater.update(pluginFile);
-            updaterFile.delete();
         });
     }
 

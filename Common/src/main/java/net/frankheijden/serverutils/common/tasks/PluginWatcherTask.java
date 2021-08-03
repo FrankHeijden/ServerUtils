@@ -167,7 +167,7 @@ public class PluginWatcherTask<P, T> extends AbstractTask {
                 fileNameToWatchEntryMap.clear();
 
                 PluginResults<P> reloadResults = pluginManager.reloadPlugins(plugins);
-                reloadResults.sendTo(sender, MessageKey.RELOADPLUGIN);
+                reloadResults.sendTo(sender, MessageKey.RELOADPLUGIN_SUCCESS);
 
                 for (PluginResult<P> reloadResult : reloadResults) {
                     if (!reloadResult.isSuccess()) continue;

@@ -37,6 +37,22 @@
           "description": "Reloads the ServerUtils plugin.",
           "display-in-help": true
         },
+        "restart": {
+          "main": "restart",
+          "aliases": [],
+          "permission": "serverutils.restart",
+          "description": "Restart the ServerUtils plugin.",
+          "display-in-help": true,
+          "flags": {
+            "force": {
+              "main": "force",
+              "aliases": ["f"],
+              "permission": "serverutils.restart",
+              "description": "Force restart of the ServerUtils plugin.",
+              "display-in-help": false
+            }
+          }
+        },
         "loadplugin": {
           "main": "loadplugin",
           "aliases": ["lp"],

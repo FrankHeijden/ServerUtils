@@ -36,6 +36,23 @@ public class CommandsResource extends ServerUtilsResource {
         return Collections.emptySet();
     }
 
+    /**
+     * Retrieves all aliases for the given path.
+     */
+    public Set<String> getAllAliases(String path) {
+        Object object = getConfig().get(path);
+        if (object instanceof ServerUtilsConfig) {
+            ServerUtilsConfig config = (ServerUtilsConfig) object;
+
+            Set<String> aliases = new HashSet<>();
+            aliases.add(config.getString("main"));
+            aliases.addAll(config.getStringList("aliases"));
+            return aliases;
+        }
+
+        return Collections.emptySet();
+    }
+
     @Override
     public void migrate(int currentConfigVersion) {
 

@@ -15,9 +15,13 @@
       "file-deleted": "<red>File of plugin <dark_red><plugin></dark_red> has been deleted!"
     },
     "reload": "<dark_aqua>Successfully reloaded <aqua>ServerUtils configurations</aqua>!",
+    "serverutils-updater": "<dark_aqua>Loaded and enabled ServerUtilsUpdater. Completion can be monitored from the console, attempting restart now...",
     "loadplugin": "<dark_aqua>Successfully loaded <aqua><plugin></aqua>!",
     "unloadplugin": "<dark_aqua>Successfully unloaded <aqua><plugin></aqua>!",
-    "reloadplugin": "<dark_aqua>Successfully reloaded <aqua><plugin></aqua>!",
+    "reloadplugin": {
+      "success": "<dark_aqua>Successfully reloaded <aqua><plugin></aqua>!",
+      "serverutils": "<red>Sorry, but you can't reload ServerUtils this way. Please restart using <dark_red>/<command></dark_red>."
+    },
     "depending-plugins": {
       "prefix": "<red>Plugin <dark_red><plugin></dark_red> has depending plugins: ",
       "format": "<dark_red><plugin>",

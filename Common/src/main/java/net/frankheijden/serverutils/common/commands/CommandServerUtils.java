@@ -7,6 +7,7 @@ import cloud.commandframework.context.CommandContext;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -26,6 +27,7 @@ import net.frankheijden.serverutils.common.entities.results.Result;
 import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
+import net.frankheijden.serverutils.common.tasks.UpdateCheckerTask;
 import net.frankheijden.serverutils.common.utils.ListComponentBuilder;
 import net.frankheijden.serverutils.common.utils.KeyValueComponentBuilder;
 import net.kyori.adventure.text.Component;
@@ -58,6 +60,8 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
                 .handler(this::handleHelpCommand));
         manager.command(buildSubcommand(builder, "reload")
                 .handler(this::handleReload));
+        manager.command(buildSubcommand(builder, "restart")
+                .handler(this::handleRestart));
         manager.command(buildSubcommand(builder, "loadplugin")
                 .argument(getArgument("jarFiles"))
                 .handler(this::handleLoadPlugin));
@@ -169,6 +173,16 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         plugin.getMessagesResource().get(MessageKey.RELOAD).sendTo(sender);
     }
 
+    private void handleRestart(CommandContext<C> context) {
+        C sender = context.getSender();
+
+        if (checkDependingPlugins(context, sender, Collections.singletonList(plugin.getPlugin()), "restart")) {
+            return;
+        }
+
+        UpdateCheckerTask.restart(sender);
+    }
+
     private void handleLoadPlugin(CommandContext<C> context) {
         C sender = context.getSender();
         List<File> jarFiles = Arrays.asList(context.get("jarFiles"));
@@ -214,8 +228,12 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
             return;
         }
 
+        if (checkServerUtils(context, sender, plugins)) {
+            return;
+        }
+
         PluginResults<P> reloadResults = plugin.getPluginManager().reloadPlugins(plugins);
-        reloadResults.sendTo(sender, MessageKey.RELOADPLUGIN);
+        reloadResults.sendTo(sender, MessageKey.RELOADPLUGIN_SUCCESS);
     }
 
     protected boolean checkDependingPlugins(CommandContext<C> context, C sender, List<P> plugins, String subcommand) {
@@ -260,11 +278,32 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         return hasDependingPlugins;
     }
 
+    protected boolean checkServerUtils(CommandContext<C> context, C sender, List<P> plugins) {
+        for (P loadedPlugin : plugins) {
+            if (plugin.getPlugin() == loadedPlugin) {
+                String restartCommand = plugin.getCommandsResource().getAllAliases(getRawPath("restart")).stream()
+                        .min(Comparator.comparingInt(String::length))
+                        .orElse("restart");
+                Component component = plugin.getMessagesResource().get(MessageKey.RELOADPLUGIN_SERVERUTILS).toComponent(
+                        Template.of("command", context.getRawInput().peekFirst() + " " + restartCommand)
+                );
+                sender.sendMessage(component);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private void handleWatchPlugin(CommandContext<C> context) {
         C sender = context.getSender();
         List<P> plugins = Arrays.asList(context.get("plugins"));
 
         if (checkDependingPlugins(context, sender, plugins, "watchplugin")) {
+            return;
+        }
+
+        if (checkServerUtils(context, sender, plugins)) {
             return;
         }
 
