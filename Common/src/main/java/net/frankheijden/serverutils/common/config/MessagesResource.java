@@ -85,8 +85,6 @@ public class MessagesResource extends ServerUtilsResource {
 
     @Override
     public void migrate(int currentConfigVersion) {
-        if (currentConfigVersion <= 1) {
-            reset("serverutils.help.format");
-        }
+
     }
 }

@@ -1,5 +1,5 @@
 {
-  "config-version": 2,
+  "config-version": 1,
   "messages": {
     "generic": {
       "prefix": "<aqua><bold>ServerUtils <dark_gray><bold>»<reset> <gray>",
