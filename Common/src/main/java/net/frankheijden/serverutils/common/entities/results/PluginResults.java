@@ -3,7 +3,9 @@ package net.frankheijden.serverutils.common.entities.results;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.config.ConfigKey;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
+import net.kyori.adventure.text.minimessage.Template;
 
 public class PluginResults<T> implements Iterable<PluginResult<T>> {
 
@@ -13,18 +15,18 @@ public class PluginResults<T> implements Iterable<PluginResult<T>> {
         this.results = new ArrayList<>();
     }
 
-    public PluginResults<T> addResult(String pluginId, Result result) {
-        addResult(pluginId, null, result);
+    public PluginResults<T> addResult(String pluginId, Result result, Template... templates) {
+        addResult(pluginId, null, result, templates);
         return this;
     }
 
-    public PluginResults<T> addResult(String pluginId, T plugin) {
-        addResult(pluginId, plugin, Result.SUCCESS);
+    public PluginResults<T> addResult(String pluginId, T plugin, Template... templates) {
+        addResult(pluginId, plugin, Result.SUCCESS, templates);
         return this;
     }
 
-    protected PluginResults<T> addResult(String pluginId, T plugin, Result result) {
-        addResult(new PluginResult<>(pluginId, plugin, result));
+    protected PluginResults<T> addResult(String pluginId, T plugin, Result result, Template... templates) {
+        addResult(new PluginResult<>(pluginId, plugin, result, templates));
         return this;
     }
 
@@ -65,11 +67,11 @@ public class PluginResults<T> implements Iterable<PluginResult<T>> {
     }
 
     /**
-     * Sends the results to given receiver.
+     * Sends the result(s) to the given sender.
      */
-    public void sendTo(ServerCommandSender<?> sender, String action) {
+    public void sendTo(ServerUtilsAudience<?> sender, ConfigKey successKey) {
         for (PluginResult<T> result : results) {
-            result.getResult().sendTo(sender, action, result.getPluginId());
+            result.sendTo(sender, successKey);
         }
     }
 

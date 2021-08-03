@@ -17,8 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import net.frankheijden.serverutils.common.config.MessageKey;
 import net.frankheijden.serverutils.common.entities.AbstractTask;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPluginDescription;
 import net.frankheijden.serverutils.common.entities.exceptions.InvalidPluginDescriptionException;
@@ -27,6 +28,7 @@ import net.frankheijden.serverutils.common.entities.results.PluginResults;
 import net.frankheijden.serverutils.common.entities.results.WatchResult;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.utils.FileUtils;
+import net.kyori.adventure.text.minimessage.Template;
 
 public class PluginWatcherTask<P, T> extends AbstractTask {
 
@@ -37,7 +39,7 @@ public class PluginWatcherTask<P, T> extends AbstractTask {
     };
 
     private final ServerUtilsPlugin<P, T, ?, ?, ?> plugin;
-    private final ServerCommandSender<?> sender;
+    private final ServerUtilsAudience<?> sender;
     private final Map<String, WatchEntry> fileNameToWatchEntryMap;
     private final Map<String, WatchEntry> pluginIdToWatchEntryMap;
 
@@ -48,7 +50,7 @@ public class PluginWatcherTask<P, T> extends AbstractTask {
     /**
      * Constructs a new PluginWatcherTask for the specified plugin.
      */
-    public PluginWatcherTask(ServerUtilsPlugin<P, T, ?, ?, ?> plugin, ServerCommandSender<?> sender, List<P> plugins) {
+    public PluginWatcherTask(ServerUtilsPlugin<P, T, ?, ?, ?> plugin, ServerUtilsAudience<?> sender, List<P> plugins) {
         this.plugin = plugin;
         this.sender = sender;
         this.fileNameToWatchEntryMap = new HashMap<>();
@@ -114,7 +116,7 @@ public class PluginWatcherTask<P, T> extends AbstractTask {
                 ServerUtilsPluginDescription description = descriptionOptional.get();
                 WatchEntry foundEntry = pluginIdToWatchEntryMap.remove(description.getId());
                 if (foundEntry != null) {
-                    send(WatchResult.DELETED_FILE_IS_CREATED.arg(foundEntry.pluginId));
+                    send(WatchResult.DELETED_FILE_IS_CREATED, Template.of("plugin", foundEntry.pluginId));
                     fileNameToWatchEntryMap.put(fileName, foundEntry);
 
                     if (pluginIdToWatchEntryMap.isEmpty()) {
@@ -137,7 +139,7 @@ public class PluginWatcherTask<P, T> extends AbstractTask {
         AbstractPluginManager<P, ?> pluginManager = plugin.getPluginManager();
         Optional<File> fileOptional = pluginManager.getPluginFile(entry.pluginId);
         if (!fileOptional.isPresent()) {
-            send(WatchResult.FILE_DELETED.arg(entry.pluginId));
+            send(WatchResult.FILE_DELETED, Template.of("plugin", entry.pluginId));
 
             fileNameToWatchEntryMap.remove(fileName);
             pluginIdToWatchEntryMap.put(entry.pluginId, entry);
@@ -165,7 +167,7 @@ public class PluginWatcherTask<P, T> extends AbstractTask {
                 fileNameToWatchEntryMap.clear();
 
                 PluginResults<P> reloadResults = pluginManager.reloadPlugins(plugins);
-                reloadResults.sendTo(sender, "reload");
+                reloadResults.sendTo(sender, MessageKey.RELOADPLUGIN);
 
                 for (PluginResult<P> reloadResult : reloadResults) {
                     if (!reloadResult.isSuccess()) continue;
@@ -181,10 +183,10 @@ public class PluginWatcherTask<P, T> extends AbstractTask {
         }, 10L);
     }
 
-    private void send(WatchResult result) {
-        result.sendTo(sender);
+    private void send(WatchResult result, Template... templates) {
+        result.sendTo(sender, templates);
         if (sender.isPlayer()) {
-            result.sendTo(plugin.getChatProvider().getConsoleSender());
+            result.sendTo(plugin.getChatProvider().getConsoleServerAudience(), templates);
         }
     }
 

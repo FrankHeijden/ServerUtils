@@ -11,17 +11,19 @@ import net.frankheijden.serverutils.bungee.listeners.BungeePlayerListener;
 import net.frankheijden.serverutils.bungee.managers.BungeePluginManager;
 import net.frankheijden.serverutils.bungee.managers.BungeeTaskManager;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
+import net.kyori.adventure.platform.bungeecord.BungeeAudiences;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 
-public class BungeePlugin extends ServerUtilsPlugin<Plugin, ScheduledTask, BungeeCommandSender, CommandSender, BungeePluginDescription> {
+public class BungeePlugin extends ServerUtilsPlugin<Plugin, ScheduledTask, BungeeAudience, CommandSender, BungeePluginDescription> {
 
     private final ServerUtils plugin;
     private final BungeePluginManager pluginManager;
     private final BungeeTaskManager taskManager;
     private final BungeeResourceProvider resourceProvider;
-    private final BungeeChatProvider chatProvider;
+    private final BungeeAudiences audiences;
+    private final BungeeAudienceProvider chatProvider;
 
     /**
      * Creates a new BungeePlugin instance of ServerUtils.
@@ -32,16 +34,17 @@ public class BungeePlugin extends ServerUtilsPlugin<Plugin, ScheduledTask, Bunge
         this.pluginManager = new BungeePluginManager();
         this.taskManager = new BungeeTaskManager();
         this.resourceProvider = new BungeeResourceProvider(plugin);
-        this.chatProvider = new BungeeChatProvider();
+        this.audiences = BungeeAudiences.create(plugin);
+        this.chatProvider = new BungeeAudienceProvider(plugin, audiences);
     }
 
     @Override
-    protected BungeeCommandManager<BungeeCommandSender> newCommandManager() {
+    protected BungeeCommandManager<BungeeAudience> newCommandManager() {
         return new BungeeCommandManager<>(
                 plugin,
-                AsynchronousCommandExecutionCoordinator.<BungeeCommandSender>newBuilder().build(),
+                AsynchronousCommandExecutionCoordinator.<BungeeAudience>newBuilder().build(),
                 chatProvider::get,
-                BungeeCommandSender::getSource
+                BungeeAudience::getSource
         );
     }
 
@@ -71,7 +74,7 @@ public class BungeePlugin extends ServerUtilsPlugin<Plugin, ScheduledTask, Bunge
     }
 
     @Override
-    public BungeeChatProvider getChatProvider() {
+    public BungeeAudienceProvider getChatProvider() {
         return chatProvider;
     }
 
@@ -88,6 +91,11 @@ public class BungeePlugin extends ServerUtilsPlugin<Plugin, ScheduledTask, Bunge
     @Override
     protected void enablePlugin() {
         plugin.getProxy().getPluginManager().registerListener(plugin, new BungeePlayerListener(this));
+    }
+
+    @Override
+    protected void disablePlugin() {
+        this.audiences.close();
     }
 
     @Override

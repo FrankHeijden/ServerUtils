@@ -5,38 +5,47 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.ComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.junit.jupiter.api.Test;
 
 class ListBuilderTest {
 
-    private final String seperator = ", ";
-    private final String lastSeperator = " and ";
+    private static final ComponentSerializer<Component, TextComponent, String> plainTextComponentSerializer
+            = PlainTextComponentSerializer.plainText();
+    private final Component separator = Component.text(", ");
+    private final Component lastSeparator = Component.text(" and ");
 
     @Test
     void testToStringOneElement() {
-        String list = ListBuilder.createStrings(singletonList("Nice"))
-                .seperator(seperator)
-                .lastSeperator(lastSeperator)
-                .toString();
-        assertEquals("Nice", list);
+        Component component = ListComponentBuilder.create(singletonList("Nice"))
+                .format(Component::text)
+                .separator(separator)
+                .lastSeparator(lastSeparator)
+                .build();
+        assertEquals("Nice", plainTextComponentSerializer.serialize(component));
     }
 
     @Test
     void testToStringTwoElements() {
-        String list = ListBuilder.createStrings(asList("Nice", "List"))
-                .seperator(seperator)
-                .lastSeperator(lastSeperator)
-                .toString();
-        assertEquals("Nice and List", list);
+        Component component = ListComponentBuilder.create(asList("Nice", "List"))
+                .format(Component::text)
+                .separator(separator)
+                .lastSeparator(lastSeparator)
+                .build();
+        assertEquals("Nice and List", plainTextComponentSerializer.serialize(component));
     }
 
     @Test
     void testToStringMultipleElements() {
-        String list = ListBuilder.createStrings(asList("Nice", "List", "You", "Having", "There"))
-                .seperator(seperator)
-                .lastSeperator(lastSeperator)
-                .toString();
-        assertEquals("Nice, List, You, Having and There", list);
+        Component component = ListComponentBuilder.create(asList("Nice", "List", "You", "Having", "There"))
+                .format(Component::text)
+                .separator(separator)
+                .lastSeparator(lastSeparator)
+                .build();
+        assertEquals("Nice, List, You, Having and There", plainTextComponentSerializer.serialize(component));
     }
 
     @Test
@@ -47,12 +56,12 @@ class ListBuilderTest {
                 new TestObject("pre3", 4)
         );
 
-        String list = ListBuilder.create(objects)
-                .format(obj -> obj.prefix + "-" + obj.value)
-                .seperator("; ")
-                .lastSeperator(" and at last ")
-                .toString();
-        assertEquals("pre1-2; pre2-3 and at last pre3-4", list);
+        Component component = ListComponentBuilder.create(objects)
+                .format(obj -> Component.text(obj.prefix + "-" + obj.value))
+                .separator(Component.text("; "))
+                .lastSeparator(Component.text(" and at last "))
+                .build();
+        assertEquals("pre1-2; pre2-3 and at last pre3-4", plainTextComponentSerializer.serialize(component));
     }
 
     private static class TestObject {

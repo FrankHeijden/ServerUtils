@@ -1,6 +1,6 @@
 package net.frankheijden.serverutils.bukkit.listeners;
 
-import net.frankheijden.serverutils.bukkit.entities.BukkitCommandSender;
+import net.frankheijden.serverutils.bukkit.entities.BukkitAudience;
 import net.frankheijden.serverutils.bukkit.entities.BukkitPlugin;
 import net.frankheijden.serverutils.common.listeners.PlayerListener;
 import org.bukkit.event.EventHandler;
@@ -10,7 +10,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 
 public class BukkitPlayerListener
-        extends PlayerListener<BukkitPlugin, Plugin, BukkitCommandSender>
+        extends PlayerListener<BukkitPlugin, Plugin, BukkitAudience>
         implements Listener {
 
     public BukkitPlayerListener(BukkitPlugin plugin) {

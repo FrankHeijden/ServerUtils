@@ -34,6 +34,9 @@ subprojects {
         implementation "com.github.FrankHeijden.cloud:cloud-core:${rootProject.cloudVersion}"
         implementation "com.github.FrankHeijden.cloud:cloud-brigadier:${rootProject.cloudVersion}"
         implementation 'com.github.FrankHeijden:MinecraftReflection:1.0.0'
+        implementation ('net.kyori:adventure-text-minimessage:4.1.0-SNAPSHOT') {
+            exclude group: 'net.kyori', module: 'adventure-api'
+        }
         implementation 'com.google.guava:guava:30.1.1-jre'
         implementation 'com.google.code.gson:gson:2.8.6'
         implementation 'me.lucko:commodore:1.10'
@@ -90,6 +93,8 @@ subprojects {
         relocate 'com.google.common.graph', dependencyDir + '.common.graph'
         relocate 'dev.frankheijden.minecraftreflection', dependencyDir + '.minecraftreflection'
         relocate 'cloud.commandframework', dependencyDir + '.cloud'
+        relocate 'net.kyori.adventure.text.minimessage', dependencyDir + '.adventure.text.minimessage'
+        relocate 'me.lucko.commodore', dependencyDir + '.commodore'
         relocate 'io.leangen.geantyref', dependencyDir + '.typetoken'
     }
 

@@ -12,10 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 
-public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?, ?>, C extends ServerCommandSender<?>> {
+public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?, ?>, C extends ServerUtilsAudience<?>> {
 
     protected final U plugin;
     protected final String commandName;

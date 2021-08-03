@@ -1,60 +1,35 @@
 package net.frankheijden.serverutils.common.entities.results;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
-import net.frankheijden.serverutils.common.config.MessagesResource;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.config.ConfigKey;
+import net.frankheijden.serverutils.common.config.MessageKey;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.Template;
 
 public enum WatchResult implements AbstractResult {
+    START(MessageKey.WATCHPLUGIN_START),
+    CHANGE(MessageKey.WATCHPLUGIN_CHANGE),
+    ALREADY_WATCHING(MessageKey.WATCHPLUGIN_ALREADY_WATCHING),
+    NOT_WATCHING(MessageKey.WATCHPLUGIN_NOT_WATCHING),
+    FILE_DELETED(MessageKey.WATCHPLUGIN_FILE_DELETED),
+    DELETED_FILE_IS_CREATED(MessageKey.WATCHPLUGIN_DELETED_FILE_IS_CREATED),
+    STOPPED(MessageKey.WATCHPLUGIN_STOPPED),
+    ;
 
-    START,
-    CHANGE,
-    ALREADY_WATCHING,
-    NOT_WATCHING,
-    FILE_DELETED,
-    DELETED_FILE_IS_CREATED,
-    STOPPED;
+    private final ConfigKey key;
 
-    private List<String> args = null;
-
-    public WatchResult arg(String arg) {
-        return args(Collections.singletonList(arg));
+    WatchResult(ConfigKey key) {
+        this.key = key;
     }
 
-    public WatchResult args(List<String> args) {
-        this.args = args;
-        return this;
+    public void sendTo(ServerUtilsAudience<?> sender, Template... templates) {
+        Component component = ServerUtilsApp.getPlugin().getMessagesResource().get(key).toComponent(templates);
+        sender.sendMessage(component);
     }
 
     @Override
-    public void sendTo(ServerCommandSender<?> sender, String action, String what) {
-        arg(what);
-        sendTo(sender);
-    }
-
-    /**
-     * Sends the result(s) to the console and specified sender.
-     */
-    public void sendTo(ServerCommandSender<?> sender) {
-        String path = "serverutils.watchplugin." + this.name().toLowerCase();
-        List<String[]> sendArguments = new ArrayList<>();
-        if (args == null || args.isEmpty()) {
-            sendArguments.add(new String[0]);
-        } else {
-            for (String what : args) {
-                sendArguments.add(new String[] { "%what%", what });
-            }
-        }
-
-        MessagesResource messages = ServerUtilsApp.getPlugin().getMessagesResource();
-        ServerCommandSender<?> console = ServerUtilsApp.getPlugin().getChatProvider().getConsoleSender();
-        for (String[] replacements : sendArguments) {
-            messages.sendMessage(sender, path, replacements);
-            if (sender.isPlayer()) {
-                messages.sendMessage(console, path, replacements);
-            }
-        }
+    public ConfigKey getKey() {
+        return key;
     }
 }

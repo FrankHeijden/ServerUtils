@@ -11,7 +11,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
-import net.frankheijden.serverutils.bukkit.entities.BukkitCommandSender;
+import net.frankheijden.serverutils.bukkit.config.BukkitMessageKey;
+import net.frankheijden.serverutils.bukkit.entities.BukkitAudience;
 import net.frankheijden.serverutils.bukkit.entities.BukkitPlugin;
 import net.frankheijden.serverutils.bukkit.managers.BukkitPluginManager;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
@@ -20,17 +21,21 @@ import net.frankheijden.serverutils.bukkit.utils.ReloadHandler;
 import net.frankheijden.serverutils.bukkit.utils.VersionReloadHandler;
 import net.frankheijden.serverutils.common.commands.CommandServerUtils;
 import net.frankheijden.serverutils.common.commands.arguments.PluginsArgument;
+import net.frankheijden.serverutils.common.config.MessageKey;
+import net.frankheijden.serverutils.common.config.MessagesResource;
 import net.frankheijden.serverutils.common.entities.results.PluginResults;
-import net.frankheijden.serverutils.common.utils.FormatBuilder;
+import net.frankheijden.serverutils.common.utils.KeyValueComponentBuilder;
 import net.frankheijden.serverutils.common.utils.ForwardFilter;
-import net.frankheijden.serverutils.common.utils.ListBuilder;
+import net.frankheijden.serverutils.common.utils.ListComponentBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.Template;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
-public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, Plugin, BukkitCommandSender> {
+public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, Plugin, BukkitAudience> {
 
     private static final Map<String, ReloadHandler> supportedConfigs;
 
@@ -53,8 +58,8 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
 
     @Override
     public void register(
-            CommandManager<BukkitCommandSender> manager,
-            cloud.commandframework.Command.Builder<BukkitCommandSender> builder
+            CommandManager<BukkitAudience> manager,
+            cloud.commandframework.Command.Builder<BukkitAudience> builder
     ) {
         super.register(manager, builder);
 
@@ -68,7 +73,7 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
                 })
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
-        addArgument(CommandArgument.<BukkitCommandSender, String>ofType(String.class, "config")
+        addArgument(CommandArgument.<BukkitAudience, String>ofType(String.class, "config")
                 .manager(manager)
                 .withSuggestionsProvider((context, s) -> supportedConfigNames)
                 .build());
@@ -88,36 +93,36 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
                 .handler(this::handleReloadConfig));
     }
 
-    private void handleEnablePlugin(CommandContext<BukkitCommandSender> context) {
-        BukkitCommandSender sender = context.getSender();
+    private void handleEnablePlugin(CommandContext<BukkitAudience> context) {
+        BukkitAudience sender = context.getSender();
         List<Plugin> plugins = Arrays.asList(context.get("plugins"));
 
-        PluginResults<Plugin> result = plugin.getPluginManager().enablePlugins(plugins);
-        result.sendTo(sender, "enabl");
+        PluginResults<Plugin> enableResults = plugin.getPluginManager().enablePlugins(plugins);
+        enableResults.sendTo(sender, BukkitMessageKey.ENABLEPLUGIN);
     }
 
-    private void handleDisablePlugin(CommandContext<BukkitCommandSender> context) {
-        BukkitCommandSender sender = context.getSender();
+    private void handleDisablePlugin(CommandContext<BukkitAudience> context) {
+        BukkitAudience sender = context.getSender();
         List<Plugin> plugins = Arrays.asList(context.get("plugins"));
 
         if (checkDependingPlugins(context, sender, plugins, "disableplugin")) {
             return;
         }
 
-        PluginResults<Plugin> result = plugin.getPluginManager().disablePlugins(plugins);
-        result.sendTo(sender, "disabl");
+        PluginResults<Plugin> disableResults = plugin.getPluginManager().disablePlugins(plugins);
+        disableResults.sendTo(sender, BukkitMessageKey.DISABLEPLUGIN);
     }
 
-    private void handleReloadConfig(CommandContext<BukkitCommandSender> context) {
-        BukkitCommandSender sender = context.getSender();
+    private void handleReloadConfig(CommandContext<BukkitAudience> context) {
+        BukkitAudience sender = context.getSender();
         String config = context.get("config");
 
+        MessagesResource messages = plugin.getMessagesResource();
         ReloadHandler handler = supportedConfigs.get(config);
         if (handler == null) {
-            plugin.getMessagesResource().sendMessage(
+            messages.get(BukkitMessageKey.RELOADCONFIG_NOT_EXISTS).sendTo(
                     sender,
-                    "serverutils.reloadconfig.not_exists",
-                    "%what%", config
+                    Template.of("config", config)
             );
             return;
         }
@@ -127,83 +132,82 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
             int max = versionReloadHandler.getMinecraftVersionMaximum();
 
             if (MinecraftReflectionVersion.MINOR > max) {
-                plugin.getMessagesResource().sendMessage(
+                messages.get(BukkitMessageKey.RELOADCONFIG_NOT_SUPPORTED).sendTo(
                         sender,
-                        "serverutils.reloadconfig.not_supported",
-                        "%what%", config
+                        Template.of("config", config)
                 );
                 return;
             }
         }
 
-        String[] replacements = new String[]{ "%action%", "reload", "%what%", config };
-
-        ForwardFilter filter = new ForwardFilter(plugin.getChatProvider(), sender);
+        ForwardFilter filter = new ForwardFilter(sender);
         filter.start(Bukkit.getLogger());
         try {
             handler.handle();
             filter.stop(Bukkit.getLogger());
 
-            String path = "serverutils." + (filter.hasWarnings() ? "warning" : "success");
-            plugin.getMessagesResource().sendMessage(sender, path, replacements);
+            BukkitMessageKey key = filter.hasWarnings()
+                    ? BukkitMessageKey.RELOADCONFIG_WARNINGS
+                    : BukkitMessageKey.RELOADCONFIG_SUCCESS;
+            plugin.getMessagesResource().get(key).sendTo(sender, Template.of("config", config));
         } catch (Exception ex) {
             filter.stop(Bukkit.getLogger());
 
             ex.printStackTrace();
-            plugin.getMessagesResource().sendMessage(sender, "serverutils.error", replacements);
+            plugin.getMessagesResource().get(MessageKey.GENERIC_ERROR).sendTo(sender);
         }
     }
 
     @Override
-    protected FormatBuilder createPluginInfo(
-            FormatBuilder builder,
-            Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
+    protected KeyValueComponentBuilder createPluginInfo(
+            KeyValueComponentBuilder builder,
+            Function<Consumer<ListComponentBuilder<String>>, Component> listBuilderFunction,
             Plugin bukkitPlugin
     ) {
         PluginDescriptionFile description = bukkitPlugin.getDescription();
 
-        builder.add("Name", bukkitPlugin.getName())
-                .add("Full Name", description.getFullName())
-                .add("Version", description.getVersion())
-                .add("Website", description.getWebsite())
-                .add("Authors", listBuilderFunction.apply(b -> b.addAll(description.getAuthors())))
-                .add("Description", description.getDescription())
-                .add("Main", description.getMain())
-                .add("Prefix", description.getPrefix())
-                .add("Load Order", description.getLoad().name())
-                .add("Load Before", listBuilderFunction.apply(b -> b.addAll(description.getLoadBefore())))
-                .add("Depend", listBuilderFunction.apply(b -> b.addAll(description.getDepend())))
-                .add("Soft Depend", listBuilderFunction.apply(b -> b.addAll(description.getSoftDepend())));
+        builder.key("Name").value(bukkitPlugin.getName())
+                .key("Full Name").value(description.getFullName())
+                .key("Version").value(description.getVersion())
+                .key("Website").value(description.getWebsite())
+                .key("Authors").value(listBuilderFunction.apply(b -> b.addAll(description.getAuthors())))
+                .key("Description").value(description.getDescription())
+                .key("Main").value(description.getMain())
+                .key("Prefix").value(description.getPrefix())
+                .key("Load Order").value(description.getLoad().name())
+                .key("Load Before").value(listBuilderFunction.apply(b -> b.addAll(description.getLoadBefore())))
+                .key("Depend").value(listBuilderFunction.apply(b -> b.addAll(description.getDepend())))
+                .key("Soft Depend").value(listBuilderFunction.apply(b -> b.addAll(description.getSoftDepend())));
 
         if (MinecraftReflectionVersion.MINOR >= 13) {
-            builder.add("API Version", description.getAPIVersion());
+            builder.key("API Version").value(description.getAPIVersion());
         }
 
         if (MinecraftReflectionVersion.MINOR >= 15) {
-            builder.add("Provides", listBuilderFunction.apply(b -> b.addAll(description.getProvides())));
+            builder.key("Provides").value(listBuilderFunction.apply(b -> b.addAll(description.getProvides())));
         }
 
         return builder;
     }
 
     @Override
-    protected FormatBuilder createCommandInfo(
-            FormatBuilder builder,
-            Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
+    protected KeyValueComponentBuilder createCommandInfo(
+            KeyValueComponentBuilder builder,
+            Function<Consumer<ListComponentBuilder<String>>, Component> listBuilderFunction,
             String commandName
     ) {
         Command cmd = BukkitPluginManager.getCommand(commandName);
-        builder.add("Name", cmd.getName());
+        builder.key("Name").value(cmd.getName());
 
         if (cmd instanceof PluginIdentifiableCommand) {
-            builder.add("Plugin", ((PluginIdentifiableCommand) cmd).getPlugin().getName());
+            builder.key("Plugin").value(((PluginIdentifiableCommand) cmd).getPlugin().getName());
         }
 
-        return builder.add("Aliases", listBuilderFunction.apply(b -> b.addAll(cmd.getAliases())))
-                .add("Usage", cmd.getUsage())
-                .add("Description", cmd.getDescription())
-                .add("Label", cmd.getLabel())
-                .add("Permission", cmd.getPermission())
-                .add("Permission Message", cmd.getPermissionMessage());
+        return builder.key("Aliases").value(listBuilderFunction.apply(b -> b.addAll(cmd.getAliases())))
+                .key("Usage").value(cmd.getUsage())
+                .key("Description").value(cmd.getDescription())
+                .key("Label").value(cmd.getLabel())
+                .key("Permission").value(cmd.getPermission())
+                .key("Permission Message").value(cmd.getPermissionMessage());
     }
 }

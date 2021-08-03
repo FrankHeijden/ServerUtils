@@ -15,13 +15,13 @@ import net.frankheijden.serverutils.velocity.listeners.VelocityPlayerListener;
 import net.frankheijden.serverutils.velocity.managers.VelocityPluginManager;
 import net.frankheijden.serverutils.velocity.managers.VelocityTaskManager;
 
-public class VelocityPlugin extends ServerUtilsPlugin<PluginContainer, ScheduledTask, VelocityCommandSender, CommandSource, VelocityPluginDescription> {
+public class VelocityPlugin extends ServerUtilsPlugin<PluginContainer, ScheduledTask, VelocityAudience, CommandSource, VelocityPluginDescription> {
 
     private final ServerUtils plugin;
     private final VelocityPluginManager pluginManager;
     private final VelocityTaskManager taskManager;
     private final VelocityResourceProvider resourceProvider;
-    private final VelocityChatProvider chatProvider;
+    private final VelocityAudienceProvider chatProvider;
 
     /**
      * Creates a new BungeePlugin instance of ServerUtils.
@@ -36,17 +36,17 @@ public class VelocityPlugin extends ServerUtilsPlugin<PluginContainer, Scheduled
         );
         this.taskManager = new VelocityTaskManager(plugin);
         this.resourceProvider = new VelocityResourceProvider(plugin);
-        this.chatProvider = new VelocityChatProvider(plugin);
+        this.chatProvider = new VelocityAudienceProvider(plugin);
     }
 
     @Override
-    protected VelocityCommandManager<VelocityCommandSender> newCommandManager() {
-        VelocityCommandManager<VelocityCommandSender> commandManager = new VelocityCommandManager<>(
+    protected VelocityCommandManager<VelocityAudience> newCommandManager() {
+        VelocityCommandManager<VelocityAudience> commandManager = new VelocityCommandManager<>(
                 plugin.getPluginContainer(),
                 plugin.getProxy(),
-                AsynchronousCommandExecutionCoordinator.<VelocityCommandSender>newBuilder().build(),
+                AsynchronousCommandExecutionCoordinator.<VelocityAudience>newBuilder().build(),
                 chatProvider::get,
-                VelocityCommandSender::getSource
+                VelocityAudience::getSource
         );
         handleBrigadier(commandManager.brigadierManager());
         return commandManager;
@@ -78,7 +78,7 @@ public class VelocityPlugin extends ServerUtilsPlugin<PluginContainer, Scheduled
     }
 
     @Override
-    public VelocityChatProvider getChatProvider() {
+    public VelocityAudienceProvider getChatProvider() {
         return this.chatProvider;
     }
 

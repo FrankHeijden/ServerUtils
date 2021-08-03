@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import net.kyori.adventure.text.minimessage.Template;
 
 public class CloseablePluginResult<T> extends PluginResult<T> implements Closeable {
 
@@ -14,8 +15,14 @@ public class CloseablePluginResult<T> extends PluginResult<T> implements Closeab
         this.closeables = Collections.emptyList();
     }
 
-    public CloseablePluginResult(String pluginId, T plugin, Result result, List<Closeable> closeables) {
-        super(pluginId, plugin, result);
+    public CloseablePluginResult(
+            String pluginId,
+            T plugin,
+            Result result,
+            List<Closeable> closeables,
+            Template... templates
+    ) {
+        super(pluginId, plugin, result, templates);
         this.closeables = closeables;
     }
 

@@ -6,10 +6,15 @@ import cloud.commandframework.context.CommandContext;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.PluginDescription;
 import net.frankheijden.serverutils.common.commands.CommandPlugins;
-import net.frankheijden.serverutils.velocity.entities.VelocityCommandSender;
+import net.frankheijden.serverutils.common.config.MessageKey;
+import net.frankheijden.serverutils.common.config.MessagesResource;
+import net.frankheijden.serverutils.velocity.entities.VelocityAudience;
 import net.frankheijden.serverutils.velocity.entities.VelocityPlugin;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.minimessage.Template;
 
-public class VelocityCommandPlugins extends CommandPlugins<VelocityPlugin, PluginContainer, VelocityCommandSender> {
+public class VelocityCommandPlugins extends CommandPlugins<VelocityPlugin, PluginContainer, VelocityAudience> {
 
     public VelocityCommandPlugins(VelocityPlugin plugin) {
         super(plugin);
@@ -17,8 +22,8 @@ public class VelocityCommandPlugins extends CommandPlugins<VelocityPlugin, Plugi
 
     @Override
     protected void register(
-            CommandManager<VelocityCommandSender> manager,
-            Command.Builder<VelocityCommandSender> builder
+            CommandManager<VelocityAudience> manager,
+            Command.Builder<VelocityAudience> builder
     ) {
         manager.command(builder
                 .flag(parseFlag("version"))
@@ -26,26 +31,25 @@ public class VelocityCommandPlugins extends CommandPlugins<VelocityPlugin, Plugi
     }
 
     @Override
-    protected void handlePlugins(CommandContext<VelocityCommandSender> context) {
-        VelocityCommandSender sender = context.getSender();
+    protected void handlePlugins(CommandContext<VelocityAudience> context) {
+        VelocityAudience sender = context.getSender();
         boolean hasVersionFlag = context.flags().contains("version");
 
+        MessagesResource messages = plugin.getMessagesResource();
         handlePlugins(sender, plugin.getPluginManager().getPluginsSorted(), container -> {
             PluginDescription description = container.getDescription();
 
-            String message = plugin.getMessagesResource().getMessage(
-                    "serverutils.plugins.format",
-                    "%plugin%", description.getId()
-            );
-
+            TextComponent.Builder builder = Component.text();
+            builder.append(messages.get(MessageKey.PLUGINS_FORMAT).toComponent(
+                    Template.of("plugin", description.getId())
+            ));
             if (hasVersionFlag) {
-                message += plugin.getMessagesResource().getMessage(
-                        "serverutils.plugins.version",
-                        "%version%", description.getVersion().orElse("<UNKNOWN>")
-                );
+                builder.append(messages.get(MessageKey.PLUGINS_FORMAT).toComponent(
+                        Template.of("version", description.getVersion().orElse("<UNKNOWN>"))
+                ));
             }
 
-            return message;
+            return builder.build();
         });
     }
 }

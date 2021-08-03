@@ -7,11 +7,11 @@ import java.util.Optional;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPluginDescription;
 import net.frankheijden.serverutils.common.entities.results.CloseablePluginResult;
 import net.frankheijden.serverutils.common.entities.results.PluginResult;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.tasks.UpdateCheckerTask;
 
-public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S, D>, P, T, C extends ServerCommandSender<S>, S, D extends ServerUtilsPluginDescription> {
+public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S, D>, P, T, C extends ServerUtilsAudience<S>, S, D extends ServerUtilsPluginDescription> {
 
     public static final int BSTATS_METRICS_ID = 7790;
     public static final String VERSION = "{version}";
@@ -31,7 +31,7 @@ public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S, D>, P, T, C 
             U extends ServerUtilsPlugin<P, T, C, S, D>,
             P,
             T,
-            C extends ServerCommandSender<S>,
+            C extends ServerUtilsAudience<S>,
             S,
             D extends ServerUtilsPluginDescription
         > void init(
@@ -45,7 +45,7 @@ public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S, D>, P, T, C 
      * Tries checking for updates if enabled by the config.
      */
     public static void tryCheckForUpdates() {
-        UpdateCheckerTask.tryStart(getPlugin(), getPlugin().getChatProvider().getConsoleSender(), "boot");
+        UpdateCheckerTask.tryStart(getPlugin(), getPlugin().getChatProvider().getConsoleServerAudience(), "boot");
     }
 
     /**
@@ -65,13 +65,13 @@ public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S, D>, P, T, C 
             File file = plugin.getPluginManager().getPluginFile(updaterPlugin);
             PluginResult<P> disableResult = plugin.getPluginManager().disablePlugin(updaterPlugin);
             if (!disableResult.isSuccess()) {
-                disableResult.getResult().sendTo(plugin.getChatProvider().getConsoleSender(), "disabl", updaterName);
+                disableResult.sendTo(plugin.getChatProvider().getConsoleServerAudience(), null);
                 return;
             }
 
             CloseablePluginResult<P> unloadResult = plugin.getPluginManager().unloadPlugin(disableResult.getPlugin());
             if (!unloadResult.isSuccess()) {
-                unloadResult.getResult().sendTo(plugin.getChatProvider().getConsoleSender(), "unload", updaterName);
+                unloadResult.sendTo(plugin.getChatProvider().getConsoleServerAudience(), null);
                 return;
             }
 
@@ -96,7 +96,7 @@ public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S, D>, P, T, C 
             U extends ServerUtilsPlugin<P, T, C, S, D>,
             P,
             T,
-            C extends ServerCommandSender<S>,
+            C extends ServerUtilsAudience<S>,
             S,
             D extends ServerUtilsPluginDescription
         > U getPlugin() {

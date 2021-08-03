@@ -3,6 +3,7 @@ package net.frankheijden.serverutils.common.entities.results;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
+import net.kyori.adventure.text.minimessage.Template;
 
 public class CloseablePluginResults<T> extends PluginResults<T> implements Closeable {
 
@@ -16,25 +17,31 @@ public class CloseablePluginResults<T> extends PluginResults<T> implements Close
     }
 
     @Override
-    public CloseablePluginResults<T> addResult(String pluginId, Result result) {
-        super.addResult(pluginId, result);
+    public CloseablePluginResults<T> addResult(String pluginId, Result result, Template... templates) {
+        super.addResult(pluginId, result, templates);
         return this;
     }
 
     @Override
-    public CloseablePluginResults<T> addResult(String pluginId, T plugin) {
-        super.addResult(pluginId, plugin);
+    public CloseablePluginResults<T> addResult(String pluginId, T plugin, Template... templates) {
+        super.addResult(pluginId, plugin, templates);
         return this;
     }
 
     @Override
-    protected CloseablePluginResults<T> addResult(String pluginId, T plugin, Result result) {
-        super.addResult(pluginId, plugin, result);
+    protected CloseablePluginResults<T> addResult(String pluginId, T plugin, Result result, Template... templates
+    ) {
+        super.addResult(pluginId, plugin, result, templates);
         return this;
     }
 
-    public CloseablePluginResults<T> addResult(String pluginId, T plugin, List<Closeable> closeables) {
-        return addResult(new CloseablePluginResult<>(pluginId, plugin, Result.SUCCESS, closeables));
+    public CloseablePluginResults<T> addResult(
+            String pluginId,
+            T plugin,
+            List<Closeable> closeables,
+            Template... templates
+    ) {
+        return addResult(new CloseablePluginResult<>(pluginId, plugin, Result.SUCCESS, closeables, templates));
     }
 
     @Override

@@ -15,21 +15,24 @@ import java.util.function.IntFunction;
 import net.frankheijden.serverutils.common.commands.arguments.JarFilesArgument;
 import net.frankheijden.serverutils.common.commands.arguments.PluginArgument;
 import net.frankheijden.serverutils.common.commands.arguments.PluginsArgument;
+import net.frankheijden.serverutils.common.config.MessageKey;
 import net.frankheijden.serverutils.common.config.MessagesResource;
 import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.frankheijden.serverutils.common.entities.results.CloseablePluginResults;
 import net.frankheijden.serverutils.common.entities.results.PluginResult;
 import net.frankheijden.serverutils.common.entities.results.PluginResults;
+import net.frankheijden.serverutils.common.entities.results.PluginWatchResults;
 import net.frankheijden.serverutils.common.entities.results.Result;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
-import net.frankheijden.serverutils.common.entities.results.WatchResult;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
-import net.frankheijden.serverutils.common.utils.FormatBuilder;
-import net.frankheijden.serverutils.common.utils.ListBuilder;
-import net.frankheijden.serverutils.common.utils.ListFormat;
+import net.frankheijden.serverutils.common.utils.ListComponentBuilder;
+import net.frankheijden.serverutils.common.utils.KeyValueComponentBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.minimessage.Template;
 
-public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?, ?>, P, C extends ServerCommandSender<?>>
+public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?, ?>, P, C extends ServerUtilsAudience<?>>
         extends ServerUtilsCommand<U, C> {
 
     protected final IntFunction<P[]> arrayCreator;
@@ -92,10 +95,11 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
 
     private void handleHelpCommand(CommandContext<C> context) {
         C sender = context.getSender();
-        plugin.getMessagesResource().sendMessage(sender, "serverutils.help.header");
 
-        FormatBuilder builder = FormatBuilder.create(plugin.getMessagesResource().getMessage("serverutils.help.format"))
-                .orderedKeys("%command%", "%help%");
+        MessagesResource messages = plugin.getMessagesResource();
+        sender.sendMessage(messages.get(MessageKey.HELP_HEADER).toComponent());
+
+        MessagesResource.Message helpFormatMessage = messages.get(MessageKey.HELP_FORMAT);
 
         ServerUtilsConfig config = (ServerUtilsConfig) plugin.getCommandsResource().getConfig().get("commands");
         for (String commandName : config.getKeys()) {
@@ -104,7 +108,10 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
             String shortestCommandAlias = determineShortestAlias(commandElement);
 
             if (commandElement.shouldDisplayInHelp()) {
-                builder.add(shortestCommandAlias, commandElement.getDescription().getDescription());
+                sender.sendMessage(helpFormatMessage.toComponent(
+                        Template.of("command", shortestCommandAlias),
+                        Template.of("help", commandElement.getDescription().getDescription())
+                ));
             }
 
             Object subcommandsObject = commandConfig.get("subcommands");
@@ -116,10 +123,10 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
                     CommandElement subcommandElement = parseElement(subcommandConfig);
                     if (subcommandElement.shouldDisplayInHelp()) {
                         String shortestSubcommandAlias = determineShortestAlias(subcommandElement);
-                        builder.add(
-                                shortestCommandAlias + ' ' + shortestSubcommandAlias,
-                                subcommandElement.getDescription().getDescription()
-                        );
+                        sender.sendMessage(helpFormatMessage.toComponent(
+                                Template.of("command", shortestCommandAlias + ' ' + shortestSubcommandAlias),
+                                Template.of("help", subcommandElement.getDescription().getDescription())
+                        ));
                     }
                 }
             }
@@ -134,16 +141,16 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
                     if (flagElement.shouldDisplayInHelp()) {
                         String shortestFlagAlias = determineShortestAlias(flagElement);
                         String flagPrefix = "-" + (flagElement.getMain().equals(shortestFlagAlias) ? "_" : "");
-                        builder.add(
-                                shortestCommandAlias + ' ' + flagPrefix + shortestFlagAlias,
-                                flagElement.getDescription().getDescription()
-                        );
+                        sender.sendMessage(helpFormatMessage.toComponent(
+                                Template.of("command", shortestCommandAlias + ' ' + flagPrefix + shortestFlagAlias),
+                                Template.of("help", flagElement.getDescription().getDescription())
+                        ));
                     }
                 }
             }
         }
-        builder.build().forEach(msg -> plugin.getMessagesResource().sendRawMessage(sender, msg));
-        plugin.getMessagesResource().sendMessage(sender, "serverutils.help.footer");
+
+        sender.sendMessage(messages.get(MessageKey.HELP_FOOTER).toComponent());
     }
 
     private String determineShortestAlias(CommandElement element) {
@@ -159,9 +166,7 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
     private void handleReload(CommandContext<C> context) {
         C sender = context.getSender();
         plugin.reload();
-        plugin.getMessagesResource().sendMessage(sender, "serverutils.success",
-                "%action%", "reload",
-                "%what%", "ServerUtils configurations");
+        plugin.getMessagesResource().get(MessageKey.RELOAD).sendTo(sender);
     }
 
     private void handleLoadPlugin(CommandContext<C> context) {
@@ -172,12 +177,12 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         PluginResults<P> loadResults = pluginManager.loadPlugins(jarFiles);
         if (!loadResults.isSuccess()) {
             PluginResult<P> failedResult = loadResults.last();
-            failedResult.getResult().sendTo(sender, "load", failedResult.getPluginId());
+            failedResult.sendTo(sender, null);
             return;
         }
 
         PluginResults<P> enableResults = pluginManager.enablePlugins(loadResults.getPlugins());
-        enableResults.sendTo(sender, "load");
+        enableResults.sendTo(sender, MessageKey.LOADPLUGIN);
     }
 
     private void handleUnloadPlugin(CommandContext<C> context) {
@@ -191,14 +196,14 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         PluginResults<P> disableResults = plugin.getPluginManager().disablePlugins(plugins);
         for (PluginResult<P> disableResult : disableResults.getResults()) {
             if (!disableResult.isSuccess() && disableResult.getResult() != Result.ALREADY_DISABLED) {
-                disableResult.getResult().sendTo(sender, "disabl", disableResult.getPluginId());
+                disableResult.sendTo(sender, null);
                 return;
             }
         }
 
         CloseablePluginResults<P> unloadResults = plugin.getPluginManager().unloadPlugins(plugins);
         unloadResults.tryClose();
-        unloadResults.sendTo(sender, "unload");
+        unloadResults.sendTo(sender, MessageKey.UNLOADPLUGIN);
     }
 
     private void handleReloadPlugin(CommandContext<C> context) {
@@ -209,8 +214,8 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
             return;
         }
 
-        PluginResults<P> reloadResult = plugin.getPluginManager().reloadPlugins(plugins);
-        reloadResult.sendTo(sender, "reload");
+        PluginResults<P> reloadResults = plugin.getPluginManager().reloadPlugins(plugins);
+        reloadResults.sendTo(sender, MessageKey.RELOADPLUGIN);
     }
 
     protected boolean checkDependingPlugins(CommandContext<C> context, C sender, List<P> plugins, String subcommand) {
@@ -225,20 +230,18 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
 
             List<P> dependingPlugins = pluginManager.getPluginsDependingOn(pluginId);
             if (!dependingPlugins.isEmpty()) {
-                String prefixString = messages.getMessage(
-                        "serverutils.depending_plugins.prefix",
-                        "%what%", pluginId
-                );
-
-                String dependingPluginsString = ListBuilder.create(dependingPlugins)
-                        .format(p -> messages.getMessage(
-                                "serverutils.depending_plugins.format",
-                                "%plugin%", pluginManager.getPluginId(p)
+                TextComponent.Builder builder = Component.text();
+                builder.append(messages.get(MessageKey.DEPENDING_PLUGINS_PREFIX).toComponent(
+                        Template.of("plugin", pluginId)
+                ));
+                builder.append(ListComponentBuilder.create(dependingPlugins)
+                        .format(p -> messages.get(MessageKey.DEPENDING_PLUGINS_FORMAT).toComponent(
+                                Template.of("plugin", pluginManager.getPluginId(p))
                         ))
-                        .seperator(messages.getMessage("serverutils.depending_plugins.separator"))
-                        .lastSeperator(messages.getMessage("serverutils.depending_plugins.last_separator"))
-                        .toString();
-                messages.sendRawMessage(sender, prefixString + dependingPluginsString);
+                        .separator(messages.get(MessageKey.DEPENDING_PLUGINS_SEPARATOR).toComponent())
+                        .lastSeparator(messages.get(MessageKey.DEPENDING_PLUGINS_LAST_SEPARATOR).toComponent())
+                        .build());
+                sender.sendMessage(builder.build());
                 hasDependingPlugins = true;
             }
         }
@@ -249,10 +252,9 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
                     .min(Comparator.comparingInt(String::length))
                     .orElse("-f");
 
-            messages.sendMessage(sender,
-                    "serverutils.depending_plugins.override",
-                    "%command%", context.getRawInputJoined() + " " + forceFlag
-            );
+            sender.sendMessage(messages.get(MessageKey.DEPENDING_PLUGINS_OVERRIDE).toComponent(
+                    Template.of("command", context.getRawInputJoined() + " " + forceFlag)
+            ));
         }
 
         return hasDependingPlugins;
@@ -266,8 +268,8 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
             return;
         }
 
-        WatchResult result = plugin.getWatchManager().watchPlugins(sender, plugins);
-        result.sendTo(sender);
+        PluginWatchResults watchResults = plugin.getWatchManager().watchPlugins(sender, plugins);
+        watchResults.sendTo(sender);
     }
 
     private void handleUnwatchPlugin(CommandContext<C> context) {
@@ -275,8 +277,8 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         P pluginArg = context.get("plugin");
 
         String pluginId = plugin.getPluginManager().getPluginId(pluginArg);
-        WatchResult result = plugin.getWatchManager().unwatchPluginsAssociatedWith(pluginId);
-        result.sendTo(sender);
+        PluginWatchResults watchResults = plugin.getWatchManager().unwatchPluginsAssociatedWith(pluginId);
+        watchResults.sendTo(sender);
     }
 
     private void handlePluginInfo(CommandContext<C> context) {
@@ -286,9 +288,9 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         createInfo(sender, "plugininfo", pluginArg, this::createPluginInfo);
     }
 
-    protected abstract FormatBuilder createPluginInfo(
-            FormatBuilder builder,
-            Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
+    protected abstract KeyValueComponentBuilder createPluginInfo(
+            KeyValueComponentBuilder builder,
+            Function<Consumer<ListComponentBuilder<String>>, Component> listBuilderFunction,
             P pluginArg
     );
 
@@ -297,51 +299,49 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         String commandName = context.get("command");
 
         if (!plugin.getPluginManager().getCommands().contains(commandName)) {
-            plugin.getMessagesResource().sendMessage(sender, "serverutils.commandinfo.not_exists");
+            plugin.getMessagesResource().get(MessageKey.COMMANDINFO_NOT_EXISTS).sendTo(sender);
             return;
         }
 
         createInfo(sender, "commandinfo", commandName, this::createCommandInfo);
     }
 
-    protected abstract FormatBuilder createCommandInfo(
-            FormatBuilder builder,
-            Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
+    protected abstract KeyValueComponentBuilder createCommandInfo(
+            KeyValueComponentBuilder builder,
+            Function<Consumer<ListComponentBuilder<String>>, Component> listBuilderFunction,
             String commandName
     );
 
     private <T> void createInfo(C sender, String command, T item, InfoCreator<T> creator) {
-        String messagePrefix = "serverutils." + command;
-        String format = plugin.getMessagesResource().getMessage(messagePrefix + ".format");
-        String listFormatString = plugin.getMessagesResource().getMessage(messagePrefix + ".list_format");
-        String seperator = plugin.getMessagesResource().getMessage(messagePrefix + ".seperator");
-        String lastSeperator = plugin.getMessagesResource().getMessage(messagePrefix + ".last_seperator");
+        MessagesResource messages = plugin.getMessagesResource();
 
-        ListFormat<String> listFormat = str -> listFormatString.replace("%value%", str);
+        MessagesResource.Message formatMessage = messages.get(command + ".format");
+        MessagesResource.Message listFormatMessage = messages.get(command + ".list-format");
+        Component separator = messages.get(command + ".list-separator").toComponent();
+        Component lastSeparator = messages.get(command + ".list-last-separator").toComponent();
 
-        plugin.getMessagesResource().sendMessage(sender, messagePrefix + ".header");
+        sender.sendMessage(messages.get(command + ".header").toComponent());
         creator.createInfo(
-                FormatBuilder
-                        .create(format)
-                        .orderedKeys("%key%", "%value%"),
+                KeyValueComponentBuilder.create(formatMessage, "key", "value"),
                 listBuilderConsumer -> {
-                    ListBuilder<String> builder = ListBuilder.<String>create()
-                            .format(listFormat)
-                            .seperator(seperator)
-                            .lastSeperator(lastSeperator);
-                    listBuilderConsumer.accept(builder);
-                    return builder.toString();
+                    ListComponentBuilder<String> listBuilder = ListComponentBuilder.<String>create()
+                            .format(str -> listFormatMessage.toComponent(Template.of("value", str)))
+                            .separator(separator)
+                            .lastSeparator(lastSeparator)
+                            .emptyValue(null);
+                    listBuilderConsumer.accept(listBuilder);
+                    return listBuilder.build();
                 },
                 item
-        ).build().forEach(str -> plugin.getMessagesResource().sendRawMessage(sender, str));
-        plugin.getMessagesResource().sendMessage(sender, messagePrefix + ".footer");
+        ).build().forEach(sender::sendMessage);
+        sender.sendMessage(messages.get(command + ".footer").toComponent());
     }
 
     private interface InfoCreator<T> {
 
-        FormatBuilder createInfo(
-                FormatBuilder builder,
-                Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
+        KeyValueComponentBuilder createInfo(
+                KeyValueComponentBuilder builder,
+                Function<Consumer<ListComponentBuilder<String>>, Component> listBuilderFunction,
                 T item
         );
     }
