@@ -1,71 +1,76 @@
 {
   "config-version": 2,
-  "serverutils": {
-    "success": "&3Successfully %action%ed &b%what%&3!",
-    "warning": "&3Successfully %action%ed &b%what%&3, but with warnings.",
-    "error": "&cAn error occurred while %action%ing &4%what%&c, please check the console!",
-    "not_exists": "&cAn error occurred while %action%ing &4%what%&c, plugin does not exist!",
-    "not_enabled": "&cAn error occurred while %action%ing &4%what%&c, plugin is not enabled!",
-    "already_loaded": "&cAn error occurred while %action%ing &4%what%&c, plugin is already loaded!",
-    "already_enabled": "&cAn error occurred while %action%ing &4%what%&c, plugin is already enabled!",
-    "already_disabled": "&cAn error occurred while %action%ing &4%what%&c, plugin is already disabled!",
-    "file_deleted": "&cAccessing the jar file while %action%ing &4%what%&c went wrong, plugin has been deleted!",
-    "invalid_description": "&cAn error occurred while %action%ing &4%what%&c, plugin doesn't have a valid description!",
-    "invalid_plugin": "&cAn error occurred while %action%ing &4%what%&c, plugin is invalid!",
-    "unknown_dependency": "&cAn error occurred while %action%ing &4%what%&c, plugin has a dependeny which is not loaded: &4%arg%",
-    "depending_plugins": {
-      "prefix": "&cPlugin &4%what%&c has depending plugins: ",
-      "format": "&4%plugin%",
-      "separator": "&c, ",
-      "last_separator": " &cand ",
-      "override": "&cUse \"&4/%command%&c\" to force command execution."
+  "messages": {
+    "generic": {
+      "prefix": "<aqua><bold>ServerUtils <dark_gray><bold>»<reset> <gray>",
+      "error": "<red>An error occurred, please check the console!",
+      "not-exists": "<red>Plugin <dark_red><plugin></dark_red> does not exist!",
+      "not-enabled": "<red>Plugin <dark_red><plugin></dark_red> is not enabled!",
+      "already-loaded": "<red>Plugin <dark_red><plugin></dark_red> is already loaded!",
+      "already-enabled": "<red>Plugin <dark_red><plugin></dark_red> is already enabled!",
+      "already-disabled": "<red>Plugin <dark_red><plugin></dark_red> is already disabled!",
+      "invalid-plugin": "<red>Plugin <dark_red><plugin></dark_red> is invalid!",
+      "invalid-description": "<red>Plugin <dark_red><plugin></dark_red> has an invalid plugin description!",
+      "unknown-dependency": "<red>Plugin <dark_red><plugin></dark_red> has an unknown dependency: <dark_red><dependency><red>!",
+      "file-deleted": "<red>File of plugin <dark_red><plugin></dark_red> has been deleted!"
+    },
+    "reload": "<dark_aqua>Successfully reloaded <aqua>ServerUtils configurations</aqua>!",
+    "loadplugin": "<dark_aqua>Successfully loaded <aqua><plugin></aqua>!",
+    "unloadplugin": "<dark_aqua>Successfully unloaded <aqua><plugin></aqua>!",
+    "reloadplugin": "<dark_aqua>Successfully reloaded <aqua><plugin></aqua>!",
+    "depending-plugins": {
+      "prefix": "<red>Plugin <dark_red><plugin></dark_red> has depending plugins: ",
+      "format": "<dark_red><plugin>",
+      "separator": "<red>, ",
+      "last-separator": " <red>and ",
+      "override": "<red>Use \"<dark_red>/<command></dark_red>\" to force command execution."
     },
     "watchplugin": {
-      "start": "&3Started watching &b%what%&3!",
-      "change": "&3Changes detected, reloading plugins now...",
-      "stopped": "&3Stopped watching &b%what%&3!",
-      "file_deleted": "&cPlugin file &4%what%&c has been deleted! Waiting for plugin to show up...",
-      "deleted_file_is_created": "&3Plugin file &b%what%&3 has shown up again!",
-      "already_watching": "&cYou are already watching &4%what%&c!",
-      "not_watching": "&cYou are not watching &4%what%&c!"
+      "start": "<dark_aqua>Started watching <aqua><plugin></aqua>!",
+      "change": "<dark_aqua>Changes detected, reloading plugins now...",
+      "stopped": "<dark_aqua>Stopped watching <aqua><plugin></aqua>!",
+      "file-deleted": "<red>File of plugin <dark_red><plugin></dark_red> has been deleted! Waiting for plugin to show up...",
+      "deleted-file-is-created": "<dark_aqua>File of plugin <aqua><plugin></aqua> has shown up again!",
+      "already-watching": "<red>You are already watching <dark_red><plugin></dark_red>!",
+      "not-watching": "<red>You are not watching <dark_red><plugin></dark_red>!"
     },
     "update": {
-      "available": "&8&m------------=&r&8[ &b&lServerUtils Update&r &8]&m=--------------\n &3Current version: &b%old%\n &3New version: &b%new%\n &3Release info: &b%info%\n&8&m-------------------------------------------------",
-      "downloading": "&8&m------------=&r&8[ &b&lServerUtils Update&r &8]&m=--------------\n &3A new version of ServerUtils will be downloaded and installed after a restart!\n &3Current version: &b%old%\n &3New version: &b%new%\n &3Release info: &b%info%\n&8&m-------------------------------------------------",
-      "download_failed": "&cFailed to download version %new% of ServerUtils. Please update manually.",
-      "download_success": "&3ServerUtils has been downloaded and will be installed on the next restart."
+      "available": "<dark_gray><strikethrough>------------=<reset><dark_gray>[ <aqua><bold>ServerUtils Update<reset> <dark_gray>]<strikethrough>=--------------\n <dark_aqua>Current version: <aqua><old>\n <dark_aqua>New version: <aqua><new>\n <dark_aqua>Release info: <aqua><info>\n<dark_gray><strikethrough>-------------------------------------------------",
+      "downloading": "<dark_gray><strikethrough>------------=<reset><dark_gray>[ <aqua><bold>ServerUtils Update<reset> <dark_gray>]<strikethrough>=--------------\n <dark_aqua>A new version of ServerUtils will be downloaded and installed after a restart!\n <dark_aqua>Current version: <aqua><old>\n <dark_aqua>New version: <aqua><new>\n <dark_aqua>Release info: <aqua><info>\n<dark_gray><strikethrough>-------------------------------------------------",
+      "download-failed": "<red>Failed to download version <new> of ServerUtils. Please update manually.",
+      "download-success": "<dark_aqua>ServerUtils has been downloaded and will be installed on the next restart."
     },
     "help": {
-      "header": "&8&m-------------=&r&8[ &b&lServerUtils Help&r &8]&m=---------------",
-      "format": "&8/&3%command% &8(&b%help%&8)",
-      "footer": "&8&m-------------------------------------------------"
+      "header": "<dark_gray><strikethrough>-------------=<reset><dark_gray>[ <aqua><bold>ServerUtils Help<reset> <dark_gray>]<strikethrough>=---------------",
+      "format": "<dark_gray>/<dark_aqua><command> <dark_gray>(<aqua><help><dark_gray>)",
+      "footer": "<dark_gray><strikethrough>-------------------------------------------------"
     },
     "plugins": {
-      "header": "&8&m------------=&r&8[ &b&lServerUtils Plugins&r &8]&m=-------------",
-      "prefix": " &3Plugins &8(&a%count%&8)&b: ",
-      "format": "&3%plugin%",
-      "format_disabled": "&c%plugin%",
-      "seperator": "&b, ",
-      "last_seperator": " &band ",
-      "version": " &8(&a%version%&8)",
-      "footer": "&8&m-------------------------------------------------"
+      "header": "<dark_gray><strikethrough>------------=<reset><dark_gray>[ <aqua><bold>ServerUtils Plugins<reset> <dark_gray>]<strikethrough>=-------------",
+      "prefix": " <dark_aqua>Plugins <dark_gray>(<green><count><dark_gray>)<aqua>: ",
+      "format": "<dark_aqua><plugin>",
+      "format-disabled": "<red><plugin>",
+      "separator": "<aqua>, ",
+      "last-separator": " <aqua>and ",
+      "version": " <dark_gray>(<green><version><dark_gray>)",
+      "footer": "<dark_gray><strikethrough>-------------------------------------------------"
     },
     "plugininfo": {
-      "header": "&8&m-----------=&r&8[ &b&lServerUtils PluginInfo&r &8]&m=-----------",
-      "format": " &3%key%&8: &b%value%",
-      "list_format": "&b%value%",
-      "seperator": "&8, ",
-      "last_seperator": " &8and ",
-      "footer": "&8&m-------------------------------------------------"
+      "header": "<dark_gray><strikethrough>-----------=<reset><dark_gray>[ <aqua><bold>ServerUtils PluginInfo<reset> <dark_gray>]<strikethrough>=-----------",
+      "format": " <dark_aqua><key><dark_gray>: <aqua><value>",
+      "list-format": "<aqua><value>",
+      "list-separator": "<dark_gray>, ",
+      "list-last-separator": " <dark_gray>and ",
+      "footer": "<dark_gray><strikethrough>-------------------------------------------------"
     },
     "commandinfo": {
-      "header": "&8&m-----------=&r&8[ &b&lServerUtils CommandInfo&r &8]&m=----------",
-      "format": " &3%key%&8: &b%value%",
-      "list_format": "&b%value%",
-      "seperator": "&8, ",
-      "last_seperator": " &8and ",
-      "footer": "&8&m-------------------------------------------------",
-      "not_exists": "&cThat command is not a valid registered command."
+      "header": "<dark_gray><strikethrough>-----------=<reset><dark_gray>[ <aqua><bold>ServerUtils CommandInfo<reset> <dark_gray>]<strikethrough>=----------",
+      "format": " <dark_aqua><key><dark_gray>: <aqua><value>",
+      "list-format": "<aqua><value>",
+      "list-separator": "<dark_gray>, ",
+      "list-last-separator": " <dark_gray>and ",
+      "footer": "<dark_gray><strikethrough>-------------------------------------------------",
+      "not-exists": "<red>That command is not a valid registered command."
     }
   }
 }

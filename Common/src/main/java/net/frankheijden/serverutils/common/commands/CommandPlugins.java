@@ -2,12 +2,15 @@ package net.frankheijden.serverutils.common.commands;
 
 import cloud.commandframework.context.CommandContext;
 import java.util.List;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.config.MessageKey;
+import net.frankheijden.serverutils.common.config.MessagesResource;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
-import net.frankheijden.serverutils.common.utils.ListBuilder;
-import net.frankheijden.serverutils.common.utils.ListFormat;
+import net.frankheijden.serverutils.common.utils.ListComponentBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.Template;
 
-public abstract class CommandPlugins<U extends ServerUtilsPlugin<P, ?, C, ?, ?>, P, C extends ServerCommandSender<?>>
+public abstract class CommandPlugins<U extends ServerUtilsPlugin<P, ?, C, ?, ?>, P, C extends ServerUtilsAudience<?>>
         extends ServerUtilsCommand<U, C> {
 
     protected CommandPlugins(U plugin) {
@@ -21,21 +24,22 @@ public abstract class CommandPlugins<U extends ServerUtilsPlugin<P, ?, C, ?, ?>,
      * @param sender The receiver of the plugin list.
      * @param plugins The plugins to be sent.
      * @param pluginFormat The format of the plugins to be sent.
-     * @param <T> The plugin type.
      */
-    protected void handlePlugins(C sender, List<P> plugins, ListFormat<P> pluginFormat) {
-        String prefix = plugin.getMessagesResource().getMessage(
-                "serverutils.plugins.prefix",
-                "%count%", String.valueOf(plugins.size())
-        );
-        if (prefix == null) prefix = "";
-
-        plugin.getMessagesResource().sendMessage(sender, "serverutils.plugins.header");
-        sender.sendMessage(plugin.getChatProvider().color(prefix + ListBuilder.create(plugins)
-                .seperator(plugin.getMessagesResource().getMessage("serverutils.plugins.seperator"))
-                .lastSeperator(plugin.getMessagesResource().getMessage("serverutils.plugins.last_seperator"))
-                .format(pluginFormat)
-                .toString()));
-        plugin.getMessagesResource().sendMessage(sender, "serverutils.plugins.footer");
+    protected void handlePlugins(C sender, List<P> plugins, ListComponentBuilder.Format<P> pluginFormat) {
+        MessagesResource messages = plugin.getMessagesResource();
+        sender.sendMessage(Component.text()
+                .append(messages.get(MessageKey.PLUGINS_HEADER).toComponent())
+                .append(Component.newline())
+                .append(messages.get(MessageKey.PLUGINS_PREFIX).toComponent(
+                        Template.of("count", String.valueOf(plugins.size()))
+                ))
+                .append(ListComponentBuilder.create(plugins)
+                        .separator(messages.get(MessageKey.PLUGINS_SEPARATOR).toComponent())
+                        .lastSeparator(messages.get(MessageKey.PLUGINS_LAST_SEPARATOR).toComponent())
+                        .format(pluginFormat)
+                        .build())
+                .append(Component.newline())
+                .append(messages.get(MessageKey.PLUGININFO_FOOTER).toComponent())
+                .build());
     }
 }

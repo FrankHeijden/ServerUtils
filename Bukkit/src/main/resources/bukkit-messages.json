@@ -1,8 +1,12 @@
 {
-  "serverutils": {
+  "messages": {
     "reloadconfig": {
-      "not_exists": "&cConfig &4%what% &cdoes not exist.",
-      "not_supported": "&cConfig &4%what% &cis not supported on your Minecraft version."
-    }
+      "success": "<dark_aqua>Successfully reloaded <aqua><config></aqua>!",
+      "warnings": "<red>There were warnings while reloading <dark_red><config></dark_red>, please check the console!",
+      "not-exists": "<red>Config <dark_red><config></dark_red> does not exist.",
+      "not-supported": "<red>Config <dark_red><config></dark_red> is not supported on your Minecraft version."
+    },
+    "disableplugin": "<dark_aqua>Successfully disabled <aqua><plugin></aqua>!",
+    "enableplugin": "<dark_aqua>Successfully enabled <aqua><plugin></aqua>!"
   }
 }

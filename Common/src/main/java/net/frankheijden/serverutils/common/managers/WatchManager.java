@@ -5,10 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
+import net.frankheijden.serverutils.common.entities.results.PluginWatchResults;
 import net.frankheijden.serverutils.common.entities.results.WatchResult;
 import net.frankheijden.serverutils.common.tasks.PluginWatcherTask;
+import net.kyori.adventure.text.minimessage.Template;
 
 public class WatchManager<P, T> {
 
@@ -23,12 +25,12 @@ public class WatchManager<P, T> {
     /**
      * Starts watching the specified plugin and reloads it when a change is detected.
      */
-    public WatchResult watchPlugins(ServerCommandSender<?> sender, List<P> plugins) {
+    public PluginWatchResults watchPlugins(ServerUtilsAudience<?> sender, List<P> plugins) {
         List<String> pluginIds = new ArrayList<>(plugins.size());
         for (P watchPlugin : plugins) {
             String pluginId = plugin.getPluginManager().getPluginId(watchPlugin);
             if (watchTasks.containsKey(pluginId)) {
-                return WatchResult.ALREADY_WATCHING.arg(pluginId);
+                return new PluginWatchResults().add(WatchResult.ALREADY_WATCHING, Template.of("plugin", pluginId));
             }
 
             pluginIds.add(plugin.getPluginManager().getPluginId(watchPlugin));
@@ -45,19 +47,28 @@ public class WatchManager<P, T> {
             watchTasks.put(pluginId, watchTask);
         }
 
-        return WatchResult.START.args(pluginIds);
+        PluginWatchResults watchResults = new PluginWatchResults();
+        for (String pluginId : pluginIds) {
+            watchResults.add(WatchResult.START, Template.of("plugin", pluginId));
+        }
+        return watchResults;
     }
 
     /**
      * Stops watching plugins for changes.
      */
-    public WatchResult unwatchPluginsAssociatedWith(String pluginId) {
-        WatchTask task = watchTasks.get(pluginId);
+    public PluginWatchResults unwatchPluginsAssociatedWith(String associatedPluginId) {
+        WatchTask task = watchTasks.get(associatedPluginId);
         if (task != null && plugin.getTaskManager().cancelTask(task.key.toString())) {
             task.pluginIds.forEach(watchTasks::remove);
-            return WatchResult.STOPPED.args(task.pluginIds);
+
+            PluginWatchResults watchResults = new PluginWatchResults();
+            for (String pluginId : task.pluginIds) {
+                watchResults.add(WatchResult.START, Template.of("plugin", pluginId));
+            }
+            return watchResults;
         }
-        return WatchResult.NOT_WATCHING.arg(pluginId);
+        return new PluginWatchResults().add(WatchResult.NOT_WATCHING, Template.of("plugin", associatedPluginId));
     }
 
     private static final class WatchTask {

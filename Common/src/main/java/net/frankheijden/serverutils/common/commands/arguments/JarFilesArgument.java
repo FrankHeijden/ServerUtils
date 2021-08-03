@@ -11,10 +11,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 
-public class JarFilesArgument<C extends ServerCommandSender<?>> extends CommandArgument<C, File[]> {
+public class JarFilesArgument<C extends ServerUtilsAudience<?>> extends CommandArgument<C, File[]> {
 
     /**
      * Constructs a Jar Files argument.
@@ -30,7 +30,7 @@ public class JarFilesArgument<C extends ServerCommandSender<?>> extends CommandA
         );
     }
 
-    public static final class JarFilesParser<C extends ServerCommandSender<?>> implements ArgumentParser<C, File[]> {
+    public static final class JarFilesParser<C extends ServerUtilsAudience<?>> implements ArgumentParser<C, File[]> {
 
         private final ServerUtilsPlugin<?, ?, C, ?, ?> plugin;
 

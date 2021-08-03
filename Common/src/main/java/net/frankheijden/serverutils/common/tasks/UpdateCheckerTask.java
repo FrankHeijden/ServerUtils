@@ -10,10 +10,12 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
+import net.frankheijden.serverutils.common.config.ConfigKey;
+import net.frankheijden.serverutils.common.config.MessageKey;
 import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.frankheijden.serverutils.common.entities.results.PluginResult;
 import net.frankheijden.serverutils.common.entities.results.Result;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.entities.http.GitHubAsset;
 import net.frankheijden.serverutils.common.entities.http.GitHubResponse;
@@ -21,11 +23,13 @@ import net.frankheijden.serverutils.common.managers.UpdateManager;
 import net.frankheijden.serverutils.common.utils.GitHubUtils;
 import net.frankheijden.serverutils.common.utils.VersionUtils;
 import net.frankheijden.serverutilsupdater.common.Updater;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.Template;
 
 public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> implements Runnable {
 
     private final U plugin;
-    private final ServerCommandSender<?> sender;
+    private final ServerUtilsAudience<?> sender;
     private final boolean download;
     private final boolean install;
 
@@ -49,7 +53,7 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
     private static final String UPDATER_ENABLE_ERROR = "Failed to enable ServerUtilsUpdater: {0}";
     private static final String UP_TO_DATE = "We are up-to-date!";
 
-    private UpdateCheckerTask(U plugin, ServerCommandSender<?> sender, boolean download, boolean install) {
+    private UpdateCheckerTask(U plugin, ServerUtilsAudience<?> sender, boolean download, boolean install) {
         this.plugin = plugin;
         this.sender = sender;
         this.download = download;
@@ -62,7 +66,7 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
      */
     public static <U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> void tryStart(
             U plugin,
-            ServerCommandSender<?> sender,
+            ServerUtilsAudience<?> sender,
             String action
     ) {
         ServerUtilsConfig config = ServerUtilsApp.getPlugin().getConfigResource().getConfig();
@@ -77,7 +81,7 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
      */
     public static <U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> void start(
             U plugin,
-            ServerCommandSender<?> sender,
+            ServerUtilsAudience<?> sender,
             String action
     ) {
         ServerUtilsConfig config = ServerUtilsApp.getPlugin().getConfigResource().getConfig();
@@ -121,20 +125,24 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
         GitHubAsset pluginAsset = GitHubAsset.from(pluginJson);
         if (!download || pluginAsset == null) {
             if (sender.isPlayer()) {
-                plugin.getMessagesResource().sendMessage(sender, "serverutils.update.available",
-                        "%old%", ServerUtilsApp.VERSION,
-                        "%new%", githubVersion,
-                        "%info%", body);
+                Component component = plugin.getMessagesResource().get(MessageKey.UPDATE_AVAILABLE).toComponent(
+                        Template.of("old", ServerUtilsApp.VERSION),
+                        Template.of("new", githubVersion),
+                        Template.of("info", body)
+                );
+                sender.sendMessage(component);
             }
             return;
         }
 
         plugin.getLogger().log(Level.INFO, DOWNLOAD_START, pluginAsset.getDownloadUrl());
         if (sender.isPlayer()) {
-            plugin.getMessagesResource().sendMessage(sender, "serverutils.update.downloading",
-                    "%old%", ServerUtilsApp.VERSION,
-                    "%new%", githubVersion,
-                    "%info%", body);
+            Component component = plugin.getMessagesResource().get(MessageKey.UPDATE_DOWNLOADING).toComponent(
+                    Template.of("old", ServerUtilsApp.VERSION),
+                    Template.of("new", githubVersion),
+                    Template.of("info", body)
+            );
+            sender.sendMessage(component);
         }
 
         File pluginTarget = new File(plugin.getPluginManager().getPluginsFolder(), pluginAsset.getName());
@@ -260,8 +268,8 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
     }
 
     private void broadcastDownloadStatus(String githubVersion, boolean isError) {
-        final String path = "serverutils.update." + (isError ? "failed" : "success");
-        String message = plugin.getMessagesResource().getMessage(path, "%new%", githubVersion);
-        plugin.getChatProvider().broadcast("serverutils.notification.update", message);
+        ConfigKey key = isError ? MessageKey.UPDATE_DOWNLOAD_FAILED : MessageKey.UPDATE_DOWNLOAD_SUCCESS;
+        Component component = plugin.getMessagesResource().get(key).toComponent(Template.of("new", githubVersion));
+        plugin.getChatProvider().broadcast(component, "serverutils.notification.update");
     }
 }

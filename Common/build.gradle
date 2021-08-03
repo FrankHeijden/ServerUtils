@@ -11,7 +11,10 @@ repositories {
 }
 
 dependencies {
+    compileOnly 'net.kyori:adventure-platform-api:4.0.0-SNAPSHOT'
     compileOnly 'com.github.FrankHeijden:ServerUtilsUpdater:v1.0.0'
+
+    testImplementation 'net.kyori:adventure-text-serializer-plain:4.8.1'
 }
 
 blossom {

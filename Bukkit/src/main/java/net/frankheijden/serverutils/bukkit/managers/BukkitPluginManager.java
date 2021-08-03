@@ -31,6 +31,7 @@ import net.frankheijden.serverutils.common.entities.results.Result;
 import net.frankheijden.serverutils.common.entities.exceptions.InvalidPluginDescriptionException;
 import net.frankheijden.serverutils.common.events.PluginEvent;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
+import net.kyori.adventure.text.minimessage.Template;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommand;
@@ -67,7 +68,9 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
             } catch (InvalidDescriptionException ex) {
                 return pluginResults.addResult(pluginId, Result.INVALID_DESCRIPTION);
             } catch (UnknownDependencyException ex) {
-                return pluginResults.addResult(pluginId, Result.UNKNOWN_DEPENDENCY.arg(ex.getMessage()));
+                return pluginResults.addResult(pluginId, Result.UNKNOWN_DEPENDENCY,
+                        Template.of("dependency", ex.getMessage())
+                );
             } catch (InvalidPluginException ex) {
                 if (ex.getCause() instanceof IllegalArgumentException) {
                     IllegalArgumentException e = (IllegalArgumentException) ex.getCause();

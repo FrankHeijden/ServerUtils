@@ -10,24 +10,24 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.frankheijden.serverutils.common.commands.CommandServerUtils;
-import net.frankheijden.serverutils.common.utils.FormatBuilder;
-import net.frankheijden.serverutils.common.utils.ListBuilder;
+import net.frankheijden.serverutils.common.utils.KeyValueComponentBuilder;
+import net.frankheijden.serverutils.common.utils.ListComponentBuilder;
 import net.frankheijden.serverutils.velocity.ServerUtils;
-import net.frankheijden.serverutils.velocity.entities.VelocityCommandSender;
+import net.frankheijden.serverutils.velocity.entities.VelocityAudience;
 import net.frankheijden.serverutils.velocity.entities.VelocityPlugin;
 import net.frankheijden.serverutils.velocity.reflection.RVelocityCommandManager;
+import net.kyori.adventure.text.Component;
 
-public class VelocityCommandServerUtils
-        extends CommandServerUtils<VelocityPlugin, PluginContainer, VelocityCommandSender> {
+public class VelocityCommandServerUtils extends CommandServerUtils<VelocityPlugin, PluginContainer, VelocityAudience> {
 
     public VelocityCommandServerUtils(VelocityPlugin plugin) {
         super(plugin, PluginContainer[]::new);
     }
 
     @Override
-    protected FormatBuilder createPluginInfo(
-            FormatBuilder builder,
-            Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
+    protected KeyValueComponentBuilder createPluginInfo(
+            KeyValueComponentBuilder builder,
+            Function<Consumer<ListComponentBuilder<String>>, Component> listBuilderFunction,
             PluginContainer container
     ) {
         PluginDescription desc = container.getDescription();
@@ -52,9 +52,9 @@ public class VelocityCommandServerUtils
     }
 
     @Override
-    protected FormatBuilder createCommandInfo(
-            FormatBuilder builder,
-            Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
+    protected KeyValueComponentBuilder createCommandInfo(
+            KeyValueComponentBuilder builder,
+            Function<Consumer<ListComponentBuilder<String>>, Component> listBuilderFunction,
             String commandName
     ) {
         ServerUtils plugin = ServerUtils.getInstance();

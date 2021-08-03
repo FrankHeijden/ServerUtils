@@ -3,13 +3,18 @@ package net.frankheijden.serverutils.bukkit.commands;
 import cloud.commandframework.Command;
 import cloud.commandframework.CommandManager;
 import cloud.commandframework.context.CommandContext;
-import net.frankheijden.serverutils.bukkit.entities.BukkitCommandSender;
+import net.frankheijden.serverutils.bukkit.entities.BukkitAudience;
 import net.frankheijden.serverutils.bukkit.entities.BukkitPlugin;
 import net.frankheijden.serverutils.common.commands.CommandPlugins;
+import net.frankheijden.serverutils.common.config.MessageKey;
+import net.frankheijden.serverutils.common.config.MessagesResource;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.minimessage.Template;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
-public class BukkitCommandPlugins extends CommandPlugins<BukkitPlugin, Plugin, BukkitCommandSender> {
+public class BukkitCommandPlugins extends CommandPlugins<BukkitPlugin, Plugin, BukkitAudience> {
 
     public BukkitCommandPlugins(BukkitPlugin plugin) {
         super(plugin);
@@ -17,8 +22,8 @@ public class BukkitCommandPlugins extends CommandPlugins<BukkitPlugin, Plugin, B
 
     @Override
     protected void register(
-            CommandManager<BukkitCommandSender> manager,
-            Command.Builder<BukkitCommandSender> builder
+            CommandManager<BukkitAudience> manager,
+            Command.Builder<BukkitAudience> builder
     ) {
         manager.command(builder
                 .flag(parseFlag("version"))
@@ -26,26 +31,25 @@ public class BukkitCommandPlugins extends CommandPlugins<BukkitPlugin, Plugin, B
     }
 
     @Override
-    protected void handlePlugins(CommandContext<BukkitCommandSender> context) {
-        BukkitCommandSender sender = context.getSender();
+    protected void handlePlugins(CommandContext<BukkitAudience> context) {
+        BukkitAudience sender = context.getSender();
         boolean hasVersionFlag = context.flags().contains("version");
 
+        MessagesResource messages = plugin.getMessagesResource();
         handlePlugins(sender, plugin.getPluginManager().getPluginsSorted(), bukkitPlugin -> {
             PluginDescriptionFile description = bukkitPlugin.getDescription();
 
-            String message = plugin.getMessagesResource().getMessage(
-                    "serverutils.plugins.format",
-                    "%plugin%", description.getName()
-            );
-
+            TextComponent.Builder builder = Component.text();
+            builder.append(messages.get(MessageKey.PLUGINS_FORMAT).toComponent(
+                    Template.of("plugin", description.getName())
+            ));
             if (hasVersionFlag) {
-                message += plugin.getMessagesResource().getMessage(
-                        "serverutils.plugins.version",
-                        "%version%", description.getVersion()
-                );
+                builder.append(messages.get(MessageKey.PLUGINS_FORMAT).toComponent(
+                        Template.of("version", description.getVersion())
+                ));
             }
 
-            return message;
+            return builder.build();
         });
     }
 }

@@ -1,56 +1,83 @@
 package net.frankheijden.serverutils.common.config;
 
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
-import net.frankheijden.serverutils.common.utils.StringUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.Template;
 
 public class MessagesResource extends ServerUtilsResource {
 
     public static final String MESSAGES_RESOURCE = "messages";
 
+    private final Map<ConfigKey, Message> messageMap;
+    private final MiniMessage miniMessage;
+
+    /**
+     * Constructs a new MessagesResource.
+     */
     public MessagesResource(ServerUtilsPlugin<?, ?, ?, ?, ?> plugin) {
         super(plugin, MESSAGES_RESOURCE);
+        this.messageMap = new HashMap<>();
+        this.miniMessage = MiniMessage.get();
+    }
+
+    public Message get(String path) {
+        return get(MessageKey.fromPath(path));
+    }
+
+    public Message get(ConfigKey key) {
+        return messageMap.get(key);
     }
 
     /**
-     * Retrieves a message from the config.
-     * @param path The yml path to the message.
-     * @param replacements The replacements to be taken into account.
-     * @return The config message with translated placeholders.
+     * Loads message keys and pre-compiles them if possible.
      */
-    public String getMessage(String path, String... replacements) {
-        String message = config.getString(path);
-        if (message != null) {
-            return StringUtils.apply(message, replacements);
-        } else {
-            plugin.getLogger().severe("Missing locale in messages.yml at path '" + path + "'!");
-        }
-        return null;
-    }
-
-    /**
-     * Sends a message to a player with translated placeholders.
-     * @param sender The receiver.
-     * @param msg The message to be sent.
-     * @param replacements The replacements to be taken into account.
-     */
-    public void sendRawMessage(ServerCommandSender<?> sender, String msg, String... replacements) {
-        String message = StringUtils.apply(msg, replacements);
-        if (message != null) {
-            sender.sendMessage(plugin.getChatProvider().color(message));
+    public void load(Collection<? extends PlaceholderConfigKey> keys) {
+        for (PlaceholderConfigKey key : keys) {
+            this.messageMap.put(key, new Message(key));
         }
     }
 
-    /**
-     * Sends a message from the specified config path to a player with translated placeholders.
-     * @param sender The receiver.
-     * @param path The yml path to the message.
-     * @param replacements The replacements to be taken into account.
-     */
-    public void sendMessage(ServerCommandSender<?> sender, String path, String... replacements) {
-        String message = getMessage(path, replacements);
-        if (message != null) {
-            sender.sendMessage(plugin.getChatProvider().color(message));
+    public class Message {
+
+        private final PlaceholderConfigKey key;
+        private final String messageString;
+        private final Component component;
+
+        /**
+         * Constructs a new Message.
+         */
+        public Message(PlaceholderConfigKey key) {
+            this.key = key;
+            this.messageString = getConfig().getString("messages." + key.getPath());
+            this.component = key.hasPlaceholders() ? null : miniMessage.parse(messageString);
+        }
+
+        /**
+         * Creates a {@link Component}.
+         */
+        public Component toComponent(Template... placeholders) {
+            if (this.component == null) {
+                if (placeholders.length == 0) {
+                    throw new IllegalArgumentException("Message '" + key + "' has placeholders"
+                            + " but none were provided!");
+                }
+                return miniMessage.parse(messageString, placeholders);
+            } else if (placeholders.length != 0) {
+                throw new IllegalArgumentException("Message '" + key + "' does not have placeholders"
+                        + " but the following placeholders were provided: " + Arrays.toString(placeholders));
+            } else {
+                return this.component;
+            }
+        }
+
+        public void sendTo(ServerUtilsAudience<?> serverAudience, Template... placeholders) {
+            serverAudience.sendMessage(toComponent(placeholders));
         }
     }
 

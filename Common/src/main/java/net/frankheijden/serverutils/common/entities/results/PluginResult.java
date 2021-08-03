@@ -1,10 +1,16 @@
 package net.frankheijden.serverutils.common.entities.results;
 
-public class PluginResult<T> {
+import net.frankheijden.serverutils.common.ServerUtilsApp;
+import net.frankheijden.serverutils.common.config.ConfigKey;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.Template;
+
+public class PluginResult<T> implements AbstractResult {
 
     private final String pluginId;
     private final T plugin;
     private final Result result;
+    private final Template[] templates;
 
     public PluginResult(String pluginId, Result result) {
         this(pluginId, null, result);
@@ -13,10 +19,13 @@ public class PluginResult<T> {
     /**
      * Constructs a new PluginResult.
      */
-    public PluginResult(String pluginId, T plugin, Result result) {
+    public PluginResult(String pluginId, T plugin, Result result, Template... templates) {
         this.pluginId = pluginId;
         this.plugin = plugin;
         this.result = result;
+        this.templates = new Template[templates.length + 1];
+        this.templates[0] = Template.of("plugin", pluginId);
+        System.arraycopy(templates, 0, this.templates, 1, templates.length);
     }
 
     public String getPluginId() {
@@ -31,7 +40,21 @@ public class PluginResult<T> {
         return result;
     }
 
+    public Template[] getTemplates() {
+        return templates;
+    }
+
     public boolean isSuccess() {
         return plugin != null && result == Result.SUCCESS;
+    }
+
+    public Component toComponent(ConfigKey successKey) {
+        ConfigKey key = isSuccess() ? successKey : result.getKey();
+        return ServerUtilsApp.getPlugin().getMessagesResource().get(key).toComponent(templates);
+    }
+
+    @Override
+    public ConfigKey getKey() {
+        return result.getKey();
     }
 }

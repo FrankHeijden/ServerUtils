@@ -5,9 +5,9 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import io.leangen.geantyref.TypeToken;
 import net.frankheijden.serverutils.common.commands.arguments.JarFilesArgument;
 import net.frankheijden.serverutils.common.commands.arguments.PluginsArgument;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 
-public class BrigadierHandler<C extends ServerCommandSender<?>, P> {
+public class BrigadierHandler<C extends ServerUtilsAudience<?>, P> {
 
     private final CloudBrigadierManager<C, ?> brigadierManager;
 

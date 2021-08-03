@@ -7,28 +7,30 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Logger;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.commands.brigadier.BrigadierHandler;
 import net.frankheijden.serverutils.common.config.CommandsResource;
 import net.frankheijden.serverutils.common.config.ConfigResource;
+import net.frankheijden.serverutils.common.config.MessageKey;
 import net.frankheijden.serverutils.common.config.MessagesResource;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.managers.AbstractTaskManager;
 import net.frankheijden.serverutils.common.managers.UpdateManager;
 import net.frankheijden.serverutils.common.managers.WatchManager;
-import net.frankheijden.serverutils.common.providers.ChatProvider;
 import net.frankheijden.serverutils.common.providers.ResourceProvider;
+import net.frankheijden.serverutils.common.providers.ServerUtilsAudienceProvider;
 import net.frankheijden.serverutils.common.utils.FileUtils;
 
-public abstract class ServerUtilsPlugin<P, T, C extends ServerCommandSender<S>, S, D extends ServerUtilsPluginDescription> {
+public abstract class ServerUtilsPlugin<P, T, C extends ServerUtilsAudience<S>, S, D extends ServerUtilsPluginDescription> {
 
     private final UpdateManager updateManager = new UpdateManager();
     private final WatchManager<P, T> watchManager = new WatchManager<>(this);
     private CommandsResource commandsResource;
     private ConfigResource configResource;
-    private MessagesResource messagesResource;
+    protected MessagesResource messagesResource;
     protected CommandManager<C> commandManager;
 
     public abstract Platform getPlatform();
@@ -53,7 +55,7 @@ public abstract class ServerUtilsPlugin<P, T, C extends ServerCommandSender<S>, 
 
     public abstract ResourceProvider getResourceProvider();
 
-    public abstract ChatProvider<C, S> getChatProvider();
+    public abstract ServerUtilsAudienceProvider<S> getChatProvider();
 
     public UpdateManager getUpdateManager() {
         return updateManager;
@@ -143,6 +145,7 @@ public abstract class ServerUtilsPlugin<P, T, C extends ServerCommandSender<S>, 
         this.commandsResource = new CommandsResource(this);
         this.configResource = new ConfigResource(this);
         this.messagesResource = new MessagesResource(this);
+        this.messagesResource.load(Arrays.asList(MessageKey.values()));
         this.commandManager = newCommandManager();
         reloadPlugin();
     }

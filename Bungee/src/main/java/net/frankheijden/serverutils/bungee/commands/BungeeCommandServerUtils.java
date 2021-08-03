@@ -5,27 +5,28 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import net.frankheijden.serverutils.bungee.ServerUtils;
-import net.frankheijden.serverutils.bungee.entities.BungeeCommandSender;
+import net.frankheijden.serverutils.bungee.entities.BungeeAudience;
 import net.frankheijden.serverutils.bungee.entities.BungeePlugin;
 import net.frankheijden.serverutils.bungee.reflection.RPluginManager;
 import net.frankheijden.serverutils.common.commands.CommandServerUtils;
-import net.frankheijden.serverutils.common.utils.FormatBuilder;
-import net.frankheijden.serverutils.common.utils.ListBuilder;
+import net.frankheijden.serverutils.common.utils.KeyValueComponentBuilder;
+import net.frankheijden.serverutils.common.utils.ListComponentBuilder;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.PluginDescription;
 import net.md_5.bungee.api.plugin.PluginManager;
 
-public class BungeeCommandServerUtils extends CommandServerUtils<BungeePlugin, Plugin, BungeeCommandSender> {
+public class BungeeCommandServerUtils extends CommandServerUtils<BungeePlugin, Plugin, BungeeAudience> {
 
     public BungeeCommandServerUtils(BungeePlugin plugin) {
         super(plugin, Plugin[]::new);
     }
 
     @Override
-    protected FormatBuilder createPluginInfo(
-            FormatBuilder builder,
-            Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
+    protected KeyValueComponentBuilder createPluginInfo(
+            KeyValueComponentBuilder builder,
+            Function<Consumer<ListComponentBuilder<String>>, Component> listBuilderFunction,
             Plugin bungeePlugin
     ) {
         PluginDescription desc = bungeePlugin.getDescription();
@@ -42,9 +43,9 @@ public class BungeeCommandServerUtils extends CommandServerUtils<BungeePlugin, P
     }
 
     @Override
-    protected FormatBuilder createCommandInfo(
-            FormatBuilder builder,
-            Function<Consumer<ListBuilder<String>>, String> listBuilderFunction,
+    protected KeyValueComponentBuilder createCommandInfo(
+            KeyValueComponentBuilder builder,
+            Function<Consumer<ListComponentBuilder<String>>, Component> listBuilderFunction,
             String commandName
     ) {
         PluginManager proxyPluginManager = ServerUtils.getInstance().getProxy().getPluginManager();

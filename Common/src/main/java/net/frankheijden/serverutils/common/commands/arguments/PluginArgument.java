@@ -9,10 +9,10 @@ import io.leangen.geantyref.TypeToken;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 
-public class PluginArgument<C extends ServerCommandSender<?>, P> extends CommandArgument<C, P> {
+public class PluginArgument<C extends ServerUtilsAudience<?>, P> extends CommandArgument<C, P> {
 
     /**
      * Constructs a Plugin argument.
@@ -28,7 +28,7 @@ public class PluginArgument<C extends ServerCommandSender<?>, P> extends Command
         );
     }
 
-    public static final class PluginParser<C extends ServerCommandSender<?>, P> implements ArgumentParser<C, P> {
+    public static final class PluginParser<C extends ServerUtilsAudience<?>, P> implements ArgumentParser<C, P> {
 
         private final ServerUtilsPlugin<P, ?, C, ?, ?> plugin;
 

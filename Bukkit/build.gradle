@@ -1,10 +1,13 @@
 group = rootProject.group + '.bukkit'
+String rootDependencyDir = rootProject.group + '.dependencies'
 String dependencyDir = group + '.dependencies'
 version = rootProject.version
 archivesBaseName = rootProject.name + '-Bukkit'
 
 dependencies {
     implementation "com.github.FrankHeijden.cloud:cloud-paper:${rootProject.cloudVersion}"
+    implementation 'net.kyori:adventure-api:4.8.1'
+    implementation 'net.kyori:adventure-platform-bukkit:4.0.0-SNAPSHOT'
     implementation 'org.bstats:bstats-bukkit:2.2.1'
     implementation project(":Common")
     compileOnly 'com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT'
@@ -19,4 +22,6 @@ processResources {
 
 shadowJar {
     relocate 'org.bstats', dependencyDir + '.bstats'
+    relocate 'net.kyori.adventure', rootDependencyDir + '.adventure'
+    relocate 'net.kyori.examination', rootDependencyDir + '.examination'
 }

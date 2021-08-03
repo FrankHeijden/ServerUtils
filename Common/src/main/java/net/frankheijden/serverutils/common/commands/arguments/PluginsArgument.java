@@ -12,10 +12,10 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.IntFunction;
-import net.frankheijden.serverutils.common.entities.ServerCommandSender;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 
-public class PluginsArgument<C extends ServerCommandSender<?>, P> extends CommandArgument<C, P[]> {
+public class PluginsArgument<C extends ServerUtilsAudience<?>, P> extends CommandArgument<C, P[]> {
 
     /**
      * Constructs a Plugins argument.
@@ -35,7 +35,7 @@ public class PluginsArgument<C extends ServerCommandSender<?>, P> extends Comman
         );
     }
 
-    public static final class PluginsParser<C extends ServerCommandSender<?>, P> implements ArgumentParser<C, P[]> {
+    public static final class PluginsParser<C extends ServerUtilsAudience<?>, P> implements ArgumentParser<C, P[]> {
 
         private final ServerUtilsPlugin<P, ?, C, ?, ?> plugin;
         private final IntFunction<P[]> arrayCreator;
