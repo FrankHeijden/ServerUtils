@@ -13,9 +13,11 @@ public class ListComponentBuilder<T> {
     private Format<T> format;
     private Component separator;
     private Component lastSeparator;
+    private Component emptyValue;
 
     private ListComponentBuilder() {
         this.elements = new ArrayList<>();
+        this.emptyValue = Component.empty();
     }
 
     public static <T> ListComponentBuilder<T> create(Collection<? extends T> list) {
@@ -42,6 +44,11 @@ public class ListComponentBuilder<T> {
         return this;
     }
 
+    public ListComponentBuilder<T> emptyValue(Component emptyValue) {
+        this.emptyValue = emptyValue;
+        return this;
+    }
+
     public ListComponentBuilder<T> addAll(Collection<? extends T> elements) {
         this.elements.addAll(elements);
         return this;
@@ -51,10 +58,12 @@ public class ListComponentBuilder<T> {
      * Builds the ListComponent.
      */
     public Component build() {
-        if (elements.size() == 1) {
+        if (elements.isEmpty()) {
+            return emptyValue;
+        } else if (elements.size() == 1) {
             return format.format(elements.iterator().next());
         } else {
-            TextComponent.Builder builder = Component.empty().toBuilder();
+            TextComponent.Builder builder = Component.text();
 
             int sizeMinusTwo = elements.size() - 2;
             for (int i = 0; i < elements.size(); i++) {

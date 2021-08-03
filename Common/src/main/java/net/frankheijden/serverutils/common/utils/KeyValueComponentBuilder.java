@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import net.frankheijden.serverutils.common.config.MessagesResource;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.Template;
 
 public class KeyValueComponentBuilder {
@@ -36,60 +35,52 @@ public class KeyValueComponentBuilder {
         return new KeyValueComponentBuilder(format, keyPlaceholder, valuePlaceholder);
     }
 
-    /**
-     * Adds an entry.
-     */
-    public KeyValueComponentBuilder add(String key, String value) {
-        if (value != null) this.templatesList.add(new Template[]{
-                Template.of(keyPlaceholder, key),
-                Template.of(valuePlaceholder, value)
-        });
-        return this;
+    public KeyValueComponentBuilder.KeyValuePair key(String key) {
+        return new KeyValuePair(key);
     }
 
-    /**
-     * Adds an entry.
-     */
-    public KeyValueComponentBuilder add(String key, Component value) {
-        if (value != null) this.templatesList.add(new Template[]{
-                Template.of(keyPlaceholder, key),
-                Template.of(valuePlaceholder, value)
-        });
-        return this;
+    public KeyValueComponentBuilder.KeyValuePair key(Component key) {
+        return new KeyValuePair(key);
     }
 
-    /**
-     * Adds an entry.
-     */
-    public KeyValueComponentBuilder add(Component key, String value) {
-        if (value != null) this.templatesList.add(new Template[]{
-                Template.of(keyPlaceholder, key),
-                Template.of(valuePlaceholder, value)
-        });
-        return this;
-    }
-
-    /**
-     * Adds an entry.
-     */
-    public KeyValueComponentBuilder add(Component key, Component value) {
-        if (value != null) this.templatesList.add(new Template[]{
-                Template.of(keyPlaceholder, key),
-                Template.of(valuePlaceholder, value)
-        });
+    private KeyValueComponentBuilder add(Template key, Template value) {
+        this.templatesList.add(new Template[]{ key, value });
         return this;
     }
 
     /**
      * Builds the current ListMessageBuilder instance into a Component.
      */
-    public Component build() {
-        TextComponent.Builder builder = Component.text();
+    public List<Component> build() {
+        List<Component> components = new ArrayList<>(templatesList.size());
 
         for (Template[] templates : templatesList) {
-            builder.append(format.toComponent(templates));
+            components.add(format.toComponent(templates));
         }
 
-        return builder.build();
+        return components;
+    }
+
+    public class KeyValuePair {
+
+        private final Template key;
+
+        private KeyValuePair(String key) {
+            this.key = Template.of(keyPlaceholder, key);
+        }
+
+        private KeyValuePair(Component key) {
+            this.key = Template.of(keyPlaceholder, key);
+        }
+
+        public KeyValueComponentBuilder value(String value) {
+            if (value == null) return KeyValueComponentBuilder.this;
+            return add(key, Template.of(valuePlaceholder, value));
+        }
+
+        public KeyValueComponentBuilder value(Component value) {
+            if (value == null) return KeyValueComponentBuilder.this;
+            return add(key, Template.of(valuePlaceholder, value));
+        }
     }
 }

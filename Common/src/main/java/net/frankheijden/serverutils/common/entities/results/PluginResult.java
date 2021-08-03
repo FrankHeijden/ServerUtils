@@ -2,7 +2,7 @@ package net.frankheijden.serverutils.common.entities.results;
 
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.config.ConfigKey;
-import net.kyori.adventure.text.Component;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.kyori.adventure.text.minimessage.Template;
 
 public class PluginResult<T> implements AbstractResult {
@@ -48,9 +48,9 @@ public class PluginResult<T> implements AbstractResult {
         return plugin != null && result == Result.SUCCESS;
     }
 
-    public Component toComponent(ConfigKey successKey) {
+    public void sendTo(ServerUtilsAudience<?> sender, ConfigKey successKey) {
         ConfigKey key = isSuccess() ? successKey : result.getKey();
-        return ServerUtilsApp.getPlugin().getMessagesResource().get(key).toComponent(templates);
+        sender.sendMessage(ServerUtilsApp.getPlugin().getMessagesResource().get(key).toComponent(templates));
     }
 
     @Override

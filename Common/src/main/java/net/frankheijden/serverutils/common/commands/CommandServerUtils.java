@@ -97,9 +97,7 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         C sender = context.getSender();
 
         MessagesResource messages = plugin.getMessagesResource();
-        TextComponent.Builder builder = Component.text()
-                .append(messages.get(MessageKey.HELP_HEADER).toComponent())
-                .append(Component.newline());
+        sender.sendMessage(messages.get(MessageKey.HELP_HEADER).toComponent());
 
         MessagesResource.Message helpFormatMessage = messages.get(MessageKey.HELP_FORMAT);
 
@@ -110,10 +108,10 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
             String shortestCommandAlias = determineShortestAlias(commandElement);
 
             if (commandElement.shouldDisplayInHelp()) {
-                builder.append(helpFormatMessage.toComponent(
+                sender.sendMessage(helpFormatMessage.toComponent(
                         Template.of("command", shortestCommandAlias),
                         Template.of("help", commandElement.getDescription().getDescription())
-                )).append(Component.newline());
+                ));
             }
 
             Object subcommandsObject = commandConfig.get("subcommands");
@@ -125,10 +123,10 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
                     CommandElement subcommandElement = parseElement(subcommandConfig);
                     if (subcommandElement.shouldDisplayInHelp()) {
                         String shortestSubcommandAlias = determineShortestAlias(subcommandElement);
-                        builder.append(helpFormatMessage.toComponent(
+                        sender.sendMessage(helpFormatMessage.toComponent(
                                 Template.of("command", shortestCommandAlias + ' ' + shortestSubcommandAlias),
                                 Template.of("help", subcommandElement.getDescription().getDescription())
-                        )).append(Component.newline());
+                        ));
                     }
                 }
             }
@@ -143,17 +141,16 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
                     if (flagElement.shouldDisplayInHelp()) {
                         String shortestFlagAlias = determineShortestAlias(flagElement);
                         String flagPrefix = "-" + (flagElement.getMain().equals(shortestFlagAlias) ? "_" : "");
-                        builder.append(helpFormatMessage.toComponent(
+                        sender.sendMessage(helpFormatMessage.toComponent(
                                 Template.of("command", shortestCommandAlias + ' ' + flagPrefix + shortestFlagAlias),
-                                        Template.of("help", flagElement.getDescription().getDescription())
-                        )).append(Component.newline());
+                                Template.of("help", flagElement.getDescription().getDescription())
+                        ));
                     }
                 }
             }
         }
 
-        builder.append(messages.get(MessageKey.HELP_FOOTER).toComponent());
-        sender.sendMessage(builder.build());
+        sender.sendMessage(messages.get(MessageKey.HELP_FOOTER).toComponent());
     }
 
     private String determineShortestAlias(CommandElement element) {
@@ -180,12 +177,12 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         PluginResults<P> loadResults = pluginManager.loadPlugins(jarFiles);
         if (!loadResults.isSuccess()) {
             PluginResult<P> failedResult = loadResults.last();
-            sender.sendMessage(failedResult.toComponent(null));
+            failedResult.sendTo(sender, null);
             return;
         }
 
         PluginResults<P> enableResults = pluginManager.enablePlugins(loadResults.getPlugins());
-        sender.sendMessage(enableResults.toComponent(MessageKey.LOADPLUGIN));
+        enableResults.sendTo(sender, MessageKey.LOADPLUGIN);
     }
 
     private void handleUnloadPlugin(CommandContext<C> context) {
@@ -199,14 +196,14 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         PluginResults<P> disableResults = plugin.getPluginManager().disablePlugins(plugins);
         for (PluginResult<P> disableResult : disableResults.getResults()) {
             if (!disableResult.isSuccess() && disableResult.getResult() != Result.ALREADY_DISABLED) {
-                sender.sendMessage(disableResult.toComponent(null));
+                disableResult.sendTo(sender, null);
                 return;
             }
         }
 
         CloseablePluginResults<P> unloadResults = plugin.getPluginManager().unloadPlugins(plugins);
         unloadResults.tryClose();
-        sender.sendMessage(unloadResults.toComponent(MessageKey.UNLOADPLUGIN));
+        unloadResults.sendTo(sender, MessageKey.UNLOADPLUGIN);
     }
 
     private void handleReloadPlugin(CommandContext<C> context) {
@@ -218,7 +215,7 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         }
 
         PluginResults<P> reloadResults = plugin.getPluginManager().reloadPlugins(plugins);
-        sender.sendMessage(reloadResults.toComponent(MessageKey.RELOADPLUGIN));
+        reloadResults.sendTo(sender, MessageKey.RELOADPLUGIN);
     }
 
     protected boolean checkDependingPlugins(CommandContext<C> context, C sender, List<P> plugins, String subcommand) {
@@ -227,27 +224,24 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         AbstractPluginManager<P, ?> pluginManager = plugin.getPluginManager();
         MessagesResource messages = plugin.getMessagesResource();
 
-        TextComponent.Builder builder = Component.text();
-
         boolean hasDependingPlugins = false;
         for (P plugin : plugins) {
             String pluginId = pluginManager.getPluginId(plugin);
 
             List<P> dependingPlugins = pluginManager.getPluginsDependingOn(pluginId);
             if (!dependingPlugins.isEmpty()) {
+                TextComponent.Builder builder = Component.text();
                 builder.append(messages.get(MessageKey.DEPENDING_PLUGINS_PREFIX).toComponent(
                         Template.of("plugin", pluginId)
                 ));
-
-                MessagesResource.Message dependingPluginsFormat = messages.get(MessageKey.DEPENDING_PLUGINS_FORMAT);
                 builder.append(ListComponentBuilder.create(dependingPlugins)
-                        .format(p -> dependingPluginsFormat.toComponent(
+                        .format(p -> messages.get(MessageKey.DEPENDING_PLUGINS_FORMAT).toComponent(
                                 Template.of("plugin", pluginManager.getPluginId(p))
                         ))
                         .separator(messages.get(MessageKey.DEPENDING_PLUGINS_SEPARATOR).toComponent())
                         .lastSeparator(messages.get(MessageKey.DEPENDING_PLUGINS_LAST_SEPARATOR).toComponent())
                         .build());
-                builder.append(Component.newline());
+                sender.sendMessage(builder.build());
                 hasDependingPlugins = true;
             }
         }
@@ -258,12 +252,10 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
                     .min(Comparator.comparingInt(String::length))
                     .orElse("-f");
 
-            builder.append(messages.get(MessageKey.DEPENDING_PLUGINS_OVERRIDE).toComponent(
+            sender.sendMessage(messages.get(MessageKey.DEPENDING_PLUGINS_OVERRIDE).toComponent(
                     Template.of("command", context.getRawInputJoined() + " " + forceFlag)
             ));
         }
-
-        sender.sendMessage(builder.build());
 
         return hasDependingPlugins;
     }
@@ -323,31 +315,26 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
     private <T> void createInfo(C sender, String command, T item, InfoCreator<T> creator) {
         MessagesResource messages = plugin.getMessagesResource();
 
-        String messagePrefix = "messages." + command;
-        MessagesResource.Message formatMessage = messages.get(messagePrefix + ".format");
-        MessagesResource.Message listFormatMessage = messages.get(messagePrefix + ".list-format");
-        Component separator = messages.get(messagePrefix + ".list-separator").toComponent();
-        Component lastSeparator = messages.get(messagePrefix + ".list-last-separator").toComponent();
+        MessagesResource.Message formatMessage = messages.get(command + ".format");
+        MessagesResource.Message listFormatMessage = messages.get(command + ".list-format");
+        Component separator = messages.get(command + ".list-separator").toComponent();
+        Component lastSeparator = messages.get(command + ".list-last-separator").toComponent();
 
-        TextComponent.Builder builder = Component.text()
-                .append(messages.get(messagePrefix + ".header").toComponent())
-                .append(Component.newline());
-
+        sender.sendMessage(messages.get(command + ".header").toComponent());
         creator.createInfo(
                 KeyValueComponentBuilder.create(formatMessage, "key", "value"),
                 listBuilderConsumer -> {
                     ListComponentBuilder<String> listBuilder = ListComponentBuilder.<String>create()
                             .format(str -> listFormatMessage.toComponent(Template.of("value", str)))
                             .separator(separator)
-                            .lastSeparator(lastSeparator);
+                            .lastSeparator(lastSeparator)
+                            .emptyValue(null);
                     listBuilderConsumer.accept(listBuilder);
                     return listBuilder.build();
                 },
                 item
-        );
-
-        builder.append(messages.get(messagePrefix + ".footer").toComponent());
-        sender.sendMessage(builder.build());
+        ).build().forEach(sender::sendMessage);
+        sender.sendMessage(messages.get(command + ".footer").toComponent());
     }
 
     private interface InfoCreator<T> {

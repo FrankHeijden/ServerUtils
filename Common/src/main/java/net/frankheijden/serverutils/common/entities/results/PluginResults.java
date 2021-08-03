@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import net.frankheijden.serverutils.common.config.ConfigKey;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
+import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.kyori.adventure.text.minimessage.Template;
 
 public class PluginResults<T> implements Iterable<PluginResult<T>> {
@@ -68,14 +67,12 @@ public class PluginResults<T> implements Iterable<PluginResult<T>> {
     }
 
     /**
-     * Creates a {@link Component}.
+     * Sends the result(s) to the given sender.
      */
-    public Component toComponent(ConfigKey successKey) {
-        TextComponent.Builder builder = Component.text();
+    public void sendTo(ServerUtilsAudience<?> sender, ConfigKey successKey) {
         for (PluginResult<T> result : results) {
-            builder.append(result.toComponent(successKey));
+            result.sendTo(sender, successKey);
         }
-        return builder.build();
     }
 
     @Override

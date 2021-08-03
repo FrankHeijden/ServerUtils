@@ -98,7 +98,7 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
         List<Plugin> plugins = Arrays.asList(context.get("plugins"));
 
         PluginResults<Plugin> enableResults = plugin.getPluginManager().enablePlugins(plugins);
-        sender.sendMessage(enableResults.toComponent(BukkitMessageKey.ENABLEPLUGIN));
+        enableResults.sendTo(sender, BukkitMessageKey.ENABLEPLUGIN);
     }
 
     private void handleDisablePlugin(CommandContext<BukkitAudience> context) {
@@ -110,7 +110,7 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
         }
 
         PluginResults<Plugin> disableResults = plugin.getPluginManager().disablePlugins(plugins);
-        sender.sendMessage(disableResults.toComponent(BukkitMessageKey.DISABLEPLUGIN));
+        disableResults.sendTo(sender, BukkitMessageKey.DISABLEPLUGIN);
     }
 
     private void handleReloadConfig(CommandContext<BukkitAudience> context) {
@@ -166,25 +166,25 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
     ) {
         PluginDescriptionFile description = bukkitPlugin.getDescription();
 
-        builder.add("Name", bukkitPlugin.getName())
-                .add("Full Name", description.getFullName())
-                .add("Version", description.getVersion())
-                .add("Website", description.getWebsite())
-                .add("Authors", listBuilderFunction.apply(b -> b.addAll(description.getAuthors())))
-                .add("Description", description.getDescription())
-                .add("Main", description.getMain())
-                .add("Prefix", description.getPrefix())
-                .add("Load Order", description.getLoad().name())
-                .add("Load Before", listBuilderFunction.apply(b -> b.addAll(description.getLoadBefore())))
-                .add("Depend", listBuilderFunction.apply(b -> b.addAll(description.getDepend())))
-                .add("Soft Depend", listBuilderFunction.apply(b -> b.addAll(description.getSoftDepend())));
+        builder.key("Name").value(bukkitPlugin.getName())
+                .key("Full Name").value(description.getFullName())
+                .key("Version").value(description.getVersion())
+                .key("Website").value(description.getWebsite())
+                .key("Authors").value(listBuilderFunction.apply(b -> b.addAll(description.getAuthors())))
+                .key("Description").value(description.getDescription())
+                .key("Main").value(description.getMain())
+                .key("Prefix").value(description.getPrefix())
+                .key("Load Order").value(description.getLoad().name())
+                .key("Load Before").value(listBuilderFunction.apply(b -> b.addAll(description.getLoadBefore())))
+                .key("Depend").value(listBuilderFunction.apply(b -> b.addAll(description.getDepend())))
+                .key("Soft Depend").value(listBuilderFunction.apply(b -> b.addAll(description.getSoftDepend())));
 
         if (MinecraftReflectionVersion.MINOR >= 13) {
-            builder.add("API Version", description.getAPIVersion());
+            builder.key("API Version").value(description.getAPIVersion());
         }
 
         if (MinecraftReflectionVersion.MINOR >= 15) {
-            builder.add("Provides", listBuilderFunction.apply(b -> b.addAll(description.getProvides())));
+            builder.key("Provides").value(listBuilderFunction.apply(b -> b.addAll(description.getProvides())));
         }
 
         return builder;
@@ -197,17 +197,17 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
             String commandName
     ) {
         Command cmd = BukkitPluginManager.getCommand(commandName);
-        builder.add("Name", cmd.getName());
+        builder.key("Name").value(cmd.getName());
 
         if (cmd instanceof PluginIdentifiableCommand) {
-            builder.add("Plugin", ((PluginIdentifiableCommand) cmd).getPlugin().getName());
+            builder.key("Plugin").value(((PluginIdentifiableCommand) cmd).getPlugin().getName());
         }
 
-        return builder.add("Aliases", listBuilderFunction.apply(b -> b.addAll(cmd.getAliases())))
-                .add("Usage", cmd.getUsage())
-                .add("Description", cmd.getDescription())
-                .add("Label", cmd.getLabel())
-                .add("Permission", cmd.getPermission())
-                .add("Permission Message", cmd.getPermissionMessage());
+        return builder.key("Aliases").value(listBuilderFunction.apply(b -> b.addAll(cmd.getAliases())))
+                .key("Usage").value(cmd.getUsage())
+                .key("Description").value(cmd.getDescription())
+                .key("Label").value(cmd.getLabel())
+                .key("Permission").value(cmd.getPermission())
+                .key("Permission Message").value(cmd.getPermissionMessage());
     }
 }

@@ -10,7 +10,6 @@ import net.frankheijden.serverutils.common.entities.results.PluginResult;
 import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.tasks.UpdateCheckerTask;
-import net.kyori.adventure.text.Component;
 
 public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S, D>, P, T, C extends ServerUtilsAudience<S>, S, D extends ServerUtilsPluginDescription> {
 
@@ -66,15 +65,13 @@ public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S, D>, P, T, C 
             File file = plugin.getPluginManager().getPluginFile(updaterPlugin);
             PluginResult<P> disableResult = plugin.getPluginManager().disablePlugin(updaterPlugin);
             if (!disableResult.isSuccess()) {
-                Component component = disableResult.toComponent(null);
-                plugin.getChatProvider().getConsoleServerAudience().sendMessage(component);
+                disableResult.sendTo(plugin.getChatProvider().getConsoleServerAudience(), null);
                 return;
             }
 
             CloseablePluginResult<P> unloadResult = plugin.getPluginManager().unloadPlugin(disableResult.getPlugin());
             if (!unloadResult.isSuccess()) {
-                Component component = unloadResult.toComponent(null);
-                plugin.getChatProvider().getConsoleServerAudience().sendMessage(component);
+                unloadResult.sendTo(plugin.getChatProvider().getConsoleServerAudience(), null);
                 return;
             }
 

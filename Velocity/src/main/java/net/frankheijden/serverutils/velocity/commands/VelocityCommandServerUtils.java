@@ -33,22 +33,18 @@ public class VelocityCommandServerUtils extends CommandServerUtils<VelocityPlugi
         PluginDescription desc = container.getDescription();
 
         return builder
-                .add("Id", desc.getId())
-                .add("Name", desc.getName().orElse(null))
-                .add("Version", desc.getVersion().orElse("<UNKNOWN>"))
-                .add(
-                        "Author" + (desc.getAuthors().size() == 1 ? "" : "s"),
-                        listBuilderFunction.apply(b -> b.addAll(desc.getAuthors()))
-                )
-                .add("Description", desc.getDescription().orElse(null))
-                .add("URL", desc.getUrl().orElse(null))
-                .add("Source", desc.getSource().map(Path::toString).orElse(null))
-                .add(
-                        "Dependencies",
-                        listBuilderFunction.apply(b -> b.addAll(desc.getDependencies().stream()
-                                .map(PluginDependency::getId)
-                                .collect(Collectors.toList())))
-                );
+                .key("Id").value(desc.getId())
+                .key("Name").value(desc.getName().orElse(null))
+                .key("Version").value(desc.getVersion().orElse("<UNKNOWN>"))
+                .key("Author" + (desc.getAuthors().size() == 1 ? "" : "s"))
+                .value(listBuilderFunction.apply(b -> b.addAll(desc.getAuthors())))
+                .key("Description").value(desc.getDescription().orElse(null))
+                .key("URL").value(desc.getUrl().orElse(null))
+                .key("Source").value(desc.getSource().map(Path::toString).orElse(null))
+                .key("Dependencies")
+                .value(listBuilderFunction.apply(b -> b.addAll(desc.getDependencies().stream()
+                        .map(PluginDependency::getId)
+                        .collect(Collectors.toList()))));
     }
 
     @Override
@@ -63,7 +59,7 @@ public class VelocityCommandServerUtils extends CommandServerUtils<VelocityPlugi
         );
 
         return builder
-                .add("Name", dispatcher.getRoot().getChild(commandName).getName())
-                .add("Plugin", plugin.getPluginCommandManager().findPluginId(commandName).orElse("<UNKNOWN>"));
+                .key("Name").value(dispatcher.getRoot().getChild(commandName).getName())
+                .key("Plugin").value(plugin.getPluginCommandManager().findPluginId(commandName).orElse("<UNKNOWN>"));
     }
 }

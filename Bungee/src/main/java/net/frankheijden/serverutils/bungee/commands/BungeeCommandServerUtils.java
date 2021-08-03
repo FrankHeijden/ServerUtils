@@ -32,14 +32,14 @@ public class BungeeCommandServerUtils extends CommandServerUtils<BungeePlugin, P
         PluginDescription desc = bungeePlugin.getDescription();
 
         return builder
-                .add("Name", desc.getName())
-                .add("Version", desc.getVersion())
-                .add("Author", desc.getAuthor())
-                .add("Description", desc.getDescription())
-                .add("Main", desc.getMain())
-                .add("File", desc.getFile().getName())
-                .add("Depend", listBuilderFunction.apply(b -> b.addAll(desc.getDepends())))
-                .add("Soft Depend", listBuilderFunction.apply(b -> b.addAll(desc.getSoftDepends())));
+                .key("Name").value(desc.getName())
+                .key("Version").value(desc.getVersion())
+                .key("Author").value(desc.getAuthor())
+                .key("Description").value(desc.getDescription())
+                .key("Main").value(desc.getMain())
+                .key("File").value(desc.getFile().getName())
+                .key("Depend").value(listBuilderFunction.apply(b -> b.addAll(desc.getDepends())))
+                .key("Soft Depend").value(listBuilderFunction.apply(b -> b.addAll(desc.getSoftDepends())));
     }
 
     @Override
@@ -54,7 +54,7 @@ public class BungeeCommandServerUtils extends CommandServerUtils<BungeePlugin, P
             commands = RPluginManager.getCommands(proxyPluginManager);
         } catch (IllegalAccessException ex) {
             ex.printStackTrace();
-            builder.add("Error", "Please check the console.");
+            builder.key("Error").value("Please check the console.");
             return builder;
         }
 
@@ -62,9 +62,9 @@ public class BungeeCommandServerUtils extends CommandServerUtils<BungeePlugin, P
         Plugin plugin = RPluginManager.getPlugin(proxyPluginManager, cmd);
 
         return builder
-                .add("Name", cmd.getName())
-                .add("Plugin", plugin == null ? "<UNKNOWN>" : plugin.getDescription().getName())
-                .add("Aliases", listBuilderFunction.apply(b -> b.addAll(Arrays.asList(cmd.getAliases()))))
-                .add("Permission", cmd.getPermission());
+                .key("Name").value(cmd.getName())
+                .key("Plugin").value(plugin == null ? "<UNKNOWN>" : plugin.getDescription().getName())
+                .key("Aliases").value(listBuilderFunction.apply(b -> b.addAll(Arrays.asList(cmd.getAliases()))))
+                .key("Permission").value(cmd.getPermission());
     }
 }
