@@ -58,6 +58,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
     public PluginResults<Plugin> loadPluginDescriptions(List<BukkitPluginDescription> descriptions) {
         PluginResults<Plugin> pluginResults = new PluginResults<>();
 
+        List<Plugin> plugins = new ArrayList<>();
         for (BukkitPluginDescription description : descriptions) {
             String pluginId = description.getId();
 
@@ -82,8 +83,19 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
             }
 
             if (plugin == null) return pluginResults.addResult(pluginId, Result.INVALID_PLUGIN);
+            plugins.add(plugin);
             Bukkit.getPluginManager().callEvent(new BukkitPluginLoadEvent(plugin, PluginEvent.Stage.PRE));
-            plugin.onLoad();
+        }
+
+        for (Plugin plugin : plugins) {
+            String pluginId = getPluginId(plugin);
+            try {
+                plugin.onLoad();
+            } catch (Throwable th) {
+                th.printStackTrace();
+                return pluginResults.addResult(pluginId, Result.ERROR);
+            }
+
             Bukkit.getPluginManager().callEvent(new BukkitPluginLoadEvent(plugin, PluginEvent.Stage.POST));
             pluginResults.addResult(pluginId, plugin);
         }
