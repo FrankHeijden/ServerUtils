@@ -69,6 +69,11 @@ public class PluginResults<T> implements Iterable<PluginResult<T>> {
      * Sends the result(s) to the given sender.
      */
     public void sendTo(ServerUtilsAudience<?> sender, ConfigKey successKey) {
+        if (!isSuccess()) {
+            last().sendTo(sender, successKey);
+            return;
+        }
+
         for (PluginResult<T> result : results) {
             result.sendTo(sender, successKey);
         }
