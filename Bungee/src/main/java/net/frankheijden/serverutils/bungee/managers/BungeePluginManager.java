@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Stack;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -82,7 +83,17 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin, BungeePlu
         }
 
         RPluginManager.setToLoad(proxyPluginManager, toLoad);
-        proxyPluginManager.loadPlugins();
+
+        Map<PluginDescription, Boolean> pluginStatuses = new HashMap<>();
+        for (Map.Entry<String, PluginDescription> entry : toLoad.entrySet()) {
+            // Yeah... loadPlugins() calls enablePlugin()
+            if (!RPluginManager.enablePlugin(proxyPluginManager, pluginStatuses, new Stack<>(), entry.getValue())) {
+                return loadResults.addResult(entry.getKey(), Result.ERROR);
+            }
+        }
+
+        toLoad.clear();
+        RPluginManager.setToLoad(proxyPluginManager, null);
 
         for (BungeePluginDescription description : descriptions) {
             Optional<Plugin> pluginOptional = getPlugin(description.getId());

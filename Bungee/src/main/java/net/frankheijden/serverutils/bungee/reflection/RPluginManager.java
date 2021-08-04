@@ -1,8 +1,10 @@
 package net.frankheijden.serverutils.bungee.reflection;
 
 import com.google.common.collect.Multimap;
-import java.util.Map;
+import dev.frankheijden.minecraftreflection.ClassObject;
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
+import java.util.Map;
+import java.util.Stack;
 import net.frankheijden.serverutils.common.utils.MapUtils;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -41,6 +43,22 @@ public class RPluginManager {
 
     public static void setToLoad(Object pluginManager, Map<String, PluginDescription> toLoad) {
         reflection.set(pluginManager, "toLoad", toLoad);
+    }
+
+    /**
+     * Enables a plugin.
+     */
+    public static boolean enablePlugin(
+            Object pluginManager,
+            Map<PluginDescription, Boolean> pluginStatuses,
+            Stack<PluginDescription> dependStack,
+            PluginDescription plugin
+    ) {
+        return reflection.invoke(pluginManager, "enablePlugin",
+                ClassObject.of(Map.class, pluginStatuses),
+                ClassObject.of(Stack.class, dependStack),
+                ClassObject.of(PluginDescription.class, plugin)
+        );
     }
 
     /**
