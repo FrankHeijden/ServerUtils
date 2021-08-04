@@ -146,12 +146,11 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
                 RSimplePluginManager.removeLookupName(Bukkit.getPluginManager(), pluginId);
 
                 ClassLoader classLoader = plugin.getClass().getClassLoader();
-                RPluginClassLoader.clearClassLoader(classLoader);
-
                 PluginLoader loader = RPluginClassLoader.getLoader(classLoader);
                 Map<String, Class<?>> classes = RPluginClassLoader.getClasses(classLoader);
                 RJavaPluginLoader.removeClasses(loader, classes.keySet());
 
+                RPluginClassLoader.clearClassLoader(classLoader);
                 RJavaPlugin.clearJavaPlugin(plugin);
 
                 addIfInstance(closeables, RPluginClassLoader.getLibraryLoader(classLoader));

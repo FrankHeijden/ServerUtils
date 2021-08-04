@@ -1,8 +1,11 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
+import java.lang.reflect.Field;
+import java.util.Map;
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
 import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
-import java.util.Map;
+import dev.frankheijden.minecraftreflection.Reflection;
+import net.frankheijden.serverutils.common.utils.ReflectionUtils;
 import org.bukkit.plugin.PluginLoader;
 
 public class RPluginClassLoader {
@@ -31,22 +34,29 @@ public class RPluginClassLoader {
     }
 
     public static ClassLoader getLibraryLoader(ClassLoader loader) {
-        if (loader == null && MinecraftReflectionVersion.MINOR <= 16) return null;
+        if (loader == null || MinecraftReflectionVersion.MINOR <= 16) return null;
         return reflection.get(loader, "libraryLoader");
     }
 
     /**
      * Clears the plugin fields from the specified PluginClassLoader.
-     * @param pluginLoader The plugin loader instance.
      */
-    public static void clearPluginClassLoader(Object pluginLoader) {
-        if (pluginLoader == null) return;
+    public static void clearPluginClassLoader(Object classLoader) {
+        if (classLoader == null) return;
 
-        reflection.set(pluginLoader, "plugin", null);
-        reflection.set(pluginLoader, "pluginInit", null);
+        reflection.set(classLoader, "loader", null);
+        if (MinecraftReflectionVersion.MINOR > 16) {
+            ReflectionUtils.doPrivilegedWithUnsafe(unsafe -> {
+                Field libraryLoaderField = Reflection.getField(reflection.getClazz(), "libraryLoader");
+                unsafe.putObject(classLoader, unsafe.objectFieldOffset(libraryLoaderField), null);
+            });
+        }
+        reflection.set(classLoader, "plugin", null);
+        reflection.set(classLoader, "pluginInit", null);
+        getClasses(classLoader).clear();
     }
 
-    public static Map<String, Class<?>> getClasses(Object pluginLoader) {
-        return reflection.get(pluginLoader, "classes");
+    public static Map<String, Class<?>> getClasses(Object classLoader) {
+        return reflection.get(classLoader, "classes");
     }
 }

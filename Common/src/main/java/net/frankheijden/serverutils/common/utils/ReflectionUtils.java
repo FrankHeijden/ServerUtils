@@ -1,4 +1,4 @@
-package net.frankheijden.serverutils.velocity.utils;
+package net.frankheijden.serverutils.common.utils;
 
 import dev.frankheijden.minecraftreflection.Reflection;
 import java.lang.invoke.MethodHandle;

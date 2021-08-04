@@ -1,7 +1,6 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
-import java.io.Closeable;
 import java.io.File;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,12 +22,9 @@ public class RJavaPlugin {
 
     /**
      * Clears the JavaPlugin from instances and returns the classloader associated with it.
-     * @param instance The instance of the JavaPlugin.
-     * @return The classloader associated with it.
      */
-    public static Closeable clearJavaPlugin(Object instance) {
+    public static void clearJavaPlugin(Object instance) {
         reflection.set(instance, "loader", null);
         reflection.set(instance, "classLoader", null);
-        return null;
     }
 }

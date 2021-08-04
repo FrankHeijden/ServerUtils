@@ -15,8 +15,8 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import net.frankheijden.serverutils.common.utils.ReflectionUtils;
 import net.frankheijden.serverutils.velocity.ServerUtils;
-import net.frankheijden.serverutils.velocity.utils.ReflectionUtils;
 
 public class RVelocityCommandManager {
 
