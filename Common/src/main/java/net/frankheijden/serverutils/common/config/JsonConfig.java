@@ -166,7 +166,9 @@ public class JsonConfig implements ServerUtilsConfig {
         if (lastDotIndex == -1) {
             object = config;
         } else {
-            object = ((JsonConfig) get(path.substring(0, lastDotIndex))).config;
+            Object obj = get(path.substring(0, lastDotIndex));
+            if (!(obj instanceof JsonConfig)) return;
+            object = ((JsonConfig) obj).config;
         }
 
         object.remove(path.substring(lastDotIndex + 1));
