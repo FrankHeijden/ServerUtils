@@ -9,13 +9,13 @@ repositories {
 }
 
 dependencies {
-    implementation "com.github.FrankHeijden.cloud:cloud-bungee:${rootProject.cloudVersion}"
-    implementation 'net.kyori:adventure-api:4.8.1'
-    implementation 'net.kyori:adventure-platform-bungeecord:4.0.0-SNAPSHOT'
-    implementation ('net.kyori:adventure-text-minimessage:4.1.0-SNAPSHOT') {
+    implementation "cloud.commandframework:cloud-bungee:${rootProject.cloudVersion}"
+    implementation "net.kyori:adventure-api:${rootProject.adventureVersion}"
+    implementation "net.kyori:adventure-platform-bungeecord:${rootProject.adventurePlatformVersion}"
+    implementation ("net.kyori:adventure-text-minimessage:${rootProject.adventureMinimessageVersion}") {
         exclude group: 'net.kyori', module: 'adventure-api'
     }
-    implementation 'org.bstats:bstats-bungeecord:2.2.1'
+    implementation "org.bstats:bstats-bungeecord:${rootProject.bstatsVersion}"
     implementation project(":Common")
     compileOnly 'net.md-5:bungeecord-api:1.17-R0.1-SNAPSHOT'
 }

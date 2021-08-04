@@ -9,7 +9,11 @@ version = '3.0.0-DEV'
 
 allprojects {
     ext {
-        cloudVersion = '62e3bc97ef'
+        cloudVersion = '1.6.0-SNAPSHOT'
+        adventureVersion = '4.8.1'
+        adventurePlatformVersion = '4.0.0-SNAPSHOT'
+        adventureMinimessageVersion = '4.1.0-SNAPSHOT'
+        bstatsVersion = '2.2.1'
     }
 }
 
@@ -31,8 +35,8 @@ subprojects {
     }
 
     dependencies {
-        implementation "com.github.FrankHeijden.cloud:cloud-core:${rootProject.cloudVersion}"
-        implementation "com.github.FrankHeijden.cloud:cloud-brigadier:${rootProject.cloudVersion}"
+        implementation "cloud.commandframework:cloud-core:${rootProject.cloudVersion}"
+        implementation "cloud.commandframework:cloud-brigadier:${rootProject.cloudVersion}"
         implementation 'com.github.FrankHeijden:MinecraftReflection:1.0.0'
         implementation 'com.google.guava:guava:30.1.1-jre'
         implementation 'com.google.code.gson:gson:2.8.6'

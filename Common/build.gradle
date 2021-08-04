@@ -11,11 +11,11 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'net.kyori:adventure-platform-api:4.0.0-SNAPSHOT'
-    compileOnly 'net.kyori:adventure-text-minimessage:4.1.0-SNAPSHOT'
+    compileOnly "net.kyori:adventure-platform-api:${rootProject.adventurePlatformVersion}"
+    compileOnly "net.kyori:adventure-text-minimessage:${rootProject.adventureMinimessageVersion}"
     compileOnly 'com.github.FrankHeijden:ServerUtilsUpdater:v1.0.0'
 
-    testImplementation 'net.kyori:adventure-text-serializer-plain:4.8.1'
+    testImplementation "net.kyori:adventure-text-serializer-plain:${rootProject.adventureVersion}"
 }
 
 blossom {
