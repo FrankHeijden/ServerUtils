@@ -8,6 +8,9 @@ dependencies {
     implementation "com.github.FrankHeijden.cloud:cloud-paper:${rootProject.cloudVersion}"
     implementation 'net.kyori:adventure-api:4.8.1'
     implementation 'net.kyori:adventure-platform-bukkit:4.0.0-SNAPSHOT'
+    implementation ('net.kyori:adventure-text-minimessage:4.1.0-SNAPSHOT') {
+        exclude group: 'net.kyori', module: 'adventure-api'
+    }
     implementation 'org.bstats:bstats-bukkit:2.2.1'
     implementation project(":Common")
     compileOnly 'com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT'

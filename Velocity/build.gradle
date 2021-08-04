@@ -16,6 +16,9 @@ dependencies {
     implementation "com.github.FrankHeijden.cloud:cloud-velocity:${rootProject.cloudVersion}"
     implementation 'org.bstats:bstats-velocity:2.2.1'
     implementation project(":Common")
+    implementation ('net.kyori:adventure-text-minimessage:4.1.0-SNAPSHOT') {
+        exclude group: 'net.kyori', module: 'adventure-api'
+    }
     compileOnly 'com.velocitypowered:velocity-api:3.0.0'
     compileOnly 'com.velocitypowered:velocity-brigadier:1.0.0-SNAPSHOT'
     compileOnly 'com.electronwill.night-config:toml:3.6.3'
