@@ -33,7 +33,13 @@ public class BungeeYamlConfig implements ServerUtilsConfig {
 
     @Override
     public Object get(String path) {
-        Object obj = config.get(path);
+        Object obj;
+        try {
+            obj = config.get(path);
+        } catch (ClassCastException ignored) {
+            return null;
+        }
+
         if (obj instanceof Configuration) {
             return new BungeeYamlConfig((Configuration) obj);
         }
@@ -61,8 +67,13 @@ public class BungeeYamlConfig implements ServerUtilsConfig {
     }
 
     @Override
-    public void set(String path, Object value) {
+    public void setUnsafe(String path, Object value) {
         config.set(path, value);
+    }
+
+    @Override
+    public void remove(String path) {
+        config.set(path, null);
     }
 
     @Override

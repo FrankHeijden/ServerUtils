@@ -40,7 +40,31 @@ public interface ServerUtilsConfig {
      * @param path The path.
      * @param value The object to set the path's value to.
      */
-    void set(String path, Object value);
+    default void set(String path, Object value) {
+        if (value == null) {
+            remove(path);
+        } else {
+            String pathSegment = path;
+
+            int lastDotIndex;
+            while ((lastDotIndex = pathSegment.lastIndexOf('.')) != -1) {
+                String parentPath = path.substring(0, lastDotIndex);
+                if (!(get(parentPath) instanceof ServerUtilsConfig)) {
+                    remove(parentPath);
+                }
+                pathSegment = parentPath;
+            }
+
+            setUnsafe(path, value);
+        }
+    }
+
+    void setUnsafe(String path, Object value);
+
+    /**
+     * Removes a path.
+     */
+    void remove(String path);
 
     /**
      * Retrieves a string from a path.
@@ -122,7 +146,7 @@ public interface ServerUtilsConfig {
             String defKey = (root.isEmpty() ? "" : root + ".") + key;
             Object value = conf.get(key);
             if (def.get(defKey) == null) {
-                conf.set(key, null);
+                conf.remove(key);
             } else if (value instanceof ServerUtilsConfig) {
                 removeOldKeys(def, (ServerUtilsConfig) value, defKey);
             }

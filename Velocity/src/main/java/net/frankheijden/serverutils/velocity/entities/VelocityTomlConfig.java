@@ -56,21 +56,13 @@ public class VelocityTomlConfig implements ServerUtilsConfig {
     }
 
     @Override
-    public void set(String path, Object value) {
-        if (value == null) {
-            config.remove(path);
-        } else {
-            int lastDotIndex = path.lastIndexOf('.');
-            if (lastDotIndex != -1) {
-                String parentPath = path.substring(0, lastDotIndex);
-                try {
-                    CommentedConfig parent = config.get(parentPath);
-                } catch (ClassCastException ex) {
-                    config.remove(parentPath);
-                }
-            }
-            config.set(path, value);
-        }
+    public void setUnsafe(String path, Object value) {
+        config.set(path, value);
+    }
+
+    @Override
+    public void remove(String path) {
+        config.remove(path);
     }
 
     @Override

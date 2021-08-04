@@ -54,8 +54,13 @@ public class BukkitYamlConfig implements ServerUtilsConfig {
     }
 
     @Override
-    public void set(String path, Object value) {
+    public void setUnsafe(String path, Object value) {
         config.set(path, value);
+    }
+
+    @Override
+    public void remove(String path) {
+        config.set(path, null);
     }
 
     @Override

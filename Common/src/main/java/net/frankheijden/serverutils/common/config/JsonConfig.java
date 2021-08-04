@@ -137,7 +137,7 @@ public class JsonConfig implements ServerUtilsConfig {
     }
 
     @Override
-    public void set(String path, Object value) {
+    public void setUnsafe(String path, Object value) {
         int lastDotIndex = path.lastIndexOf('.');
 
         String memberName = path;
@@ -156,6 +156,20 @@ public class JsonConfig implements ServerUtilsConfig {
             }
         }
         jsonObject.add(memberName, gson.toJsonTree(value));
+    }
+
+    @Override
+    public void remove(String path) {
+        int lastDotIndex = path.lastIndexOf('.');
+
+        JsonObject object;
+        if (lastDotIndex == -1) {
+            object = config;
+        } else {
+            object = ((JsonConfig) get(path.substring(0, lastDotIndex))).config;
+        }
+
+        object.remove(path.substring(lastDotIndex + 1));
     }
 
     @Override
