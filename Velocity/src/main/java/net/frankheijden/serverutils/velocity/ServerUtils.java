@@ -57,6 +57,7 @@ public class ServerUtils {
      */
     @Inject
     public ServerUtils(ProxyServer proxy, @DataDirectory Path dataDirectory) {
+        instance = this;
         try {
             this.pluginCommandManager = VelocityPluginCommandManager.load(dataDirectory.resolve(PLUGIN_COMMANDS_CACHE));
         } catch (IOException ex) {
@@ -78,8 +79,6 @@ public class ServerUtils {
      */
     @Subscribe
     public void onEnable(ProxyInitializeEvent event) {
-        instance = this;
-
         this.plugin = new VelocityPlugin(this);
         ServerUtilsApp.init(this, plugin);
 
