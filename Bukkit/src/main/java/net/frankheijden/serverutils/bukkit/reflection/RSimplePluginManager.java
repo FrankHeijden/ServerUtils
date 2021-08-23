@@ -1,15 +1,12 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
-
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-
 import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.Plugin;
