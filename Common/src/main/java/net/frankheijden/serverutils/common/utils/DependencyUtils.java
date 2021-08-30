@@ -1,8 +1,5 @@
 package net.frankheijden.serverutils.common.utils;
 
-import com.google.common.graph.Graph;
-import com.google.common.graph.GraphBuilder;
-import com.google.common.graph.MutableGraph;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -10,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import net.frankheijden.serverutils.common.util.HashGraph;
 
 public class DependencyUtils {
 
@@ -22,7 +20,7 @@ public class DependencyUtils {
      */
     @SuppressWarnings("UnstableApiUsage")
     public static <T> List<T> determineOrder(Map<T, Set<T>> dependencyMap) throws IllegalStateException {
-        MutableGraph<T> dependencyGraph = GraphBuilder.directed().allowsSelfLoops(true).build();
+        HashGraph<T> dependencyGraph = new HashGraph<>();
         for (T node : dependencyMap.keySet()) {
             dependencyGraph.addNode(node);
         }
@@ -45,7 +43,7 @@ public class DependencyUtils {
 
     @SuppressWarnings("UnstableApiUsage")
     private static <T> void visitNode(
-            Graph<T> dependencyGraph,
+            HashGraph<T> dependencyGraph,
             T node,
             Map<T, Mark> marks,
             List<T> orderedList,
