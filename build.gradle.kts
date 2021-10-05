@@ -108,7 +108,6 @@ subprojects {
         publications {
             create<MavenPublication>("ServerUtils") {
                 artifact(tasks["shadowJar"]) {
-                    extension = ""
                     classifier = ""
                 }
                 artifactId = "ServerUtils-$artifactId"
@@ -189,7 +188,6 @@ publishing {
     publications {
         create<MavenPublication>("ServerUtils") {
             artifact(tasks["shadowJar"]) {
-                extension = ""
                 classifier = ""
             }
             artifactId = "ServerUtils"
