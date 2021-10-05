@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 @Plugin(
         id = "serverutils",
         name = "ServerUtils",
-        version = "${version}",
+        version = "{version}",
         description = "A server utility",
         url = "https://github.com/FrankHeijden/ServerUtils",
         authors = "FrankHeijden"
