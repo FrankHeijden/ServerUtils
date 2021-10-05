@@ -71,7 +71,7 @@ dependencies {
 ```xml
 <project>
   <repositories>
-    <!-- Insights repo -->
+    <!-- ServerUtils repo -->
     <repository>
       <id>fvdh</id>
       <url>https://repo.fvdh.dev/releases</url>
@@ -79,7 +79,7 @@ dependencies {
   </repositories>
   
   <dependencies>
-    <!-- Insights dependency -->
+    <!-- ServerUtils dependency -->
     <dependency>
       <groupId>net.frankheijden.serverutils</groupId>
       <artifactId>ServerUtils</artifactId>
