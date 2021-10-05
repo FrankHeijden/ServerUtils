@@ -96,7 +96,7 @@ subprojects {
         repositories {
             maven {
                 name = "fvdh"
-                url = if (version.toString().endsWith("-SNAPSHOT")) {
+                url = if (rootProject.version.toString().endsWith("-SNAPSHOT")) {
                     uri("https://repo.fvdh.dev/snapshots")
                 } else {
                     uri("https://repo.fvdh.dev/releases")
