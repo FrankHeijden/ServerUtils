@@ -29,6 +29,7 @@ tasks.withType<ShadowJar> {
 }
 
 bukkit {
+    name = "ServerUtils"
     main = "net.frankheijden.serverutils.bukkit.ServerUtils"
     description = "A server utility"
     apiVersion = "1.13"
