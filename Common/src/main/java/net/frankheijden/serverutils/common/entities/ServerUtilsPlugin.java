@@ -7,8 +7,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 import net.frankheijden.serverutils.common.ServerUtilsApp;
 import net.frankheijden.serverutils.common.commands.brigadier.BrigadierHandler;
@@ -16,6 +19,7 @@ import net.frankheijden.serverutils.common.config.CommandsResource;
 import net.frankheijden.serverutils.common.config.ConfigResource;
 import net.frankheijden.serverutils.common.config.MessageKey;
 import net.frankheijden.serverutils.common.config.MessagesResource;
+import net.frankheijden.serverutils.common.entities.results.CloseablePluginResults;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.managers.AbstractTaskManager;
 import net.frankheijden.serverutils.common.managers.UpdateManager;
@@ -99,6 +103,27 @@ public abstract class ServerUtilsPlugin<P, T, C extends ServerUtilsAudience<S>, 
         return file;
     }
 
+    private void unloadConfiguredPlugins() {
+        List<String> pluginIds = configResource.getConfig().getStringList("unload-after-startup.plugins");
+        List<P> plugins = new ArrayList<>(pluginIds.size());
+        for (String pluginId : pluginIds) {
+            Optional<P> pluginOptional = getPluginManager().getPlugin(pluginId);
+            if (!pluginOptional.isPresent()) {
+                getLogger().warning(
+                        "Plugin '" + pluginId + "' defined in config.yml 'unload-after-startup' is not loaded!"
+                );
+                continue;
+            }
+            plugins.add(pluginOptional.get());
+        }
+
+        if (plugins.isEmpty()) return;
+
+        CloseablePluginResults<P> unloadResults = getPluginManager().unloadPlugins(plugins);
+        unloadResults.tryClose();
+        unloadResults.sendTo(getChatProvider().getConsoleServerAudience(), MessageKey.UNLOADPLUGIN);
+    }
+
     protected abstract CommandManager<C> newCommandManager();
 
     protected void handleBrigadier(CloudBrigadierManager<C, ?> brigadierManager) {
@@ -121,6 +146,10 @@ public abstract class ServerUtilsPlugin<P, T, C extends ServerUtilsAudience<S>, 
 
         reload();
         enablePlugin();
+        getTaskManager().runTaskLater(
+                this::unloadConfiguredPlugins,
+                configResource.getConfig().getInt("unload-after-startup.delay-ticks")
+        );
         ServerUtilsApp.tryCheckForUpdates();
         ServerUtilsApp.unloadServerUtilsUpdater();
     }
