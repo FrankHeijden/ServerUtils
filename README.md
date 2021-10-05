@@ -27,7 +27,6 @@ and provides you with handy information about them.
 
 For the full description of this plugin, please refer to the ServerUtils [SpigotMC][spigot] page.
 
-[![](https://jitpack.io/v/FrankHeijden/ServerUtils.svg)](https://jitpack.io/#FrankHeijden/ServerUtils)
 [![releaseImg]][release]
 [![GitHub Actions](https://github.com/FrankHeijden/ServerUtils/workflows/Java%20CI%20with%20Gradle/badge.svg)](https://github.com/FrankHeijden/ServerUtils/actions)
 [![licenseImg]][license]
@@ -40,38 +39,55 @@ For the full description of this plugin, please refer to the ServerUtils [Spigot
 
 [![bStatsImg]][bStats]
 
-## How to run the project?
+## Compiling ServerUtils
+There are two ways to compile ServerUtils:
+### 1. Installing gradle (recommended)
 1. Make sure you have [gradle][gradleInstall] installed.
-2. Run the project with `gradle clean build` to compile all submodules with dependencies.
-3. Afterwards, the platform specific plugins and platform independent compiled jars can be found in the `jars/` directory.
+2. Run the project with `gradle build` to compile it with dependencies.
+### 2. Using the wrapper
+**Windows**: `gradlew.bat build`
+<br>
+**Linux/macOS**: `./gradlew build`
 
-## API Repository / Dependency
-Please use the following maven repository:
+## Developer API
+### Repository / Dependency
+If you wish to use snapshot versions of ServerUtils, you can use the following repo:
+```
+https://repo.fvdh.dev/snapshots
+```
+
 #### Gradle:
-```groovy
-maven { url 'https://jitpack.io' }
+```kotlin
+repositories {
+  compileOnly("net.frankheijden.serverutils:ServerUtils:VERSION")
+}
+
+dependencies {
+  maven("https://repo.fvdh.dev/releases")
+}
 ```
-and as dependency:
-```groovy
-// Replace VERSION with for example 2.5.0
-compileOnly 'com.github.FrankHeijden:ServerUtils:VERSION'
-```
+
 #### Maven:
 ```xml
-<repository>
-    <id>jitpack.io</id>
-    <url>https://jitpack.io</url>
-</repository>
-```
-and as dependency:
-```xml
-<dependency>
-    <groupId>com.github.FrankHeijden</groupId>
-    <artifactId>ServerUtils</artifactId>
-    <!-- Replace VERSION with for example 2.5.0 -->
-    <version>VERSION</version>
-    <scope>provided</scope>
-</dependency>
+<project>
+  <repositories>
+    <!-- Insights repo -->
+    <repository>
+      <id>fvdh</id>
+      <url>https://repo.fvdh.dev/releases</url>
+    </repository>
+  </repositories>
+  
+  <dependencies>
+    <!-- Insights dependency -->
+    <dependency>
+      <groupId>net.frankheijden.serverutils</groupId>
+      <artifactId>ServerUtils</artifactId>
+      <version>VERSION</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+</project>
 ```
 
 ## Commands and Permissions
