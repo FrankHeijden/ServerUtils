@@ -1,7 +1,10 @@
 package net.frankheijden.serverutils.common.commands;
 
 import cloud.commandframework.context.CommandContext;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import net.frankheijden.serverutils.common.config.MessageKey;
 import net.frankheijden.serverutils.common.config.MessagesResource;
 import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
@@ -27,14 +30,24 @@ public abstract class CommandPlugins<U extends ServerUtilsPlugin<P, ?, C, ?, ?>,
      * @param pluginFormat The format of the plugins to be sent.
      */
     protected void handlePlugins(C sender, List<P> plugins, ListComponentBuilder.Format<P> pluginFormat) {
+        List<P> filteredPlugins = new ArrayList<>(plugins.size());
+        Set<String> hiddenPlugins = new HashSet<>(plugin.getConfigResource().getConfig().getStringList(
+                "hide-plugins-from-plugins-command"
+        ));
+        for (P plugin : plugins) {
+            if (!hiddenPlugins.contains(this.plugin.getPluginManager().getPluginId(plugin))) {
+                filteredPlugins.add(plugin);
+            }
+        }
+
         MessagesResource messages = plugin.getMessagesResource();
 
         sender.sendMessage(messages.get(MessageKey.PLUGINS_HEADER).toComponent());
         TextComponent.Builder builder = Component.text();
         builder.append(messages.get(MessageKey.PLUGINS_PREFIX).toComponent(
-                Template.of("count", String.valueOf(plugins.size()))
+                Template.of("count", String.valueOf(filteredPlugins.size()))
         ));
-        builder.append(ListComponentBuilder.create(plugins)
+        builder.append(ListComponentBuilder.create(filteredPlugins)
                 .separator(messages.get(MessageKey.PLUGINS_SEPARATOR).toComponent())
                 .lastSeparator(messages.get(MessageKey.PLUGINS_LAST_SEPARATOR).toComponent())
                 .format(pluginFormat)
