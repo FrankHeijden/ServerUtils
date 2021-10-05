@@ -7,5 +7,6 @@
     "download-updates-login": false,
     "install-updates-boot": false,
     "install-updates-login": false
-  }
+  },
+  "hide-plugins-from-plugins-command": []
 }
