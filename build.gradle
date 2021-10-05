@@ -76,6 +76,10 @@ subprojects {
         relocate 'cloud.commandframework', dependencyDir + '.cloud'
         relocate 'me.lucko.commodore', dependencyDir + '.commodore'
         relocate 'io.leangen.geantyref', dependencyDir + '.typetoken'
+        relocate 'net.kyori.adventure', dependencyDir + '.adventure'
+        relocate 'net.kyori.examination', dependencyDir + '.examination'
+        relocate 'net.kyori.adventure.text.minimessage', dependencyDir + '.adventure.text.minimessage'
+        relocate 'dev.frankheijden.minecraftreflection', dependencyDir + '.minecraftreflection'
     }
 
     shadowJar.dependsOn checkstyleMain, checkstyleTest, test
@@ -90,11 +94,14 @@ dependencies {
     implementation project(path: ':Bukkit', configuration: 'shadow')
     implementation project(path: ':Bungee', configuration: 'shadow')
     implementation project(path: ':Velocity', configuration: 'shadow')
+    implementation("net.kyori:adventure-text-serializer-gson:${rootProject.adventureVersion}") {
+        exclude group: 'net.kyori', module: 'adventure-api'
+        exclude group: 'com.google.code.gson', module: 'gson'
+    }
 }
 
 shadowJar {
-    relocate 'org.apache.commons.codec', dependencyDir + '.codec'
-    relocate 'dev.frankheijden.minecraftreflection', dependencyDir + '.minecraftreflection'
+    relocate 'net.kyori.adventure.text.serializer.gson', dependencyDir + '.impl.adventure.text.serializer.gson'
     archiveFileName = "${archiveBaseName.orNull}-${archiveVersion.orNull}.${archiveExtension.orNull}"
 }
 
