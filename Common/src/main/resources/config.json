@@ -7,5 +7,9 @@
     "download-updates-login": false,
     "install-updates-boot": false,
     "install-updates-login": false
+  },
+  "unload-after-startup": {
+    "delay-ticks": 20,
+    "plugins": []
   }
 }
