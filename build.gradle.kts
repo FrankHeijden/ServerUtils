@@ -96,7 +96,11 @@ subprojects {
         repositories {
             maven {
                 name = "fvdh"
-                url = uri("https://repo.fvdh.dev/test")
+                url = if (version.toString().endsWith("-SNAPSHOT")) {
+                    uri("https://repo.fvdh.dev/snapshots")
+                } else {
+                    uri("https://repo.fvdh.dev/releases")
+                }
 
                 credentials {
                     username = System.getenv("FVDH_USERNAME")
