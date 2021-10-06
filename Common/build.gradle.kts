@@ -17,7 +17,7 @@ repositories {
 dependencies {
     compileOnly("net.kyori:adventure-platform-api:${VersionConstants.adventurePlatformVersion}")
     compileOnly("net.kyori:adventure-text-minimessage:${VersionConstants.adventureMinimessageVersion}")
-    compileOnly("com.github.FrankHeijden:ServerUtilsUpdater:v1.0.0")
+    compileOnly("com.github.FrankHeijden:ServerUtilsUpdater:5f722b10d1")
 
     testImplementation("net.kyori:adventure-text-serializer-plain:${VersionConstants.adventureVersion}")
 }
