@@ -7,6 +7,7 @@ import cloud.commandframework.context.CommandContext;
 import cloud.commandframework.exceptions.parsing.NoInputProvidedException;
 import io.leangen.geantyref.TypeToken;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
@@ -45,18 +46,45 @@ public class JarFilesArgument<C extends ServerUtilsAudience<?>> extends CommandA
             }
 
             Set<String> pluginFiles = new HashSet<>(plugin.getPluginManager().getPluginFileNames());
-            File[] files = new File[inputQueue.size()];
-            for (int i = 0; i < files.length; i++) {
-                if (!pluginFiles.contains(inputQueue.peek())) {
+            List<File> files = new ArrayList<>(inputQueue.size());
+            while (!inputQueue.isEmpty()) {
+                StringBuilder builder = new StringBuilder(inputQueue.peek());
+                if (builder.length() == 0) {
                     return ArgumentParseResult.failure(new IllegalArgumentException(
-                            "Plugin '" + inputQueue.peek() + "' does not exist!"
+                            "Specified argument is empty"
+                    ));
+                }
+                inputQueue.remove();
+
+                final String pluginFileName;
+                if (builder.charAt(0) == '"') {
+                    while (!inputQueue.isEmpty()) {
+                        if (builder.length() > 1 && builder.charAt(builder.length() - 1) == '"') {
+                            break;
+                        }
+                        builder.append(" ").append(inputQueue.remove());
+                    }
+
+                    if (builder.charAt(builder.length() - 1) != '"') {
+                        return ArgumentParseResult.failure(new IllegalArgumentException(
+                                "Could not find closing '\"' character"
+                        ));
+                    }
+                    pluginFileName = builder.substring(1, builder.length() - 1);
+                } else {
+                    pluginFileName = builder.toString();
+                }
+
+                if (!pluginFiles.contains(pluginFileName)) {
+                    return ArgumentParseResult.failure(new IllegalArgumentException(
+                            "Plugin '" + pluginFileName + "' does not exist!"
                     ));
                 }
 
-                files[i] = new File(plugin.getPluginManager().getPluginsFolder(), inputQueue.remove());
+                files.add(new File(plugin.getPluginManager().getPluginsFolder(), pluginFileName));
             }
 
-            return ArgumentParseResult.success(files);
+            return ArgumentParseResult.success(files.toArray(new File[0]));
         }
 
         @Override
