@@ -20,6 +20,7 @@ import net.frankheijden.serverutils.common.config.ConfigResource;
 import net.frankheijden.serverutils.common.config.MessageKey;
 import net.frankheijden.serverutils.common.config.MessagesResource;
 import net.frankheijden.serverutils.common.entities.results.CloseablePluginResults;
+import net.frankheijden.serverutils.common.entities.results.PluginResults;
 import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.managers.AbstractTaskManager;
 import net.frankheijden.serverutils.common.managers.UpdateManager;
@@ -118,6 +119,12 @@ public abstract class ServerUtilsPlugin<P, T, C extends ServerUtilsAudience<S>, 
         }
 
         if (plugins.isEmpty()) return;
+
+        PluginResults<P> disableResults = getPluginManager().disablePlugins(plugins);
+        if (!disableResults.isSuccess()) {
+            disableResults.sendTo(getChatProvider().getConsoleServerAudience(), null);
+            return;
+        }
 
         CloseablePluginResults<P> unloadResults = getPluginManager().unloadPlugins(plugins);
         unloadResults.tryClose();
