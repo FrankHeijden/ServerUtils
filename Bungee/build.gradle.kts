@@ -33,6 +33,7 @@ tasks.withType<ShadowJar> {
 }
 
 bungee {
+    name = "ServerUtils"
     main = "net.frankheijden.serverutils.bungee.ServerUtils"
     description = "A server utility"
     softDepends = setOf("ServerUtilsUpdater")
