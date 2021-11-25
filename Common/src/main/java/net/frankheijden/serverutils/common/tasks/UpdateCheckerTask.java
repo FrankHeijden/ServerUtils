@@ -128,7 +128,7 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
         plugin.getLogger().log(Level.INFO, UPDATE_AVAILABLE, githubVersion);
         plugin.getLogger().log(Level.INFO, RELEASE_INFO, body);
 
-        GitHubAsset pluginAsset = GitHubAsset.from(pluginJson);
+        GitHubAsset pluginAsset = GitHubAsset.from(pluginJson, plugin.getPlatform());
         if (!download || pluginAsset == null) {
             if (sender.isPlayer()) {
                 Component component = plugin.getMessagesResource().get(MessageKey.UPDATE_AVAILABLE).toComponent(
