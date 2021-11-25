@@ -3,7 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     `java-library`
     `maven-publish`
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("com.github.johnrengelman.shadow") version "7.1.0"
 }
 
 group = "net.frankheijden.serverutils"
@@ -50,7 +50,7 @@ subprojects {
 
     tasks {
         build {
-            dependsOn("checkstyleMain", "checkstyleTest", "test")
+            dependsOn("shadowJar", "checkstyleMain", "checkstyleTest", "test")
         }
 
         compileJava {
@@ -86,8 +86,10 @@ subprojects {
         relocate("cloud.commandframework", "${dependencyDir}.cloud")
         relocate("me.lucko.commodore", "${dependencyDir}.commodore")
         relocate("io.leangen.geantyref", "${dependencyDir}.typetoken")
-        relocate("net.kyori.adventure", "${dependencyDir}.adventure")
-        relocate("net.kyori.examination", "${dependencyDir}.examination")
+        if (project.name != "Velocity") {
+            relocate("net.kyori.adventure", "${dependencyDir}.adventure")
+            relocate("net.kyori.examination", "${dependencyDir}.examination")
+        }
         relocate("net.kyori.adventure.text.minimessage", "${dependencyDir}.adventure.text.minimessage")
         relocate("dev.frankheijden.minecraftreflection", "${dependencyDir}.minecraftreflection")
     }
@@ -151,7 +153,6 @@ tasks.withType<ShadowJar> {
 
 fun outputTasks(): List<Task> {
     return listOf(
-        "shadowJar",
         ":Bukkit:shadowJar",
         ":Bungee:shadowJar",
         ":Velocity:shadowJar",

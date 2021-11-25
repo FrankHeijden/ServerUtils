@@ -1,6 +1,8 @@
 package net.frankheijden.serverutils.velocity.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.velocitypowered.api.command.CommandManager;
+import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.PluginDescription;
@@ -54,12 +56,36 @@ public class VelocityCommandServerUtils extends CommandServerUtils<VelocityPlugi
             String commandName
     ) {
         ServerUtils plugin = ServerUtils.getInstance();
-        CommandDispatcher<CommandSource> dispatcher = RVelocityCommandManager.getDispatcher(
-                plugin.getProxy().getCommandManager()
-        );
+        CommandManager proxyCommandManager = plugin.getProxy().getCommandManager();
+        CommandDispatcher<CommandSource> dispatcher = RVelocityCommandManager.getDispatcher(proxyCommandManager);
 
-        return builder
-                .key("Name").value(dispatcher.getRoot().getChild(commandName).getName())
-                .key("Plugin").value(plugin.getPluginCommandManager().findPluginId(commandName).orElse("<UNKNOWN>"));
+        builder.key("Name").value(dispatcher.getRoot().getChild(commandName).getName());
+
+        CommandMeta meta = null;
+        try {
+            meta = proxyCommandManager.getCommandMeta(commandName);
+        } catch (Throwable ignored) {
+            //
+        }
+
+        String pluginName = null;
+        if (meta != null) {
+            if (meta.getPlugin() != null) {
+                pluginName = plugin.getProxy().getPluginManager().fromInstance(meta.getPlugin())
+                        .map(c -> c.getDescription().getId())
+                        .orElse(null);
+            }
+
+            CommandMeta finalMeta = meta;
+            builder.key("Aliases").value(listBuilderFunction.apply(b -> b.addAll(finalMeta.getAliases())));
+        }
+
+        if (pluginName == null) {
+            pluginName = plugin.getPluginCommandManager().findPluginId(commandName).orElse("<UNKNOWN>");
+        }
+
+        builder.key("Plugin").value(pluginName);
+
+        return builder;
     }
 }

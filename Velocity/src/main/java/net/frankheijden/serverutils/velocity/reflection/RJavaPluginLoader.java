@@ -26,19 +26,32 @@ public class RJavaPluginLoader {
         );
     }
 
+    /**
+     * Loads a candidate description from the given source.
+     */
     public static PluginDescription loadPluginDescription(Object javaPluginLoader, Path source) {
-        return reflection.invoke(javaPluginLoader, "loadPluginDescription", ClassObject.of(Path.class, source));
+        String fieldName = "loadCandidate";
+        try {
+            reflection.getClazz().getDeclaredMethod(fieldName, Path.class);
+        } catch (NoSuchMethodException ex) {
+            fieldName = "loadPluginDescription";
+        }
+
+        return reflection.invoke(javaPluginLoader, fieldName, ClassObject.of(Path.class, source));
     }
 
     /**
      * Loads the plugin from their candidate PluginDescription.
      */
     public static PluginDescription loadPlugin(Object javaPluginLoader, PluginDescription candidate) {
-        return reflection.invoke(
-                javaPluginLoader,
-                "loadPlugin",
-                ClassObject.of(PluginDescription.class, candidate)
-        );
+        String fieldName = "createPluginFromCandidate";
+        try {
+            reflection.getClazz().getDeclaredMethod(fieldName, PluginDescription.class);
+        } catch (NoSuchMethodException ex) {
+            fieldName = "loadPlugin";
+        }
+
+        return reflection.invoke(javaPluginLoader, fieldName, ClassObject.of(PluginDescription.class, candidate));
     }
 
     public static Module createModule(Object javaPluginLoader, PluginContainer container) {

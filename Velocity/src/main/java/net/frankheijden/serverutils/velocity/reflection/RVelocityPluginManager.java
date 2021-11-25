@@ -13,8 +13,18 @@ public class RVelocityPluginManager {
 
     private RVelocityPluginManager() {}
 
+    /**
+     * Retrieves the plugin map. Key is the id of the plugin.
+     */
     public static Map<String, PluginContainer> getPlugins(PluginManager manager) {
-        return reflection.get(manager, "plugins");
+        String fieldName = "plugins";
+        try {
+            reflection.getClazz().getField(fieldName);
+        } catch (NoSuchFieldException ex) {
+            fieldName = "pluginsById";
+        }
+
+        return reflection.get(manager, fieldName);
     }
 
     public static Map<Object, PluginContainer> getPluginInstances(PluginManager manager) {
