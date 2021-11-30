@@ -33,8 +33,10 @@ public class RMinecraftKey {
     public static String getNameSpace(Object instance) {
         if (MinecraftReflectionVersion.MINOR <= 13) {
             return reflection.get(instance, "a");
-        } else if (MinecraftReflectionVersion.MINOR >= 17) {
+        } else if (MinecraftReflectionVersion.MINOR == 17) {
             return reflection.invoke(instance, "getNamespace");
+        } else if (MinecraftReflectionVersion.MINOR >= 18) {
+            return reflection.invoke(instance, "a");
         }
         return reflection.get(instance, "namespace");
     }

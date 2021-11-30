@@ -35,7 +35,8 @@ public class RCraftingManager {
             RRegistryMaterials.removeKeysFor(reflection.get(null, "recipes"), plugin);
         } else if (MinecraftReflectionVersion.MINOR > 12) {
             Object server = RMinecraftServer.getReflection().invoke(null, "getServer");
-            Object craftingManager = RMinecraftServer.getReflection().invoke(server, "getCraftingManager");
+            String getCraftingManagerMethod = MinecraftReflectionVersion.MINOR >= 18 ? "aC" : "getCraftingManager";
+            Object craftingManager = RMinecraftServer.getReflection().invoke(server, getCraftingManagerMethod);
 
             Map recipes;
             if (MinecraftReflectionVersion.MINOR >= 17) {
