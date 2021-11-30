@@ -8,7 +8,7 @@ plugins {
 
 group = "net.frankheijden.serverutils"
 val dependencyDir = "${group}.dependencies"
-version = "3.2.1-SNAPSHOT"
+version = "3.3.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
