@@ -25,7 +25,7 @@ dependencies {
     }
     implementation("org.bstats:bstats-bungeecord:${VersionConstants.bstatsVersion}")
     implementation(project(":Common"))
-    compileOnly("net.md-5:bungeecord-api:1.17-R0.1-SNAPSHOT")
+    compileOnly("net.md-5:bungeecord-api:1.18-R0.1-SNAPSHOT")
 }
 
 tasks.withType<ShadowJar> {
