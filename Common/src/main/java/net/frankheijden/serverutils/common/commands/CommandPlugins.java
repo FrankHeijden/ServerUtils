@@ -9,12 +9,15 @@ import net.frankheijden.serverutils.common.config.MessageKey;
 import net.frankheijden.serverutils.common.config.MessagesResource;
 import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
+import net.frankheijden.serverutils.common.entities.ServerUtilsPluginDescription;
+import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.utils.ListComponentBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.Template;
 
-public abstract class CommandPlugins<U extends ServerUtilsPlugin<P, ?, C, ?, ?>, P, C extends ServerUtilsAudience<?>>
+@SuppressWarnings("LineLength")
+public abstract class CommandPlugins<U extends ServerUtilsPlugin<P, ?, C, ?, D>, P, C extends ServerUtilsAudience<?>, D extends ServerUtilsPluginDescription>
         extends ServerUtilsCommand<U, C> {
 
     protected CommandPlugins(U plugin) {
@@ -29,13 +32,14 @@ public abstract class CommandPlugins<U extends ServerUtilsPlugin<P, ?, C, ?, ?>,
      * @param plugins The plugins to be sent.
      * @param pluginFormat The format of the plugins to be sent.
      */
-    protected void handlePlugins(C sender, List<P> plugins, ListComponentBuilder.Format<P> pluginFormat) {
+    protected void handlePlugins(C sender, List<P> plugins, boolean hasVersionFlag) {
         List<P> filteredPlugins = new ArrayList<>(plugins.size());
         Set<String> hiddenPlugins = new HashSet<>(plugin.getConfigResource().getConfig().getStringList(
                 "hide-plugins-from-plugins-command"
         ));
+        AbstractPluginManager<P, D> pluginManager = plugin.getPluginManager();
         for (P plugin : plugins) {
-            if (!hiddenPlugins.contains(this.plugin.getPluginManager().getPluginId(plugin))) {
+            if (!hiddenPlugins.contains(pluginManager.getPluginId(plugin))) {
                 filteredPlugins.add(plugin);
             }
         }
@@ -50,7 +54,24 @@ public abstract class CommandPlugins<U extends ServerUtilsPlugin<P, ?, C, ?, ?>,
         builder.append(ListComponentBuilder.create(filteredPlugins)
                 .separator(messages.get(MessageKey.PLUGINS_SEPARATOR).toComponent())
                 .lastSeparator(messages.get(MessageKey.PLUGINS_LAST_SEPARATOR).toComponent())
-                .format(pluginFormat)
+                .format(plugin -> {
+                    D description = pluginManager.getLoadedPluginDescription(plugin);
+
+                    TextComponent.Builder formatBuilder = Component.text();
+                    MessageKey formatKey = pluginManager.isPluginEnabled(plugin)
+                            ? MessageKey.PLUGINS_FORMAT
+                            : MessageKey.PLUGINS_FORMAT_DISABLED;
+                    formatBuilder.append(messages.get(formatKey).toComponent(
+                            Template.of("plugin", description.getName())
+                    ));
+                    if (hasVersionFlag) {
+                        formatBuilder.append(messages.get(MessageKey.PLUGINS_VERSION).toComponent(
+                                Template.of("version", description.getVersion())
+                        ));
+                    }
+
+                    return formatBuilder.build();
+                })
                 .build());
         sender.sendMessage(builder.build());
         sender.sendMessage(messages.get(MessageKey.PLUGININFO_FOOTER).toComponent());
