@@ -56,43 +56,43 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
 
         manager.command(builder
                 .handler(this::handleHelpCommand));
-        manager.command(buildSubcommand(builder, "help")
+        registerSubcommand(manager, builder, "help", subcommandBuilder -> subcommandBuilder
                 .handler(this::handleHelpCommand));
-        manager.command(buildSubcommand(builder, "reload")
+        registerSubcommand(manager, builder, "reload", subcommandBuilder -> subcommandBuilder
                 .handler(this::handleReload));
-        manager.command(buildSubcommand(builder, "restart")
+        registerSubcommand(manager, builder, "restart", subcommandBuilder -> subcommandBuilder
                 .handler(this::handleRestart));
-        manager.command(buildSubcommand(builder, "loadplugin")
+        registerSubcommand(manager, builder, "loadplugin", subcommandBuilder -> subcommandBuilder
                 .argument(getArgument("jarFiles"))
                 .handler(this::handleLoadPlugin));
-        manager.command(buildSubcommand(builder, "unloadplugin")
+        registerSubcommand(manager, builder, "unloadplugin", subcommandBuilder -> subcommandBuilder
                 .argument(new PluginsArgument<>(
                         true,
                         "plugins",
                         new PluginsArgument.PluginsParser<>(plugin, arrayCreator, getRawPath("unloadplugin"))
                 ))
                 .handler(this::handleUnloadPlugin));
-        manager.command(buildSubcommand(builder, "reloadplugin")
+        registerSubcommand(manager, builder, "reloadplugin", subcommandBuilder -> subcommandBuilder
                 .argument(new PluginsArgument<>(
                         true,
                         "plugins",
                         new PluginsArgument.PluginsParser<>(plugin, arrayCreator, getRawPath("reloadplugin"))
                 ))
                 .handler(this::handleReloadPlugin));
-        manager.command(buildSubcommand(builder, "watchplugin")
+        registerSubcommand(manager, builder, "watchplugin", subcommandBuilder -> subcommandBuilder
                 .argument(new PluginsArgument<>(
                         true,
                         "plugins",
                         new PluginsArgument.PluginsParser<>(plugin, arrayCreator, getRawPath("watchplugin"))
                 ))
                 .handler(this::handleWatchPlugin));
-        manager.command(buildSubcommand(builder, "unwatchplugin")
+        registerSubcommand(manager, builder, "unwatchplugin", subcommandBuilder -> subcommandBuilder
                 .argument(getArgument("plugin"))
                 .handler(this::handleUnwatchPlugin));
-        manager.command(buildSubcommand(builder, "plugininfo")
+        registerSubcommand(manager, builder, "plugininfo", subcommandBuilder -> subcommandBuilder
                 .argument(getArgument("plugin"))
                 .handler(this::handlePluginInfo));
-        manager.command(buildSubcommand(builder, "commandinfo")
+        registerSubcommand(manager, builder, "commandinfo", subcommandBuilder -> subcommandBuilder
                 .argument(getArgument("command"))
                 .handler(this::handleCommandInfo));
     }

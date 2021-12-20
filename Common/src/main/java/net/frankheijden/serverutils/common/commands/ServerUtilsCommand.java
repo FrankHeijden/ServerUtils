@@ -8,9 +8,12 @@ import cloud.commandframework.arguments.flags.CommandFlag;
 import cloud.commandframework.permission.CommandPermission;
 import cloud.commandframework.permission.Permission;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
@@ -58,16 +61,27 @@ public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?,
     /**
      * Builds a subcommand from the config.
      */
-    public Command.Builder<C> buildSubcommand(Command.Builder<C> builder, String subcommandName) {
+    public void registerSubcommand(
+            CommandManager<C> manager,
+            Command.Builder<C> builder,
+            String subcommandName,
+            UnaryOperator<Command.Builder<C>> builderUnaryOperator
+    ) {
         CommandElement subcommand = parseSubcommand(subcommandName);
 
-        builder = builder
-                .literal(subcommand.getMain(), subcommand.getDescription(), subcommand.getAliases())
-                .permission(subcommand.getPermission());
-        for (CommandElement flagElement : subcommand.getFlags()) {
-            builder = builder.flag(createFlag(flagElement));
-        }
-        return builder;
+        Stream.concat(
+                Stream.of(subcommand.getMain()),
+                Arrays.stream(subcommand.getAliases())
+        ).map(cmd -> {
+            Command.Builder<C> subcommandBuilder = builder
+                    .literal(cmd, subcommand.getDescription())
+                    .permission(subcommand.getPermission());
+            for (CommandElement flagElement : subcommand.getFlags()) {
+                subcommandBuilder = subcommandBuilder.flag(createFlag(flagElement));
+            }
+
+            return builderUnaryOperator.apply(subcommandBuilder).build();
+        }).forEach(manager::command);
     }
 
     /**
