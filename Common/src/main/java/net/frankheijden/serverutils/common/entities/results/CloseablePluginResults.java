@@ -2,16 +2,24 @@ package net.frankheijden.serverutils.common.entities.results;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 public class CloseablePluginResults<T> extends PluginResults<T> implements Closeable {
 
     @Override
     public CloseablePluginResults<T> addResult(PluginResult<T> pluginResult) {
-        if (!(pluginResult instanceof CloseablePluginResult)) {
-            throw new IllegalArgumentException("Not an instance of CloseablePluginResult: " + pluginResult);
+        if (pluginResult instanceof CloseablePluginResult) {
+            results.add(pluginResult);
+        } else {
+            results.add(new CloseablePluginResult<>(
+                    pluginResult.getPluginId(),
+                    pluginResult.getPlugin(),
+                    pluginResult.getResult(),
+                    Collections.emptyList(),
+                    pluginResult.getPlaceholders()
+            ));
         }
-        results.add(pluginResult);
         return this;
     }
 
@@ -28,10 +36,8 @@ public class CloseablePluginResults<T> extends PluginResults<T> implements Close
     }
 
     @Override
-    protected CloseablePluginResults<T> addResult(String pluginId, T plugin, Result result, String... placeholders
-    ) {
-        super.addResult(pluginId, plugin, result, placeholders);
-        return this;
+    protected CloseablePluginResults<T> addResult(String pluginId, T plugin, Result result, String... placeholders) {
+        return addResult(new CloseablePluginResult<>(pluginId, plugin, result, Collections.emptyList(), placeholders));
     }
 
     public CloseablePluginResults<T> addResult(
