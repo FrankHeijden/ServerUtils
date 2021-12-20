@@ -12,7 +12,8 @@
       "invalid-plugin": "<red>Plugin <dark_red><plugin></dark_red> is invalid!",
       "invalid-description": "<red>Plugin <dark_red><plugin></dark_red> has an invalid plugin description!",
       "unknown-dependency": "<red>Plugin <dark_red><plugin></dark_red> has an unknown dependency: <dark_red><dependency><red>!",
-      "file-deleted": "<red>File of plugin <dark_red><plugin></dark_red> has been deleted!"
+      "file-deleted": "<red>File of plugin <dark_red><plugin></dark_red> has been deleted!",
+      "protected-plugin": "<red>Plugin <dark_red><plugin></dark_red> is protected!"
     },
     "reload": "<dark_aqua>Successfully reloaded <aqua>ServerUtils configurations</aqua>!",
     "serverutils-updater": "<dark_aqua>Loaded and enabled ServerUtilsUpdater. Completion can be monitored from the console, attempting restart now...",

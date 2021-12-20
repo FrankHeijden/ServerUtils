@@ -203,6 +203,10 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         C sender = context.getSender();
         List<P> plugins = Arrays.asList(context.get("plugins"));
 
+        if (checkProtectedPlugins(sender, plugins)) {
+            return;
+        }
+
         if (checkDependingPlugins(context, sender, plugins, "unloadplugin")) {
             return;
         }
@@ -223,6 +227,10 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
     private void handleReloadPlugin(CommandContext<C> context) {
         C sender = context.getSender();
         List<P> plugins = Arrays.asList(context.get("plugins"));
+
+        if (checkProtectedPlugins(sender, plugins)) {
+            return;
+        }
 
         if (checkDependingPlugins(context, sender, plugins, "reloadplugin")) {
             return;
@@ -292,6 +300,22 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
             }
         }
 
+        return false;
+    }
+
+    protected boolean checkProtectedPlugins(C sender, List<P> plugins) {
+        List<String> protectedPlugins = plugin.getConfigResource().getConfig().getStringList("protected-plugins");
+        AbstractPluginManager<P, ?> pluginManager = plugin.getPluginManager();
+        MessagesResource messagesResource = plugin.getMessagesResource();
+        for (P plugin : plugins) {
+            String pluginId = pluginManager.getPluginId(plugin);
+            if (protectedPlugins.contains(pluginId)) {
+                sender.sendMessage(messagesResource.get(MessageKey.GENERIC_PROTECTED_PLUGIN).toComponent(
+                        Template.of("plugin", pluginId)
+                ));
+                return true;
+            }
+        }
         return false;
     }
 

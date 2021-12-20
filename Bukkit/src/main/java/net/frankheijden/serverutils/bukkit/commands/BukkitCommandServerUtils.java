@@ -105,6 +105,10 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
         BukkitAudience sender = context.getSender();
         List<Plugin> plugins = Arrays.asList(context.get("plugins"));
 
+        if (checkProtectedPlugins(sender, plugins)) {
+            return;
+        }
+
         if (checkDependingPlugins(context, sender, plugins, "disableplugin")) {
             return;
         }
