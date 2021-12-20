@@ -21,6 +21,7 @@ public enum MessageKey implements PlaceholderConfigKey {
     GENERIC_INVALID_DESCRIPTION("generic.invalid-description"),
     GENERIC_UNKNOWN_DEPENDENCY("generic.unknown-dependency"),
     GENERIC_FILE_DELETED("generic.file-deleted"),
+    GENERIC_PROTECTED_PLUGIN("generic.protected-plugin"),
     DEPENDING_PLUGINS_PREFIX("depending-plugins.prefix"),
     DEPENDING_PLUGINS_FORMAT("depending-plugins.format"),
     DEPENDING_PLUGINS_SEPARATOR("depending-plugins.separator", false),
