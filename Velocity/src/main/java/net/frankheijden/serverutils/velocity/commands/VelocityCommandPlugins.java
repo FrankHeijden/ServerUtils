@@ -4,17 +4,13 @@ import cloud.commandframework.Command;
 import cloud.commandframework.CommandManager;
 import cloud.commandframework.context.CommandContext;
 import com.velocitypowered.api.plugin.PluginContainer;
-import com.velocitypowered.api.plugin.PluginDescription;
 import net.frankheijden.serverutils.common.commands.CommandPlugins;
-import net.frankheijden.serverutils.common.config.MessageKey;
-import net.frankheijden.serverutils.common.config.MessagesResource;
 import net.frankheijden.serverutils.velocity.entities.VelocityAudience;
 import net.frankheijden.serverutils.velocity.entities.VelocityPlugin;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.minimessage.Template;
+import net.frankheijden.serverutils.velocity.entities.VelocityPluginDescription;
 
-public class VelocityCommandPlugins extends CommandPlugins<VelocityPlugin, PluginContainer, VelocityAudience> {
+@SuppressWarnings("LineLength")
+public class VelocityCommandPlugins extends CommandPlugins<VelocityPlugin, PluginContainer, VelocityAudience, VelocityPluginDescription> {
 
     public VelocityCommandPlugins(VelocityPlugin plugin) {
         super(plugin);
@@ -35,21 +31,6 @@ public class VelocityCommandPlugins extends CommandPlugins<VelocityPlugin, Plugi
         VelocityAudience sender = context.getSender();
         boolean hasVersionFlag = context.flags().contains("version");
 
-        MessagesResource messages = plugin.getMessagesResource();
-        handlePlugins(sender, plugin.getPluginManager().getPluginsSorted(), container -> {
-            PluginDescription description = container.getDescription();
-
-            TextComponent.Builder builder = Component.text();
-            builder.append(messages.get(MessageKey.PLUGINS_FORMAT).toComponent(
-                    Template.of("plugin", description.getId())
-            ));
-            if (hasVersionFlag) {
-                builder.append(messages.get(MessageKey.PLUGINS_VERSION).toComponent(
-                        Template.of("version", description.getVersion().orElse("<UNKNOWN>"))
-                ));
-            }
-
-            return builder.build();
-        });
+        handlePlugins(sender, plugin.getPluginManager().getPluginsSorted(), hasVersionFlag);
     }
 }
