@@ -72,6 +72,13 @@ public class JarFilesArgument<C extends ServerUtilsAudience<?>> extends CommandA
                     }
                     pluginFileName = builder.substring(1, builder.length() - 1);
                 } else {
+                    if (builder.length() > 0) {
+                        int lastChar;
+                        while (builder.charAt((lastChar = builder.length() - 1)) == '\\' && !inputQueue.isEmpty()) {
+                            builder.setCharAt(lastChar, ' ');
+                            builder.append(inputQueue.remove());
+                        }
+                    }
                     pluginFileName = builder.toString();
                 }
 
