@@ -19,6 +19,7 @@ import net.frankheijden.serverutils.common.entities.ServerUtilsAudience;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.frankheijden.serverutils.common.entities.http.GitHubAsset;
 import net.frankheijden.serverutils.common.entities.http.GitHubResponse;
+import net.frankheijden.serverutils.common.managers.AbstractPluginManager;
 import net.frankheijden.serverutils.common.managers.UpdateManager;
 import net.frankheijden.serverutils.common.utils.GitHubUtils;
 import net.frankheijden.serverutils.common.utils.VersionUtils;
@@ -95,7 +96,10 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
     public static <P> void restart(ServerUtilsAudience<?> sender) {
         ServerUtilsApp.getPlugin().getTaskManager().runTaskAsynchronously(() -> {
             UpdateCheckerTask<?, P> task = new UpdateCheckerTask<>(ServerUtilsApp.getPlugin(), sender, true, true);
-            task.downloadUpdaterAndReload(task.plugin.getPluginManager().getPluginFile(task.plugin.getPlugin()));
+            AbstractPluginManager<P, ?> pluginManager = task.plugin.getPluginManager();
+            File pluginFile = pluginManager.getPluginFile(pluginManager.getPluginId(task.plugin.getPlugin()))
+                    .orElse(pluginManager.getPluginFile(task.plugin.getPlugin()));
+            task.downloadUpdaterAndReload(pluginFile);
         });
     }
 
