@@ -28,7 +28,6 @@ public class RCommandDispatcher {
 
             getCommandDispatcherMethod = Arrays.stream(RMinecraftServer.getReflection().getClazz().getDeclaredMethods())
                     .filter(m -> m.getReturnType().equals(reflection.getClazz()))
-                    .distinct()
                     .findAny()
                     .get();
             getDispatcherMethod = Arrays.stream(getCommandDispatcherMethod.getReturnType().getDeclaredMethods())
