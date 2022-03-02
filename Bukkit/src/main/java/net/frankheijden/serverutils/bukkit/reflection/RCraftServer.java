@@ -3,12 +3,15 @@ package net.frankheijden.serverutils.bukkit.reflection;
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
 import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
 import java.io.File;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.Warning;
 import org.bukkit.command.Command;
 import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 public class RCraftServer {
 
@@ -41,8 +44,35 @@ public class RCraftServer {
         return reflection.get(Bukkit.getServer(), "commandMap");
     }
 
+    /**
+     * Syncs and registers all commands, but keeping the old values that haven't been added.
+     */
+    @SuppressWarnings({"rawtypes"})
     public static void syncCommands() {
-        if (MinecraftReflectionVersion.MINOR >= 13) reflection.invoke(Bukkit.getServer(), "syncCommands");
+        if (MinecraftReflectionVersion.MINOR < 13) return;
+
+        Collection children = RCommandDispatcher.getDispatcher().getRoot().getChildren();
+        reflection.invoke(Bukkit.getServer(), "syncCommands");
+        Object root = RCommandDispatcher.getDispatcher().getRoot();
+
+        for (Object child : children) {
+            RCommandNode.removeCommand(root, RCommandNode.getName(child));
+            RCommandNode.addChild(root, child);
+        }
+        updateCommands();
+    }
+
+    /**
+     * Updates commands for all online players.
+     */
+    public static void updateCommands() {
+        if (MinecraftReflectionVersion.MINOR < 13) return;
+        Bukkit.getOnlinePlayers().forEach(RCraftServer::updateCommands);
+    }
+
+    public static void updateCommands(Player player) {
+        if (MinecraftReflectionVersion.MINOR < 13) return;
+        player.updateCommands();
     }
 
     public static Object getConsole() {
@@ -89,7 +119,9 @@ public class RCraftServer {
         SimpleCommandMap commandMap = getCommandMap();
         Map<String, Command> map = RCommandMap.getKnownCommands(commandMap);
 
-        for (String alias : Bukkit.getCommandAliases().keySet()) {
+        Set<String> commandNames = Bukkit.getCommandAliases().keySet();
+        RCommandDispatcher.removeCommands(commandNames);
+        for (String alias : commandNames) {
             Command aliasCommand = map.remove(alias);
             if (aliasCommand == null) continue;
 
