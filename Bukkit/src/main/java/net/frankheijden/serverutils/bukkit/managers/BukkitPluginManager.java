@@ -13,11 +13,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import net.frankheijden.serverutils.bukkit.entities.BukkitPluginDescription;
 import net.frankheijden.serverutils.bukkit.events.BukkitPluginDisableEvent;
 import net.frankheijden.serverutils.bukkit.events.BukkitPluginEnableEvent;
 import net.frankheijden.serverutils.bukkit.events.BukkitPluginLoadEvent;
 import net.frankheijden.serverutils.bukkit.events.BukkitPluginUnloadEvent;
+import net.frankheijden.serverutils.bukkit.reflection.RCommandDispatcher;
 import net.frankheijden.serverutils.bukkit.reflection.RCommandMap;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftServer;
 import net.frankheijden.serverutils.bukkit.reflection.RCraftingManager;
@@ -220,11 +222,14 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
         Map<String, Command> knownCommands = getKnownCommands();
         if (knownCommands == null) return;
 
-        knownCommands.values().removeIf(c -> {
+        List<String> unregisteredCommands = new ArrayList<>();
+        knownCommands.entrySet().removeIf(e -> {
+            Command c = e.getValue();
             if (c instanceof PluginIdentifiableCommand) {
                 PluginIdentifiableCommand pc = (PluginIdentifiableCommand) c;
                 if (pc.getPlugin().getName().equals(plugin.getName())) {
                     c.unregister(RCraftServer.getCommandMap());
+                    unregisteredCommands.add(e.getKey());
                     return true;
                 }
                 return false;
@@ -232,7 +237,8 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
             return false;
         });
 
-        RCraftServer.syncCommands();
+        RCommandDispatcher.removeCommands(unregisteredCommands);
+        RCraftServer.updateCommands();
     }
 
     /**
@@ -263,7 +269,8 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
             return false;
         });
 
-        RCraftServer.syncCommands();
+        RCommandDispatcher.removeCommands(commands);
+        RCraftServer.updateCommands();
     }
 
     /**
@@ -282,7 +289,8 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
             map.remove(command);
         }
 
-        RCraftServer.syncCommands();
+        RCommandDispatcher.removeCommands(Arrays.asList(commands));
+        RCraftServer.updateCommands();
     }
 
     /**
@@ -294,7 +302,8 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
         if (knownCommands == null) return;
         knownCommands.values().removeAll(commands);
 
-        RCraftServer.syncCommands();
+        RCommandDispatcher.removeCommands(commands.stream().map(Command::getName).collect(Collectors.toList()));
+        RCraftServer.updateCommands();
     }
 
     /**
