@@ -77,17 +77,19 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin, BungeePlu
         Map<String, PluginDescription> toLoad = RPluginManager.getToLoad(proxyPluginManager);
         if (toLoad == null) toLoad = new HashMap<>(descriptions.size());
 
+        Map<PluginDescription, Boolean> pluginStatuses = new HashMap<>();
+        for (Plugin plugin : getPlugins()) {
+            PluginDescription desc = plugin.getDescription();
+            pluginStatuses.put(desc, true);
+            toLoad.put(desc.getName(), desc);
+        }
+
         for (BungeePluginDescription description : descriptions) {
             PluginDescription desc = description.getDescription();
             toLoad.put(desc.getName(), desc);
         }
 
         RPluginManager.setToLoad(proxyPluginManager, toLoad);
-
-        Map<PluginDescription, Boolean> pluginStatuses = new HashMap<>();
-        for (Plugin plugin : getPlugins()) {
-            pluginStatuses.put(plugin.getDescription(), true);
-        }
 
         for (Map.Entry<String, PluginDescription> entry : toLoad.entrySet()) {
             // Yeah... loadPlugins() calls enablePlugin()
