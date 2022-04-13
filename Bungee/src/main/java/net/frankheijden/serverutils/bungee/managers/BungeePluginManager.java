@@ -178,7 +178,6 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin, BungeePlu
             String pluginId = getPluginId(plugin);
 
             proxy.getPluginManager().callEvent(new BungeePluginUnloadEvent(plugin, PluginEvent.Stage.PRE));
-            plugin.onDisable();
             proxy.getPluginManager().unregisterCommands(plugin);
             proxy.getPluginManager().unregisterListeners(plugin);
             proxy.getScheduler().cancel(plugin);
