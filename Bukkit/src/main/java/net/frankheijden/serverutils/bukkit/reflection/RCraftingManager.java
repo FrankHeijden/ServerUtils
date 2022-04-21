@@ -52,6 +52,11 @@ public class RCraftingManager {
                 Collection<Map> list = (Collection<Map>) recipes.values();
                 list.forEach(map -> MapUtils.removeKeys(map, predicate));
             }
+
+            if (MinecraftReflectionVersion.MINOR >= 18) {
+                Map byName = reflection.get(craftingManager, "d");
+                MapUtils.removeKeys(byName, predicate);
+            }
         }
     }
 }
