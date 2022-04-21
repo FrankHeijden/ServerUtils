@@ -36,7 +36,7 @@ public class RMinecraftKey {
         } else if (MinecraftReflectionVersion.MINOR == 17) {
             return reflection.invoke(instance, "getNamespace");
         } else if (MinecraftReflectionVersion.MINOR >= 18) {
-            return reflection.invoke(instance, "a");
+            return reflection.invoke(instance, "b");
         }
         return reflection.get(instance, "namespace");
     }
