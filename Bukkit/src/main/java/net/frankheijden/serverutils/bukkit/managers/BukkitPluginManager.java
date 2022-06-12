@@ -123,6 +123,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
             }
 
             unregisterCommands(plugin);
+            RSimplePluginManager.clearPermissions(Bukkit.getPluginManager(), plugin.getDescription().getPermissions());
             Bukkit.getPluginManager().callEvent(new BukkitPluginDisableEvent(plugin, PluginEvent.Stage.POST));
 
             disableResults.addResult(pluginId, plugin);
