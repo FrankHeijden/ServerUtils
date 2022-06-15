@@ -48,7 +48,7 @@ public class RCraftServer {
      * Syncs and registers all commands, but keeping the old values that haven't been added.
      */
     @SuppressWarnings({"rawtypes"})
-    public static void syncCommands() {
+    public static void syncCommands(Set<String> removedCommands) {
         if (MinecraftReflectionVersion.MINOR < 13) return;
 
         Collection children = RCommandDispatcher.getDispatcher().getRoot().getChildren();
@@ -56,8 +56,12 @@ public class RCraftServer {
         Object root = RCommandDispatcher.getDispatcher().getRoot();
 
         for (Object child : children) {
-            RCommandNode.removeCommand(root, RCommandNode.getName(child));
-            RCommandNode.addChild(root, child);
+            String name = RCommandNode.getName(child);
+            RCommandNode.removeCommand(root, name);
+
+            if (!removedCommands.contains(name)) {
+                RCommandNode.addChild(root, child);
+            }
         }
         updateCommands();
     }
@@ -144,7 +148,7 @@ public class RCraftServer {
         );
 
         commandMap.registerServerAliases();
-        RCraftServer.syncCommands();
+        RCraftServer.syncCommands(commandNames);
     }
 
     /**

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -109,11 +110,14 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
     public PluginResults<Plugin> disableOrderedPlugins(List<Plugin> plugins) {
         PluginResults<Plugin> disableResults = new PluginResults<>();
 
+        Set<String> removedCommands = new HashSet<>();
         for (Plugin plugin : plugins) {
             String pluginId = getPluginId(plugin);
             if (!isPluginEnabled(pluginId)) return disableResults.addResult(pluginId, Result.ALREADY_DISABLED);
 
             Bukkit.getPluginManager().callEvent(new BukkitPluginDisableEvent(plugin, PluginEvent.Stage.PRE));
+            Map<String, ? extends Command> pluginCommands = getPluginCommands(plugin);
+
             try {
                 Bukkit.getPluginManager().disablePlugin(plugin);
                 RCraftingManager.removeRecipesFor(plugin);
@@ -122,12 +126,14 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
                 return disableResults.addResult(pluginId, Result.ERROR);
             }
 
-            unregisterCommands(plugin);
+            unregisterCommands(pluginCommands);
+            removedCommands.addAll(pluginCommands.keySet());
             Bukkit.getPluginManager().callEvent(new BukkitPluginDisableEvent(plugin, PluginEvent.Stage.POST));
 
             disableResults.addResult(pluginId, plugin);
         }
 
+        RCraftServer.syncCommands(removedCommands);
         return disableResults;
     }
 
@@ -192,7 +198,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
             enableResults.addResult(pluginId, plugin);
         }
 
-        RCraftServer.syncCommands();
+        RCraftServer.syncCommands(Collections.emptySet());
         return enableResults;
     }
 
@@ -215,30 +221,39 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
     }
 
     /**
+     * Retrieves the commands associated to a plugin.
+     */
+    public static <C extends Command & PluginIdentifiableCommand> Map<String, C> getPluginCommands(Plugin plugin) {
+        Map<String, C> commands = new HashMap<>();
+
+        Map<String, Command> knownCommands = getKnownCommands();
+        if (knownCommands == null) return commands;
+
+        for (Map.Entry<String, Command> entry : knownCommands.entrySet()) {
+            Command c = entry.getValue();
+            if (c instanceof PluginIdentifiableCommand) {
+                @SuppressWarnings("unchecked")
+                C pc = (C) c;
+                if (pc.getPlugin().getName().equals(plugin.getName())) {
+                    commands.put(entry.getKey(), pc);
+                }
+            }
+        }
+
+        return commands;
+    }
+
+    /**
      * Unregisters all commands from the specified plugin.
      * @param plugin The plugin.
      */
     public static void unregisterCommands(Plugin plugin) {
-        Map<String, Command> knownCommands = getKnownCommands();
-        if (knownCommands == null) return;
+        unregisterCommands(getPluginCommands(plugin));
+    }
 
-        List<String> unregisteredCommands = new ArrayList<>();
-        knownCommands.entrySet().removeIf(e -> {
-            Command c = e.getValue();
-            if (c instanceof PluginIdentifiableCommand) {
-                PluginIdentifiableCommand pc = (PluginIdentifiableCommand) c;
-                if (pc.getPlugin().getName().equals(plugin.getName())) {
-                    c.unregister(RCraftServer.getCommandMap());
-                    unregisteredCommands.add(e.getKey());
-                    return true;
-                }
-                return false;
-            }
-            return false;
-        });
-
-        RCommandDispatcher.removeCommands(unregisteredCommands);
-        RCraftServer.updateCommands();
+    private static void unregisterCommands(Map<String, ? extends Command> pluginCommands) {
+        pluginCommands.values().forEach(c -> c.unregister(RCraftServer.getCommandMap()));
+        RCommandDispatcher.removeCommands(pluginCommands.keySet());
     }
 
     /**
