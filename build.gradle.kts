@@ -8,7 +8,7 @@ plugins {
 
 group = "net.frankheijden.serverutils"
 val dependencyDir = "${group}.dependencies"
-version = "3.4.5-SNAPSHOT"
+version = "3.5.0-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -39,7 +39,7 @@ subprojects {
         implementation("cloud.commandframework:cloud-brigadier:${VersionConstants.cloudVersion}")
         implementation("com.github.FrankHeijden:MinecraftReflection:1.0.0")
         implementation("com.google.code.gson:gson:2.8.6")
-        implementation("me.lucko:commodore:1.13")
+        implementation("me.lucko:commodore:2.0")
         compileOnly("com.mojang:brigadier:1.0.18")
 
         testImplementation("org.assertj:assertj-core:3.18.1")
@@ -55,6 +55,7 @@ subprojects {
 
         compileJava {
             options.encoding = Charsets.UTF_8.name()
+            options.isDeprecation = true
         }
 
         javadoc {

@@ -58,12 +58,12 @@ public class BukkitPlugin extends ServerUtilsPlugin<Plugin, BukkitTask, BukkitAu
             throw new RuntimeException(ex);
         }
 
-        if (commandManager.queryCapability(CloudBukkitCapabilities.BRIGADIER)) {
+        if (commandManager.hasCapability(CloudBukkitCapabilities.BRIGADIER)) {
             commandManager.registerBrigadier();
             handleBrigadier(commandManager.brigadierManager());
         }
 
-        if (commandManager.queryCapability(CloudBukkitCapabilities.ASYNCHRONOUS_COMPLETION)) {
+        if (commandManager.hasCapability(CloudBukkitCapabilities.ASYNCHRONOUS_COMPLETION)) {
             commandManager.registerAsynchronousCompletions();
         }
 

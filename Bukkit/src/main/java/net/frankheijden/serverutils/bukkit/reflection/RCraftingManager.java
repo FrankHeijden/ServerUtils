@@ -1,7 +1,10 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
+import dev.frankheijden.minecraftreflection.exceptions.MinecraftReflectionException;
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
 import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -12,6 +15,7 @@ import org.bukkit.plugin.Plugin;
 public class RCraftingManager {
 
     private static final MinecraftReflection reflection;
+    private static final Method getCraftingManagerMethod;
 
     static {
         if (MinecraftReflectionVersion.MINOR >= 17) {
@@ -19,6 +23,11 @@ public class RCraftingManager {
         } else {
             reflection = MinecraftReflection.of("net.minecraft.server.%s.CraftingManager");
         }
+
+        getCraftingManagerMethod = Arrays.stream(RMinecraftServer.getReflection().getClazz().getDeclaredMethods())
+                .filter(m -> m.getReturnType().equals(reflection.getClazz()))
+                .findAny()
+                .get();
     }
 
     private RCraftingManager() {}
@@ -35,8 +44,12 @@ public class RCraftingManager {
             RRegistryMaterials.removeKeysFor(reflection.get(null, "recipes"), plugin);
         } else if (MinecraftReflectionVersion.MINOR > 12) {
             Object server = RMinecraftServer.getReflection().invoke(null, "getServer");
-            String getCraftingManagerMethod = MinecraftReflectionVersion.MINOR >= 18 ? "aC" : "getCraftingManager";
-            Object craftingManager = RMinecraftServer.getReflection().invoke(server, getCraftingManagerMethod);
+            Object craftingManager;
+            try {
+                craftingManager = getCraftingManagerMethod.invoke(server);
+            } catch (ReflectiveOperationException ex) {
+                throw new MinecraftReflectionException(ex);
+            }
 
             Map recipes;
             if (MinecraftReflectionVersion.MINOR >= 17) {
