@@ -251,15 +251,28 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
         unregisterCommands(getPluginCommands(plugin));
     }
 
-    private static void unregisterCommands(Map<String, ? extends Command> pluginCommands) {
-        pluginCommands.values().forEach(c -> c.unregister(RCraftServer.getCommandMap()));
-        RCommandDispatcher.removeCommands(pluginCommands.keySet());
+    private static void unregisterCommands(Map<String, ? extends Command> commands) {
+        commands.values().forEach(c -> {
+            if (c instanceof PluginCommand) {
+                PluginCommand pluginCommand = (PluginCommand) c;
+                pluginCommand.setExecutor(null);
+                pluginCommand.setTabCompleter(null);
+            }
+            c.unregister(RCraftServer.getCommandMap());
+        });
+        RCommandDispatcher.removeCommands(commands.keySet());
+
+        Map<String, Command> knownCommands = getKnownCommands();
+        if (knownCommands == null) return;
+        knownCommands.values().removeIf(c -> c.equals(commands.get(c.getName().toLowerCase())));
     }
 
     /**
      * Unregisters all the specified PluginCommand's.
+     * @deprecated Use {@link BukkitPluginManager#unregisterCommands(Map)} instead.
      * @param pluginCommands The commands to unregister.
      */
+    @Deprecated
     public static void unregisterCommands(Collection<? extends PluginCommand> pluginCommands) {
         Map<String, Command> knownCommands = getKnownCommands();
         if (knownCommands == null) return;
