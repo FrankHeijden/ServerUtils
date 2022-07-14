@@ -20,14 +20,20 @@ public class RCraftingManager {
     static {
         if (MinecraftReflectionVersion.MINOR >= 17) {
             reflection = MinecraftReflection.of("net.minecraft.world.item.crafting.CraftingManager");
-        } else {
+        } else if (MinecraftReflectionVersion.MINOR >= 12) {
             reflection = MinecraftReflection.of("net.minecraft.server.%s.CraftingManager");
+        } else {
+            reflection = null;
         }
 
-        getCraftingManagerMethod = Arrays.stream(RMinecraftServer.getReflection().getClazz().getDeclaredMethods())
-                .filter(m -> m.getReturnType().equals(reflection.getClazz()))
-                .findAny()
-                .get();
+        if (MinecraftReflectionVersion.MINOR > 12) {
+            getCraftingManagerMethod = Arrays.stream(RMinecraftServer.getReflection().getClazz().getDeclaredMethods())
+                    .filter(m -> m.getReturnType().equals(reflection.getClazz()))
+                    .findAny()
+                    .get();
+        } else {
+            getCraftingManagerMethod = null;
+        }
     }
 
     private RCraftingManager() {}
