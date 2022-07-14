@@ -269,8 +269,8 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
 
     /**
      * Unregisters all the specified PluginCommand's.
-     * @deprecated Use {@link BukkitPluginManager#unregisterCommands(Map)} instead.
      * @param pluginCommands The commands to unregister.
+     * @deprecated Use {@link BukkitPluginManager#unregisterCommands(Map)} instead.
      */
     @Deprecated
     public static void unregisterCommands(Collection<? extends PluginCommand> pluginCommands) {
