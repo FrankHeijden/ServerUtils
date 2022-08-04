@@ -74,6 +74,6 @@ public abstract class CommandPlugins<U extends ServerUtilsPlugin<P, ?, C, ?, D>,
                 })
                 .build());
         sender.sendMessage(builder.build());
-        sender.sendMessage(messages.get(MessageKey.PLUGININFO_FOOTER).toComponent());
+        sender.sendMessage(messages.get(MessageKey.PLUGINS_FOOTER).toComponent());
     }
 }
