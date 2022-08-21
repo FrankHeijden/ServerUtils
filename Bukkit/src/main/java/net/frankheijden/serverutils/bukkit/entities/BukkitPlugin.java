@@ -58,7 +58,10 @@ public class BukkitPlugin extends ServerUtilsPlugin<Plugin, BukkitTask, BukkitAu
             throw new RuntimeException(ex);
         }
 
-        if (commandManager.hasCapability(CloudBukkitCapabilities.BRIGADIER)) {
+        boolean hasBrigadier = commandManager.hasCapability(CloudBukkitCapabilities.BRIGADIER);
+        boolean hasNativeBrigadier = commandManager.hasCapability(CloudBukkitCapabilities.NATIVE_BRIGADIER);
+        boolean hasCommodoreBrigadier = commandManager.hasCapability(CloudBukkitCapabilities.COMMODORE_BRIGADIER);
+        if (hasBrigadier && (hasNativeBrigadier || hasCommodoreBrigadier)) {
             commandManager.registerBrigadier();
             handleBrigadier(commandManager.brigadierManager());
         }
