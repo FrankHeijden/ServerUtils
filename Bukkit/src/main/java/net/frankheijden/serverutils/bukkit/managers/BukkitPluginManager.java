@@ -313,12 +313,15 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
             return;
         }
 
-        for (String command : commands) {
-            map.remove(command);
+        List<Command> unregisteredCommands = new ArrayList<>();
+        for (String commandName : commands) {
+            Command command = map.remove(commandName);
+            if (command == null) continue;
+
+            unregisteredCommands.add(command);
         }
 
-        RCommandDispatcher.removeCommands(Arrays.asList(commands));
-        RCraftServer.updateCommands();
+        unregisterExactCommands(unregisteredCommands);
     }
 
     /**

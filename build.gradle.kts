@@ -39,7 +39,7 @@ subprojects {
         implementation("cloud.commandframework:cloud-brigadier:${VersionConstants.cloudVersion}")
         implementation("com.github.FrankHeijden:MinecraftReflection:1.0.0")
         implementation("com.google.code.gson:gson:2.8.6")
-        implementation("me.lucko:commodore:2.0")
+        implementation("me.lucko:commodore:2.2")
         compileOnly("com.mojang:brigadier:1.0.18")
 
         testImplementation("org.assertj:assertj-core:3.18.1")

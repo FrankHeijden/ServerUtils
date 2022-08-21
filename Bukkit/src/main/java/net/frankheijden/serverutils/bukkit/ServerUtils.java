@@ -1,6 +1,7 @@
 package net.frankheijden.serverutils.bukkit;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import net.frankheijden.serverutils.bukkit.entities.BukkitPlugin;
@@ -46,6 +47,7 @@ public class ServerUtils extends JavaPlugin {
     public void onDisable() {
         super.onDisable();
         restoreBukkitPluginCommand();
+        RCraftServer.syncCommands(Collections.emptySet());
         plugin.disable();
     }
 

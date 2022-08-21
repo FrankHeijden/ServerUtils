@@ -23,10 +23,10 @@ dependencies {
     implementation("net.kyori:adventure-text-minimessage:${VersionConstants.adventureMinimessageVersion}") {
         exclude("net.kyori", "adventure-api")
     }
-    compileOnly("com.velocitypowered:velocity-api:3.1.0-SNAPSHOT")
+    compileOnly("com.velocitypowered:velocity-api:3.1.2-SNAPSHOT")
     compileOnly("com.velocitypowered:velocity-brigadier:1.0.0-SNAPSHOT")
     compileOnly("com.electronwill.night-config:toml:3.6.3")
-    annotationProcessor("com.velocitypowered:velocity-api:3.1.0-SNAPSHOT")
+    annotationProcessor("com.velocitypowered:velocity-api:3.1.2-SNAPSHOT")
 }
 
 tasks {
