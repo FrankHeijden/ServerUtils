@@ -19,6 +19,7 @@ dependencies {
         exclude("net.kyori", "adventure-api")
         exclude("net.kyori", "adventure-text-minimessage")
     }
+    compileOnly("net.kyori:adventure-text-minimessage:${VersionConstants.adventureMinimessageVersion}")
     compileOnly("com.github.FrankHeijden:ServerUtilsUpdater:5f722b10d1")
 
     testImplementation("net.kyori:adventure-text-serializer-plain:${VersionConstants.adventureVersion}")
