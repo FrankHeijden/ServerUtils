@@ -18,8 +18,13 @@ repositories {
 
 dependencies {
     implementation("cloud.commandframework:cloud-bungee:${VersionConstants.cloudVersion}")
-    implementation("net.kyori:adventure-api:${VersionConstants.adventureVersion}")
-    implementation("net.kyori:adventure-platform-bungeecord:${VersionConstants.adventurePlatformVersion}")
+    implementation("net.kyori:adventure-api:${VersionConstants.adventureVersion}") {
+        exclude("net.kyori", "adventure-text-minimessage")
+    }
+    implementation("net.kyori:adventure-platform-bungeecord:${VersionConstants.adventurePlatformVersion}") {
+        exclude("net.kyori", "adventure-api")
+        exclude("net.kyori", "adventure-text-minimessage")
+    }
     implementation("net.kyori:adventure-text-minimessage:${VersionConstants.adventureMinimessageVersion}") {
         exclude("net.kyori", "adventure-api")
     }
