@@ -1,0 +1,81 @@
+{
+  "config-version": 1,
+  "messages": {
+    "generic": {
+      "prefix": "<aqua><bold>ServerUtils <dark_gray><bold>»<reset> <gray>",
+      "error": "<red>An error occurred, please check the console!",
+      "not-exists": "<red>Plugin <dark_red><plugin></dark_red> does not exist!",
+      "not-enabled": "<red>Plugin <dark_red><plugin></dark_red> is not enabled!",
+      "already-loaded": "<red>Plugin <dark_red><plugin></dark_red> is already loaded!",
+      "already-enabled": "<red>Plugin <dark_red><plugin></dark_red> is already enabled!",
+      "already-disabled": "<red>Plugin <dark_red><plugin></dark_red> is already disabled!",
+      "invalid-plugin": "<red>Plugin <dark_red><plugin></dark_red> is invalid!",
+      "invalid-description": "<red>Plugin <dark_red><plugin></dark_red> has an invalid plugin description!",
+      "unknown-dependency": "<red>Plugin <dark_red><plugin></dark_red> has an unknown dependency: <dark_red><dependency><red>!",
+      "file-deleted": "<red>File of plugin <dark_red><plugin></dark_red> has been deleted!",
+      "protected-plugin": "<red>Plugin <dark_red><plugin></dark_red> is protected!"
+    },
+    "reload": "<dark_aqua>Successfully reloaded <aqua>ServerUtils configurations</aqua>!",
+    "serverutils-updater": "<dark_aqua>Loaded and enabled ServerUtilsUpdater. Completion can be monitored from the console, attempting restart now...",
+    "loadplugin": "<dark_aqua>Successfully loaded <aqua><plugin></aqua>!",
+    "unloadplugin": "<dark_aqua>Successfully unloaded <aqua><plugin></aqua>!",
+    "reloadplugin": {
+      "success": "<dark_aqua>Successfully reloaded <aqua><plugin></aqua>!",
+      "serverutils": "<red>Sorry, but you can't reload ServerUtils this way. Please restart using <dark_red>/<command></dark_red>."
+    },
+    "depending-plugins": {
+      "prefix": "<red>Plugin <dark_red><plugin></dark_red> has depending plugins: ",
+      "format": "<dark_red><plugin>",
+      "separator": "<red>, ",
+      "last-separator": " <red>and ",
+      "override": "<red>Use \"<dark_red>/<command></dark_red>\" to force command execution."
+    },
+    "watchplugin": {
+      "start": "<dark_aqua>Started watching <aqua><plugin></aqua>!",
+      "change": "<dark_aqua>Changes detected, reloading plugins now...",
+      "stopped": "<dark_aqua>Stopped watching <aqua><plugin></aqua>!",
+      "file-deleted": "<red>File of plugin <dark_red><plugin></dark_red> has been deleted! Waiting for plugin to show up...",
+      "deleted-file-is-created": "<dark_aqua>File of plugin <aqua><plugin></aqua> has shown up again!",
+      "already-watching": "<red>You are already watching <dark_red><plugin></dark_red>!",
+      "not-watching": "<red>You are not watching <dark_red><plugin></dark_red>!"
+    },
+    "update": {
+      "available": "<dark_gray><strikethrough>------------=<reset><dark_gray>[ <aqua><bold>ServerUtils Update<reset> <dark_gray>]<strikethrough>=--------------\n <dark_aqua>Current version: <aqua><old>\n <dark_aqua>New version: <aqua><new>\n <dark_aqua>Release info: <aqua><info>\n<dark_gray><strikethrough>-------------------------------------------------",
+      "downloading": "<dark_gray><strikethrough>------------=<reset><dark_gray>[ <aqua><bold>ServerUtils Update<reset> <dark_gray>]<strikethrough>=--------------\n <dark_aqua>A new version of ServerUtils will be downloaded and installed after a restart!\n <dark_aqua>Current version: <aqua><old>\n <dark_aqua>New version: <aqua><new>\n <dark_aqua>Release info: <aqua><info>\n<dark_gray><strikethrough>-------------------------------------------------",
+      "download-failed": "<red>Failed to download version <new> of ServerUtils. Please update manually.",
+      "download-success": "<dark_aqua>ServerUtils has been downloaded and will be installed on the next restart."
+    },
+    "help": {
+      "header": "<dark_gray><strikethrough>-------------=<reset><dark_gray>[ <aqua><bold>ServerUtils Help<reset> <dark_gray>]<strikethrough>=---------------",
+      "format": "<dark_gray>/<dark_aqua><command> <dark_gray>(<aqua><help><dark_gray>)",
+      "footer": "<dark_gray><strikethrough>-------------------------------------------------"
+    },
+    "plugins": {
+      "header": "<dark_gray><strikethrough>------------=<reset><dark_gray>[ <aqua><bold>ServerUtils Plugins<reset> <dark_gray>]<strikethrough>=-------------",
+      "prefix": " <dark_aqua>Plugins <dark_gray>(<green><count><dark_gray>)<aqua>: ",
+      "format": "<dark_aqua><plugin>",
+      "format-disabled": "<red><plugin>",
+      "separator": "<aqua>, ",
+      "last-separator": " <aqua>and ",
+      "version": " <dark_gray>(<green><version><dark_gray>)",
+      "footer": "<dark_gray><strikethrough>-------------------------------------------------"
+    },
+    "plugininfo": {
+      "header": "<dark_gray><strikethrough>-----------=<reset><dark_gray>[ <aqua><bold>ServerUtils PluginInfo<reset> <dark_gray>]<strikethrough>=-----------",
+      "format": " <dark_aqua><key><dark_gray>: <aqua><value>",
+      "list-format": "<aqua><value>",
+      "list-separator": "<dark_gray>, ",
+      "list-last-separator": " <dark_gray>and ",
+      "footer": "<dark_gray><strikethrough>-------------------------------------------------"
+    },
+    "commandinfo": {
+      "header": "<dark_gray><strikethrough>-----------=<reset><dark_gray>[ <aqua><bold>ServerUtils CommandInfo<reset> <dark_gray>]<strikethrough>=----------",
+      "format": " <dark_aqua><key><dark_gray>: <aqua><value>",
+      "list-format": "<aqua><value>",
+      "list-separator": "<dark_gray>, ",
+      "list-last-separator": " <dark_gray>and ",
+      "footer": "<dark_gray><strikethrough>-------------------------------------------------",
+      "not-exists": "<red>That command is not a valid registered command."
+    }
+  }
+}

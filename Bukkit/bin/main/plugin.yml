@@ -1,0 +1,10 @@
+name: ServerUtils
+version: 3.5.4-SNAPSHOT
+main: net.frankheijden.serverutils.bukkit.ServerUtils
+description: A server utility
+authors:
+ - FrankHeijden
+website: https://github.com/FrankHeijden/ServerUtils
+api-version: 1.13
+softdepend:
+ - ServerUtilsUpdater

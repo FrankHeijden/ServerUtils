@@ -1,0 +1,7 @@
+name: ServerUtils
+main: net.frankheijden.serverutils.bungee.ServerUtils
+version: 3.5.4-SNAPSHOT
+author: FrankHeijden
+softDepends:
+ - ServerUtilsUpdater
+description: A server utility

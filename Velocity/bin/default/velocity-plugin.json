@@ -1,0 +1,1 @@
+{"id":"serverutils","name":"ServerUtils","version":"{version}","description":"A server utility","url":"https://github.com/FrankHeijden/ServerUtils","authors":["FrankHeijden"],"dependencies":[],"main":"net.frankheijden.serverutils.velocity.ServerUtils"}
