@@ -63,7 +63,7 @@ public class WatchManager<P, T> {
 
             PluginWatchResults watchResults = new PluginWatchResults();
             for (String pluginId : task.pluginIds) {
-                watchResults.add(WatchResult.START, "plugin", pluginId);
+                watchResults.add(WatchResult.STOPPED, "plugin", pluginId);
             }
             return watchResults;
         }
