@@ -1,5 +1,6 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
+import com.google.common.primitives.Primitives;
 import dev.frankheijden.minecraftreflection.ClassObject;
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
 import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
@@ -124,7 +125,12 @@ public class RDedicatedServer {
     public static void setConfigValue(Object config, Object console, String getMethod, String setMethod,
                                             String configMethod, String key) {
         Object defaultValue = reflection.invoke(console, getMethod);
-        Object configValue = RPropertyManager.getReflection().invoke(config, configMethod, key, defaultValue);
-        reflection.invoke(console, setMethod, configValue);
+        Class<?> defaultValueClass = Primitives.unwrap(defaultValue.getClass());
+        Object configValue = RPropertyManager.getReflection().invoke(
+            config,
+            configMethod,
+            ClassObject.of(key),
+            ClassObject.of(defaultValueClass, defaultValue));
+        reflection.invoke(console, setMethod, ClassObject.of(defaultValueClass, configValue));
     }
 }
