@@ -1,6 +1,5 @@
 package net.frankheijden.serverutils.bukkit.reflection;
 
-import com.google.common.primitives.Primitives;
 import dev.frankheijden.minecraftreflection.ClassObject;
 import dev.frankheijden.minecraftreflection.MinecraftReflection;
 import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
@@ -8,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodType;
 import java.util.Properties;
 
 public class RDedicatedServer {
