@@ -125,7 +125,7 @@ public class RDedicatedServer {
     public static void setConfigValue(Object config, Object console, String getMethod, String setMethod,
                                             String configMethod, String key) {
         Object defaultValue = reflection.invoke(console, getMethod);
-        Class<?> defaultValueClass = Primitives.unwrap(defaultValue.getClass());
+        Class<?> defaultValueClass = MethodType.methodType(defaultValue.getClass()).unwrap().returnType();
         Object configValue = RPropertyManager.getReflection().invoke(
             config,
             configMethod,
