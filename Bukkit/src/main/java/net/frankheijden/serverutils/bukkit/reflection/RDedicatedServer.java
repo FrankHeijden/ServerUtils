@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodType;
 import java.util.Properties;
 
 public class RDedicatedServer {
@@ -124,7 +125,12 @@ public class RDedicatedServer {
     public static void setConfigValue(Object config, Object console, String getMethod, String setMethod,
                                             String configMethod, String key) {
         Object defaultValue = reflection.invoke(console, getMethod);
-        Object configValue = RPropertyManager.getReflection().invoke(config, configMethod, key, defaultValue);
-        reflection.invoke(console, setMethod, configValue);
+        Class<?> defaultValueClass = MethodType.methodType(defaultValue.getClass()).unwrap().returnType();
+        Object configValue = RPropertyManager.getReflection().invoke(
+            config,
+            configMethod,
+            ClassObject.of(key),
+            ClassObject.of(defaultValueClass, defaultValue));
+        reflection.invoke(console, setMethod, ClassObject.of(defaultValueClass, configValue));
     }
 }

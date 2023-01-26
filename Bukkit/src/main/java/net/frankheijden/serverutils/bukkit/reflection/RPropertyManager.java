@@ -12,6 +12,6 @@ public class RPropertyManager {
     }
 
     public static Object newInstance(Object options) {
-        return ROptionSet.getReflection().newInstance(options);
+        return getReflection().newInstance(options);
     }
 }
